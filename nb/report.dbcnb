@@ -1,0 +1,260 @@
+cells:
+  - kind: 2
+    languageId: sql
+    value: "FROM system_latest\r
+
+      SELECT  timestamp, StarSystem, SystemAddress, (* GLOB 'Powerplay*')\r
+
+      \        -- PowerplayState, ControllingPower, Powers, \r
+
+      \        -- PowerplayConflictProgress, PowerplayStateControlProgress, \r
+
+      \        -- PowerplayStateReinforcement, PowerplayStateUndermining\r
+
+      WHERE PowerplayState = 'Exploited' and \"PowerplayStateControlProgress\" >
+      1 and Controllingpower = 'Li Yong-Rui'"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "\r
+
+      WITH \r
+
+      populated AS (\r
+
+      \    SELECT \r
+
+      \        * EXCLUDE (PowerplayState, Powers),\r
+
+      \        COALESCE(PowerplayState, 'Unoccupied') AS PowerplayState, \r
+
+      \        COALESCE(Powers, []) AS Powers,\r
+
+      \        \r
+
+      \    FROM system_latest\r
+
+      \    WHERE Population > 0\r
+
+      ),\r
+
+      activities AS (\r
+
+      \    SELECT \r
+
+      \        StarSystem,\r
+
+      \        ControllingPower,\r
+
+      \        COALESCE(PowerplayState, 'Unoccupied') AS PowerplayState, \r
+
+      \        PowerplayStateControlProgress,\r
+
+      \        COALESCE(Powers, []) AS Powers,\r
+
+      \        PowerplayStateReinforcement, PowerplayStateUndermining,
+      PowerplayConflictProgress,\r
+
+      \        CASE \r
+
+      \            WHEN ControllingPower = 'Li Yong-Rui' THEN\r
+
+      \                CASE\r
+
+      \                    WHEN PowerplayState = 'Exploited' AND
+      PowerplayStateControlProgress < 0.05 AND (PowerplayStateReinforcement -
+      PowerplayStateUndermining) / 230000 <= -0.05 THEN 'Reinforce (>5%
+      undermining, risk of loss)'\r
+
+      \                    WHEN PowerplayState = 'Exploited' AND
+      (PowerplayStateReinforcement - PowerplayStateUndermining) / 230000 <=
+      -0.05 THEN 'Reinforce (>5% undermining)'\r
+
+      \                    WHEN PowerplayState = 'Exploited' AND
+      PowerplayStateControlProgress < 0.01 THEN 'Reinforce (<1% progress)'\r
+
+      \                    WHEN PowerplayState = 'Exploited' AND
+      PowerplayStateControlProgress < 1 THEN 'Reinforce'\r
+
+      \                    WHEN PowerplayState = 'Fortified' AND
+      PowerplayStateControlProgress < 0.05 AND (PowerplayStateReinforcement -
+      PowerplayStateUndermining) / 317000 <= -0.05 THEN 'Reinforce (>5%
+      undermining, risk of fort loss)'\r
+
+      \                    WHEN PowerplayState = 'Fortified' AND
+      (PowerplayStateReinforcement - PowerplayStateUndermining) / 317000 <=
+      -0.05 THEN 'Reinforce (>5% undermining)'\r
+
+      \                    WHEN PowerplayState = 'Fortified' AND
+      PowerplayStateControlProgress < 0.01 THEN 'Reinforce (<1% progress)'\r
+
+      \                    WHEN PowerplayState = 'Fortified' AND
+      PowerplayStateControlProgress < 1.25 THEN 'Reinforce'\r
+
+      \                    WHEN PowerplayState = 'Stronghold' AND
+      PowerplayStateControlProgress < 0.05 AND (PowerplayStateReinforcement -
+      PowerplayStateUndermining) / 333000 <= -0.05 THEN 'Reinforce (>5%
+      undermining, risk of sh loss)'\r
+
+      \                    WHEN PowerplayState = 'Stronghold' AND
+      (PowerplayStateReinforcement - PowerplayStateUndermining) / 333000 <=
+      -0.05 THEN 'Reinforce (>5% undermining)'\r
+
+      \                    WHEN PowerplayState = 'Stronghold' AND
+      PowerplayStateControlProgress < 0.01 THEN 'Reinforce (<1% progress)'\r
+
+      \                    WHEN PowerplayState = 'Stronghold' THEN 'Reinforce'\r
+
+      \                    ELSE 'Wait Until Next Cycle'\r
+
+      \                END\r
+
+      \            ELSE\r
+
+      \                CASE\r
+
+      \                    WHEN PowerplayState = 'Unoccupied' AND ['Li
+      Yong-Rui'] = Powers THEN 'Acquire (uncontested)'\r
+
+      \                    WHEN PowerplayState = 'Unoccupied' AND 'Li Yong-Rui'
+      IN Powers THEN 'Acquire (contested)'\r
+
+      \                    WHEN PowerplayState = 'Unoccupied' THEN 'Out of
+      Range'\r
+
+      \                    ELSE 'Undermine'\r
+
+      \                END\r
+
+      \        END AS Activity,\r
+
+      \        timestamp as LastUpdate\r
+
+      \    FROM populated\r
+
+      )\r
+
+      SELECT * FROM activities\r
+
+      WHERE Activity NOT IN ('Out of Range', 'Wait Until Next Cycle')\r
+
+      \r
+
+      \r\n"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "\r
+
+      --CREATE OR REPLACE TYPE activity_enum AS ENUM ('No Powerplay Data',
+      'Acquire', 'Reinforce', 'Undermine', 'Out of Range', 'Wait Until Next
+      Cycle');\r
+
+      \r
+
+      WITH \r
+
+      populated AS (\r
+
+      \    SELECT \r
+
+      \        sys.*,\r
+
+      \        pp.* EXCLUDE (SystemAddress, StarSystem, StarPos, PowerplayState,
+      Powers),\r
+
+      \        COALESCE(PowerplayState, 'Unoccupied') AS PowerplayState, \r
+
+      \        COALESCE(Powers, []) AS Powers,\r
+
+      \        (pp.SystemAddress IS NULL) AS HasNoPowerplayData,\r
+
+      \    FROM systems_populated sys\r
+
+      \    LEFT JOIN system_latest pp ON pp.SystemAddress = sys.Id64\r
+
+      \r
+
+      ),\r
+
+      activities AS (\r
+
+      \    SELECT \r
+
+      \        Id64 AS SystemAddress,\r
+
+      \        Name AS StarSystem,\r
+
+      \        StarPos,\r
+
+      \        ControllingPower,\r
+
+      \        COALESCE(PowerplayState, 'Unoccupied') AS PowerplayState, \r
+
+      \        PowerplayStateControlProgress,\r
+
+      \        COALESCE(Powers, []) AS Powers,\r
+
+      \        PowerplayStateReinforcement, PowerplayStateUndermining,
+      PowerplayConflictProgress,\r
+
+      \        CASE \r
+
+      \            WHEN HasNoPowerplayData THEN 'No Powerplay Data'\r
+
+      \            WHEN ControllingPower = 'Li Yong-Rui' THEN\r
+
+      \                CASE\r
+
+      \                    WHEN PowerplayState = 'Exploited' AND
+      PowerplayStateControlProgress < 1 THEN 'Reinforce'\r
+
+      \                    WHEN PowerplayState = 'Fortified' AND
+      PowerplayStateControlProgress < 1.25 THEN 'Reinforce'\r
+
+      \                    WHEN PowerplayState = 'Stronghold' THEN 'Reinforce'\r
+
+      \                    ELSE 'Wait Until Next Cycle'\r
+
+      \                END\r
+
+      \            ELSE\r
+
+      \                CASE\r
+
+      \                    WHEN PowerplayState = 'Unoccupied' AND 'Li Yong-Rui'
+      IN Powers THEN 'Acquire'\r
+
+      \                    WHEN PowerplayState = 'Unoccupied' THEN 'Out of
+      Range'\r
+
+      \                    ELSE 'Undermine'\r
+
+      \                END\r
+
+      \        END::activity_enum AS Activity,\r
+
+      \        timestamp as LastUpdate,\r
+
+      \    FROM populated\r
+
+      )\r
+
+      SELECT * FROM activities\r
+
+      WHERE Activity NOT IN ('No Powerplay Data')\r
+
+      \r
+
+      \r\n"
+    metadata: {}
+metadata:
+  conn:
+    id: mqlq5LygeBHE6x5c6115x
+    name: data.duckdb
+  database: data
+  schema: main
+  parameters:
+    ${power}:
+      value: Li Yong-Rui
+      type: string

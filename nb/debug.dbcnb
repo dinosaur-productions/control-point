@@ -1,0 +1,99 @@
+cells:
+  - kind: 2
+    languageId: sql
+    value: "-- check a system history\r
+
+      \r
+
+      SELECT * from jumps_location WHERE StarSystem = 'Arietis Sector ON-T b3-3'
+      ORDER BY timestamp DESC LIMIT 10;"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "WITH latest AS (\r
+
+      \    SELECT SystemAddress,\r
+
+      \    MAX(timestamp) AS timestamp, \r
+
+      \    any_value(timestamp ORDER BY timestamp DESC) FILTER
+      (PowerplayStateControlProgress IS NOT NULL) AS pptimestamp,\r
+
+      \    any_value(PowerplayStateControlProgress ORDER BY timestamp DESC) AS
+      PowerplayStateControlProgress\r
+
+      \    FROM jumps_location\r
+
+      \    GROUP BY ALL\r
+
+      )\r
+
+      SELECT DISTINCT ON (j.SystemAddress) j.* EXCLUDE
+      (PowerplayStateControlProgress), l.PowerplayStateControlProgress\r
+
+      FROM jumps_location j\r
+
+      JOIN latest l USING (SystemAddress, timestamp)\r
+
+      WHERE j.StarSystem = 'LP 410-93'\r
+
+      ORDER BY l.PowerplayStateControlProgress\r
+
+      --ORDER BY j.ControllingPower\r
+
+      \r
+
+      \r\n"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "-- Read all jump and location JSON files directly. Useful to diagnose
+      import issues.\r
+
+      \r
+
+      WITH jsn as (\r
+
+      SELECT message->>'timestamp' ts, header->>'softwareName' softwareName,
+      header->>'softwareVersion' softwareVersion, message->'ControllingPower'
+      CPower, message->'PowerplayStateControlProgress' Progress, *\r
+
+      FROM read_ndjson_auto(['data-dump/Journal.*Jump-2025-??-??.jsonl.gz',
+      'data-dump/Journal.*Jump-2025-??-??.jsonl',
+      'data-dump/Journal.Location-2025-??-??.jsonl.gz',
+      'data-dump/Journal.Location-2025-??-??.jsonl'], union_by_name= true)\r
+
+      )\r
+
+      SELECT *\r
+
+      FROM jsn\r
+
+      WHERE message->>'StarSystem' = 'LP 410-93'\r
+
+      --WHERE CPower != 'null' AND Progress = 'null'\r
+
+      --WHERE message->'ControllingPower' IS NOT NULL AND
+      message->'PowerplayStateControlProgress' IS NULL\r
+
+      --WHERE header->>'softwareName' = 'EDDiscovery' limit 10; -- AND
+      message->>'StarSystem' = 'Arietis Sector ON-T b3-3';\r
+
+      \r\n"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: COPY (SELECT DISTINCT Name FROM systems_populated) TO 'names.parquet'
+      (FORMAT parquet);
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: select MarketId, UNNEST(commodities,RECURSIVE:=true) FROM
+      commodities_latest limit 1;
+    metadata: {}
+metadata:
+  conn:
+    id: mqlq5LygeBHE6x5c6115x
+    name: data.duckdb
+  database: data
+  schema: main

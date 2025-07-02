@@ -1,0 +1,514 @@
+cells:
+  - kind: 2
+    languageId: sql
+    value: "-- nb of stronghols, forts, exploits for LYR\r
+
+      SELECT\r
+
+      \    PowerplayState,\r
+
+      \    COUNT(DISTINCT StarSystem) AS Systems\r
+
+      FROM system_latest\r
+
+      WHERE ControllingPower = 'Li Yong-Rui' --and \"PowerplayState\" =
+      'Stronghold'\r
+
+      GROUP BY PowerplayState\r
+
+      ORDER BY PowerplayState DESC;"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "\r
+
+      -- find tritium near Diaguandri\r
+
+      with \r
+
+      \    orig as (SELECT StarPos FROM systems_populated WHERE Name =
+      'Diaguandri' LIMIT 1)\r
+
+      select SystemName, StationName, StationType, Name, Stock, BuyPrice,
+      TRY(array_distance(orig.StarPos, s.StarPos)) as Distance\r
+
+      FROM (select SystemName, StationName, StationType, timestamp,
+      unnest(commodities, recursive:=true) from commodities_latest) as c\r
+
+      CROSS JOIN orig\r
+
+      LEFT JOIN (SELECT DISTINCT ON (StarSystem) StarSystem, StarPos from
+      system_latest) as s on s.StarSystem = c.SystemName\r
+
+      where stock > 1000 \r
+
+      and lower(name) = 'tritium' \r
+
+      and coalesce(stationtype, '') != 'FleetCarrier'\r
+
+      and timestamp >= today() - interval '1 day'\r
+
+      order by Distance,BuyPrice\r\n"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "WITH infra_failures AS (\r
+
+      \    -- 1. Find all (SystemAddress, FactionName) pairs with
+      InfrastructureFailure\r
+
+      \    SELECT DISTINCT SystemAddress, Name as FactionName, timestamp\r
+
+      \    FROM (SELECT SystemAddress, timestamp, UNNEST(Factions,
+      recursive:=true) FROM system_latest) AS f\r
+
+      \    WHERE list_has_any(f.ActiveStates, ['InfrastructureFailure'])\r
+
+      \    AND timestamp >= today() - interval '1 day'\r
+
+      ),\r
+
+      \r
+
+      stations AS (\r
+
+      \    -- 2. Find stations with a market\r
+
+      \    SELECT SystemAddress, MarketID, StationName, StarSystem,
+      StationFaction.Name AS FactionName, timestamp\r
+
+      \    FROM station_latest\r
+
+      \    WHERE MarketId IS NOT NULL\r
+
+      ),\r
+
+      \r
+
+      infra_stations AS (\r
+
+      \    -- 2b. Only stations in systems and controlled by the faction with
+      InfrastructureFailure\r
+
+      \    SELECT s.*, i.timestamp as InfraFailTimestamp\r
+
+      \    FROM stations s\r
+
+      \    JOIN infra_failures i USING(SystemAddress, FactionName)\r
+
+      ),\r
+
+      \r
+
+      stations_with_commodities AS (\r
+
+      \    -- 3. Join to commodities and filter for gold or palladium in stock\r
+
+      \    SELECT\r
+
+      \        s.StarSystem,\r
+
+      \        s.StationName,\r
+
+      \        s.MarketID,\r
+
+      \        s.FactionName,\r
+
+      \        c.Name as Commodity,\r
+
+      \        c.BuyPrice,\r
+
+      \        c.Stock,\r
+
+      \        s.InfraFailTimestamp,\r
+
+      \        c.timestamp AS MarketTimestamp,\r
+
+      \    FROM infra_stations s\r
+
+      \    JOIN (select MarketId, UNNEST(commodities, recursive:=true),
+      timestamp FROM commodities_latest) c\r
+
+      \      ON s.MarketId = c.marketId\r
+
+      \    WHERE c.Name IN ('gold', 'silver', 'palladium')\r
+
+      \      AND c.Stock > 0\r
+
+      ),\r
+
+      \r
+
+      wash_locations as (\r
+
+      \    SELECT StarSystem, StationName, FactionName,
+      array_agg([Commodity,BuyPrice::VARCHAR,Stock::VARCHAR]) as Commodities
+      ,max(InfraFailTimestamp) AS InfraFailTimestamp, max(MarketTimestamp) AS
+      MarketTimestamp\r
+
+      \    FROM stations_with_commodities\r
+
+      \    GROUP BY ALL\r
+
+      )\r
+
+      \r
+
+      SELECT\r
+
+      \    wl.StarSystem,\r
+
+      \    wl.StationName,\r
+
+      \    wl.FactionName,\r
+
+      \    wl.Commodities,\r
+
+      \    wl.InfraFailTimestamp,\r
+
+      \    wl.MarketTimestamp,\r
+
+      \    round(system_distance('Lembava', wl.StarSystem),0) AS \"Distance to
+      Lembava\",\r
+
+      FROM wash_locations wl\r
+
+      ORDER BY InfraFailTimestamp DESC, MarketTimestamp DESC;"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "SELECT systemName, stationname, timestamp,
+      round(system_distance('Lembava', \"SystemName\"),0) as \"Distance to
+      Lembava\" \r
+
+      FROM commodities_latest c\r
+
+      WHERE timestamp >= today() - interval '1 day'\r
+
+      AND coalesce(stationType, '') != 'FleetCarrier' \r
+
+      AND (NOT regexp_matches(StationName,
+      '^[A-Z0-9]{3}-[A-Z0-9]{3}$'))   --exclude carriers\r
+
+      AND EXISTS (\r
+
+      \        SELECT 1\r
+
+      \        FROM UNNEST(c.\"commodities\") AS tbl(com)\r
+
+      \        WHERE LOWER(com.\"name\") IN ('gold', 'palladium')\r
+
+      \        AND com.\"stock\" > 0 \r
+
+      \        AND com.buyPrice <= 6000\r
+
+      \    )\r\n"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "WITH cmds AS (\r
+
+      \    SELECT * exclude Commodities, unnest(Commodities) as commodity\r
+
+      \    FROM commodities_latest c\r
+
+      )\r
+
+      SELECT SystemName, StationName,  \r
+
+      \    unnest(commodity),  \r
+
+      \    system_distance('Hyades Sector ZU-Y c4', c.\"SystemName\") AS
+      distTarget,\r
+
+      \    system_distance('Bukulas', c.\"SystemName\") AS distWash, \r
+
+      \    system_distance('Bukulas', 'Hyades Sector ZU-Y c4') as distBack\r
+
+      FROM cmds c\r
+
+      WHERE c.\"timestamp\" >= today() - interval '1 day'\r
+
+      \    AND COALESCE(c.\"stationType\", '') != 'FleetCarrier' --exclude
+      carriers\r
+
+      \    AND LOWER(commodity.Name) IN ('gold', 'palladium')\r
+
+      \    AND commodity.Stock > 1000\r
+
+      ORDER BY distTarget\r
+
+      limit 10;\r\n"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "WITH \r
+
+      \    wolf as (SELECT StarPos from systems_populated where Name = 'Wolf
+      1458' LIMIT 1),\r
+
+      \    ngobe as (SELECT StarPos from systems_populated where Name = 'Ngobe'
+      LIMIT 1)\r
+
+      \r
+
+      SELECT StarSystem, c.StationName, ControllingPower,
+      PowerplayConflictProgress, array_distance(sys.StarPos, wolf.StarPos) as
+      \"Dist Wolf\", array_distance(sys.StarPos, ngobe.StarPos) as \"Dist
+      Ngobe\"\r
+
+      FROM system_latest sys\r
+
+      CROSS JOIN wolf\r
+
+      CROSS JOIN ngobe\r
+
+      INNER JOIN commodities_latest c\r
+
+      \    ON c.\"SystemName\" = sys.\"StarSystem\"\r
+
+      \    --AND c.\"timestamp\" >= today() - interval '1 day'\r
+
+      \    AND COALESCE(c.\"stationType\", '') != 'FleetCarrier' --exclude
+      carriers\r
+
+      where  \"Dist Wolf\" <= 30\r
+
+      AND --ControllingPower IS NULL   \r
+
+      \    EXISTS (\r
+
+      \        SELECT 1\r
+
+      \        FROM UNNEST(c.\"commodities\") AS tbl(com)\r
+
+      \        WHERE LOWER(com.\"name\") IN ('platinum')\r
+
+      \        AND com.Demand > 1000\r
+
+      )\r\n"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "select distinct * from (\r
+
+      select * exclude signals, unnest(signals, recursive:=true),
+      generate_subscripts(signals, 1) AS index from fsssignaldiscovered)\r
+
+      where SignalType = 'Combat'\r
+
+      ;"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "  \r
+
+      -- this is not correct: it counts the number of events per hour, not the
+      number of systems/factions in infra failure\r
+
+      -- to count that, we need to pair up events - system A faction A in infra
+      failure -> system A faction A no more infra failure.\r
+
+      SELECT time_bucket('1 hour', timestamp) as Bucket, \r
+
+      \    COUNT(DISTINCT (StarSystem, Name)) as \"nb of systems & factions\",
+      \r
+
+      \    COUNT(DISTINCT Name) as \"nb of factions\", \r
+
+      \    COUNT(DISTINCT StarSystem) as \"nb of systems\", \r
+
+      \    list(distinct {'s':StarSystem, 'f':Name}) as \"sys + fac\"--,
+      COUNT(*) --DISTINCT f.FactionName)\r
+
+      FROM (SELECT StarSystem, timestamp, UNNEST(Factions, recursive:=true) FROM
+      jumps_location) AS f\r
+
+      WHERE list_has_any(f.ActiveStates, ['InfrastructureFailure']) and
+      timestamp >= '2025-06-06'\r
+
+      GROUP BY Bucket --, SystemAddress\r
+
+      ORDER BY Bucket ASC\r
+
+      \    --AND timestamp >= today() - interval '1 day'\r\n"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "\r
+
+      -- SELECT StarSystem, timestamp, Name as Faction,
+      list_transform(RecoveringStates, lambda x: x.State) Recovering,
+      ActiveStates Active, list_transform(PendingStates, lambda x: x.State)
+      Pending, Influence, Happiness\r
+
+      -- FROM (SELECT *, UNNEST(Factions, recursive:=true) FROM
+      jumps_location)\r
+
+      -- WHERE 'InfrastructureFailure' IN Active OR 'InfrastructureFailure' IN
+      Recovering\r
+
+      -- ORDER BY Faction, StarSystem, timestamp;\r
+
+      \r
+
+      WITH infra_failures AS (\r
+
+      SELECT StarSystem, timestamp, Name as Faction,
+      list_transform(RecoveringStates, lambda x: x.State) Recovering,
+      ActiveStates Active, list_transform(PendingStates, lambda x: x.State)
+      Pending, Influence, Happiness\r
+
+      FROM (SELECT *, UNNEST(Factions, recursive:=true) FROM jumps_location)\r
+
+      WHERE 'InfrastructureFailure' IN Active OR 'InfrastructureFailure' IN
+      Recovering\r
+
+      )\r
+
+      SELECT StarSystem, Faction, array_agg(DISTINCT Active), array_agg(DISTINCT
+      Happiness) as Happiness, array_agg(DISTINCT Influence) as Influence,
+      count(*) as \"Nb of Infra Failures\"\r
+
+      FROM infra_failures\r
+
+      GROUP BY StarSystem, Faction\r
+
+      ORDER BY StarSystem, Faction;\r
+
+      \r\n"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "WITH \r
+
+      events as (\r
+
+      \    SELECT StarSystem, Name as Faction, timestamp,
+      list_transform(RecoveringStates, lambda x: x.State) Recovering,
+      ActiveStates Active, list_transform(PendingStates, lambda x: x.State)
+      Pending, Influence, Happiness\r
+
+      \    FROM (SELECT *, UNNEST(Factions, recursive:=true) FROM
+      jumps_location)\r
+
+      ),\r
+
+      state_changes AS (\r
+
+      \    SELECT\r
+
+      \        timestamp,\r
+
+      \        StarSystem, Faction,Influence, Happiness,\r
+
+      \        LAG(list_contains(Active, 'InfrastructureFailure'), 1, FALSE)
+      OVER (PARTITION BY StarSystem,Faction ORDER BY timestamp) AS
+      was_in_state,\r
+
+      \        'InfrastructureFailure' IN Active AS is_in_state,\r
+
+      \        LEAD(list_contains(Active, 'InfrastructureFailure'), 1, TRUE)
+      OVER (PARTITION BY StarSystem,Faction ORDER BY timestamp) AS
+      still_in_state\r
+
+      \    FROM\r
+
+      \        events\r
+
+      ),\r
+
+      grouped AS (\r
+
+      \    SELECT\r
+
+      \        timestamp,\r
+
+      \        StarSystem, Faction,Influence, Happiness,\r
+
+      \        is_in_state, still_in_state,\r
+
+      \        SUM(CASE WHEN is_in_state AND NOT was_in_state THEN 1 ELSE 0 END)
+      OVER (PARTITION BY StarSystem, Faction ORDER BY timestamp) AS
+      state_session_id\r
+
+      \    FROM\r
+
+      \        state_changes\r
+
+      \    WHERE\r
+
+      \        is_in_state OR was_in_state\r
+
+      )\r
+
+      \r
+
+      SELECT\r
+
+      \    StarSystem, Faction,\r
+
+      \    MIN(timestamp) AS start_time,\r
+
+      \    MAX(CASE WHEN is_in_state AND NOT still_in_state THEN timestamp END)
+      AS end_time,\r
+
+      \    end_time - start_time AS duration, \r
+
+      \    avg(Influence) as avg_influence,\r
+
+      \    array_Agg(DISTINCT Happiness) as Happiness\r
+
+      \r
+
+      FROM\r
+
+      \    grouped\r
+
+      WHERE\r
+
+      \    state_session_id > 0 -- Exclude periods before the first time the
+      state was seen\r
+
+      GROUP BY\r
+
+      \     StarSystem, Faction,state_session_id\r
+
+      ORDER BY\r
+
+      \    start_time;\r
+
+      \r
+
+      \r
+
+      --WHERE 'InfrastructureFailure' IN Active OR 'InfrastructureFailure' IN
+      Recovering"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "WITH \r
+
+      events as (\r
+
+      \    SELECT StarSystem, Name as Faction, timestamp,
+      list_transform(RecoveringStates, lambda x: x.State) Recovering,
+      ActiveStates Active, list_transform(PendingStates, lambda x: x.State)
+      Pending, Influence, Happiness\r
+
+      \    FROM (SELECT *, UNNEST(Factions, recursive:=true) FROM
+      jumps_location)\r
+
+      )\r
+
+      \r
+
+      select * from events where \"StarSystem\" = 'Moirai' and Faction =
+      'Kausalya Netcoms Organisation' order by timestamp"
+    metadata: {}
+metadata:
+  conn:
+    id: mqlq5LygeBHE6x5c6115x
+    name: data.duckdb
+  database: data
+  schema: main
