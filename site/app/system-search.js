@@ -4,7 +4,7 @@ import { registerAutoCompleteComponent } from "../components/autocomplete.js";
 class SystemSearchComponent extends HTMLElement {
     constructor() {
         super();
-        this.innerHTML = `<x-autocomplete></x-autocomplete>`;
+        this.innerHTML = `<x-autocomplete placeholder="Enter system name..."></x-autocomplete>`;
         this.ac = this.querySelector('x-autocomplete');
     }
 

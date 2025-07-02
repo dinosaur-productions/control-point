@@ -1,10 +1,10 @@
 class AutoCompleteComponent extends HTMLElement {
     constructor() {
         super();
-        // No shadow DOM, use light DOM
+        const placeholder = this.getAttribute('placeholder');
         this.innerHTML = `
         <div class="autocomplete-root">
-            <input type="text" class="autocomplete-input" autocomplete="off" placeholder="Enter system name..." />
+            <input type="text" class="autocomplete-input" autocomplete="off" placeholder="${placeholder}" />
             <ul class="autocomplete-list"></ul>
         </div>
         `;
@@ -17,6 +17,16 @@ class AutoCompleteComponent extends HTMLElement {
 
         // Bind the handler so it can be removed later
         this._onDocumentClick = this._onDocumentClick.bind(this);
+    }
+
+    static get observedAttributes() {
+        return ['placeholder'];
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (name === 'placeholder' && this.input) {
+            this.input.placeholder = newValue;
+        }
     }
 
     connectedCallback() {
@@ -44,7 +54,7 @@ class AutoCompleteComponent extends HTMLElement {
         if (loading) {
             this.input.placeholder = 'Loading database...';
         } else {
-            this.input.placeholder = 'Enter system name...';
+            this.input.placeholder = this.getAttribute('placeholder');
         }
     }
 
