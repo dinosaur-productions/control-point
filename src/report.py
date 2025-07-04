@@ -1,9 +1,15 @@
 import duckdb
+import os
 
-def main():
+from constants import DB_SYSTEMS_PATH
 
-    # Create or replace the data-dump/systems.duckdb file with the required table
-    out_con = duckdb.connect("site/systems.duckdb")
+
+
+def make_report_db():
+    if os.path.exists(DB_SYSTEMS_PATH):
+        os.remove(DB_SYSTEMS_PATH)
+    print(f"Creating report database at {DB_SYSTEMS_PATH} ...", end="")
+    out_con = duckdb.connect(DB_SYSTEMS_PATH)
     out_con.execute("ATTACH 'data.duckdb' as db (READ_ONLY);")
     out_con.execute("""
         CREATE OR REPLACE TYPE activity_enum AS ENUM ('Acquire', 'Reinforce', 'Undermine', 'Out of Range', 'Wait Until Next Cycle');
@@ -53,6 +59,7 @@ def main():
             WHERE Activity NOT IN ('No Powerplay Data')
     """)
     out_con.close()
+    print("Done.")
 
 if __name__ == "__main__":
-    main()
+    make_report_db()

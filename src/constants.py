@@ -2,7 +2,9 @@ import datetime as dt
 
 DIR_DATA_DUMP = 'data-dump/' 
 
-DB_PATH = 'data.duckdb'
+DB_MAIN_PATH = 'data.duckdb'
+
+DB_SYSTEMS_PATH = "site/systems.duckdb"
 
 URL_BASE_EDGALAXYDATA = "https://edgalaxydata.space/EDDN/"
 URL_EDSM_SYSTEMS_POPULATED = "https://www.edsm.net/dump/systemsPopulated.json.gz"

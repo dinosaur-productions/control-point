@@ -2,20 +2,18 @@ import duckdb
 import shutil
 import os
 
-from constants import DB_PATH
+def compress_database(db):
+    print(f"Compressing database {db} ...", end="")
+    # no filename arg = in-memory database
+    new_db = 'temp.duckdb'
+    con = duckdb.connect()
+    con.execute(f"""
+        ATTACH '{db}' AS db1;
+        ATTACH '{new_db}' AS db2;
+        COPY FROM DATABASE db1 TO db2;
+        """)
+    con.close()
 
-old_db = DB_PATH
-new_db = 'compressed.duckdb'
-
-# no filename arg = in-memory database
-con = duckdb.connect()
-con.execute(f"""
-    ATTACH '{old_db}' AS db1;
-    ATTACH '{new_db}' AS db2;
-    COPY FROM DATABASE db1 TO db2;
-    """)
-
-con.close()
-
-os.remove(old_db)
-shutil.move(new_db, old_db)
+    os.remove(db)
+    shutil.move(new_db, db)
+    print(f"Done.")

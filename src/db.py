@@ -1,6 +1,6 @@
 import duckdb
 
-from constants import DB_PATH
+from constants import DB_MAIN_PATH
 
 POWER = [
     "Aisling Duval",
@@ -685,11 +685,11 @@ def create_schema(conn):
     """)
 
 
-def connect_db(db_path=DB_PATH):
+def connect_db(db_path=DB_MAIN_PATH):
     return duckdb.connect(db_path)
 
 if __name__ == "__main__":
     conn = connect_db()
     create_schema(conn)
-    print(f"Schema created in {DB_PATH}")
+    print(f"Schema created in {DB_MAIN_PATH}")
     conn.close()

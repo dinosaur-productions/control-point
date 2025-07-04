@@ -33,15 +33,14 @@ def download_and_decompress_daily_file(event_type: str, date: dt.date):
     if last_modified:
         headers["If-Modified-Since"] = last_modified
 
-    print(f"Checking {url} ...")
+    print(f"Checking {url} ...", end="")
     resp = requests.get(url, stream=True, headers=headers)
     if resp.status_code == 304:
-        print(f"{bz2_path} not modified on server, skipping download.")
+        print(f"Not modified, skipping.")
     elif resp.status_code == 200:
         with open(bz2_path, "wb") as f:
             for chunk in resp.iter_content(chunk_size=8192):
                 f.write(chunk)
-        print(f"Downloaded {filename}.bz2")
         # Save Last-Modified header if present
         last_mod = resp.headers.get("Last-Modified")
         if last_mod:
@@ -50,14 +49,14 @@ def download_and_decompress_daily_file(event_type: str, date: dt.date):
         with bz2.open(bz2_path, "rb") as f_in, gzip.open(jsonl_path + ".gz", "wb") as f_out:
             for chunk in iter(lambda: f_in.read(8192), b""):
                 f_out.write(chunk)
-        print(f"Recompressed to {jsonl_path}.gz")
+        print(f"Downloaded & recompressed.")
         # Remove the original .bz2 file
         os.remove(bz2_path)
         if os.path.exists(jsonl_path):
             os.remove(jsonl_path)
             print(f"Deleted uncompressed file {jsonl_path}")
     else:
-        print(f"Failed to download {filename}.bz2: HTTP {resp.status_code}")
+        print(f"Failed to download: HTTP {resp.status_code}")
         return
 
 
