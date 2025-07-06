@@ -248,9 +248,129 @@ cells:
 
       \r\n"
     metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "WITH infra_failures AS (\r
+
+      \    -- 1. Find all (SystemAddress, FactionName) pairs with
+      InfrastructureFailure\r
+
+      \    SELECT DISTINCT SystemAddress, Name as FactionName, timestamp\r
+
+      \    FROM (SELECT SystemAddress, timestamp, UNNEST(Factions,
+      recursive:=true) FROM system_latest) AS f\r
+
+      \    WHERE list_has_any(f.ActiveStates, ['InfrastructureFailure'])\r
+
+      \    --AND timestamp >= today() - interval '1 day'\r
+
+      ),\r
+
+      \r
+
+      stations AS (\r
+
+      \    -- 2. Find stations with a market\r
+
+      \    SELECT SystemAddress, MarketID, StationName, StarSystem,
+      StationFaction.Name AS FactionName, timestamp\r
+
+      \    FROM station_latest\r
+
+      \    WHERE MarketId IS NOT NULL\r
+
+      ),\r
+
+      \r
+
+      infra_stations AS (\r
+
+      \    -- 2b. Only stations in systems and controlled by the faction with
+      InfrastructureFailure\r
+
+      \    SELECT s.*, i.timestamp as InfraFailTimestamp\r
+
+      \    FROM stations s\r
+
+      \    JOIN infra_failures i USING(SystemAddress, FactionName)\r
+
+      ),\r
+
+      \r
+
+      stations_with_commodities AS (\r
+
+      \    -- 3. Join to commodities and filter for gold or palladium in stock\r
+
+      \    SELECT\r
+
+      \        s.StarSystem,\r
+
+      \        s.StationName,\r
+
+      \        s.MarketID,\r
+
+      \        s.FactionName,\r
+
+      \        c.Name as Commodity,\r
+
+      \        c.BuyPrice,\r
+
+      \        c.Stock,\r
+
+      \        s.InfraFailTimestamp,\r
+
+      \        c.timestamp AS MarketTimestamp,\r
+
+      \    FROM infra_stations s\r
+
+      \    JOIN (select MarketId, UNNEST(commodities, recursive:=true),
+      timestamp FROM commodities_latest) c\r
+
+      \      ON s.MarketId = c.marketId\r
+
+      \    WHERE c.Name IN ('gold', 'silver', 'palladium')\r
+
+      \      AND c.Stock > 0\r
+
+      ),\r
+
+      \r
+
+      wash_locations as (\r
+
+      \    SELECT StarSystem, StationName, FactionName,
+      array_agg([Commodity,BuyPrice::VARCHAR,Stock::VARCHAR]) as Commodities
+      ,max(InfraFailTimestamp) AS InfraFailTimestamp, max(MarketTimestamp) AS
+      MarketTimestamp\r
+
+      \    FROM stations_with_commodities\r
+
+      \    GROUP BY ALL\r
+
+      )\r
+
+      \r
+
+      SELECT\r
+
+      \    wl.StarSystem,\r
+
+      \    wl.StationName,\r
+
+      \    wl.FactionName,\r
+
+      \    wl.Commodities,\r
+
+      \    wl.InfraFailTimestamp,\r
+
+      \    wl.MarketTimestamp,\r
+
+      FROM wash_locations wl"
+    metadata: {}
 metadata:
   conn:
-    id: mqlq5LygeBHE6x5c6115x
+    id: c8e8a3ca7ffa39a9
     name: data.duckdb
   database: data
   schema: main

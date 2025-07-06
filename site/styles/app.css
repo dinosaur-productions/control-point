@@ -1,0 +1,70 @@
+@import './infra-failures.css';
+
+/* General reset */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+/* Header styling */
+header {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Navbar container */
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Navbar brand (title) */
+.navbar-brand h2 {
+    font-size: 1.5rem;
+    margin: 0;
+    color: #fff;
+}
+
+/* Navbar links */
+.navbar-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 20px;
+}
+
+.navbar-links li {
+    display: inline;
+}
+
+.navbar-links a {
+    text-decoration: none;
+    color: #fff;
+    font-size: 1rem;
+    padding: 5px 10px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.navbar-links a:hover {
+    background-color: #555;
+    border-radius: 5px;
+    color: #fff;
+}
+
+/* Main content container */
+main .container {
+    padding: 20px;
+}
+
+/* Footer styling */
+footer {
+    text-align: center;
+    padding: 10px;
+    background-color: #333;
+    color: #fff;
+    font-size: 0.9rem;
+}

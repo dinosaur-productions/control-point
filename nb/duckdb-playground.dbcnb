@@ -168,7 +168,7 @@ cells:
 
       \    wl.MarketTimestamp,\r
 
-      \    round(system_distance('Lembava', wl.StarSystem),0) AS \"Distance to
+      \    --round(system_distance('Lembava', wl.StarSystem),0) AS \"Distance to
       Lembava\",\r
 
       FROM wash_locations wl\r
@@ -508,7 +508,7 @@ cells:
     metadata: {}
 metadata:
   conn:
-    id: mqlq5LygeBHE6x5c6115x
+    id: c8e8a3ca7ffa39a9
     name: data.duckdb
   database: data
   schema: main

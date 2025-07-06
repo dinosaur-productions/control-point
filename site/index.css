@@ -1,5 +1,6 @@
 @import "./styles/reset.css";
 @import "./components/autocomplete.css";
+@import "./styles/app.css";
 
 body {
     font-family: Arial, sans-serif;
@@ -9,7 +10,7 @@ body {
     padding: 0;
 }
 .container {
-    max-width: 500px;
+    max-width: 800px;
     margin: 60px auto;
     background: #23272e;
     padding: 2em;

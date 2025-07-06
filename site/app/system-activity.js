@@ -7,7 +7,6 @@ class SystemActivityComponent extends HTMLElement {
 
     constructor() {
         super();
-        // No shadow DOM, use light DOM
         this.innerHTML = `<div class="system-activity">Loading...</div>`;
         this.container = this.querySelector('.system-activity');
     }
@@ -43,20 +42,69 @@ class SystemActivityComponent extends HTMLElement {
                 return;
             }
             const row = rows[0];
+
+            // Format the last update time
+            const lastUpdateDate = new Date(row.LastUpdate);
+            const timeAgo = this.getTimeAgo(row.LastUpdate);
+
+            // Format control progress as a percentage
+            const controlProgress = row.PowerplayStateControlProgress
+                ? `${Math.floor(row.PowerplayStateControlProgress * 100)}%`
+                : null;
+
+            // Format PowerplayConflictProgress
+            let conflictProgress = '';
+            if (row.PowerplayConflictProgress && typeof row.PowerplayConflictProgress.toArray === 'function') {
+                const conflicts = row.PowerplayConflictProgress.toArray();
+                conflictProgress = conflicts.map(conflict => {
+                    const points = Math.floor(conflict.ConflictProgress * 120000);
+                    return `<p>${conflict.Power}: ${points}</p>`;
+                }).join('');
+            }
+
+            // Check if Powers array is empty
+            const powers = row.Powers && typeof row.Powers.toArray === 'function' ? row.Powers.toArray() : [];
+            const powersLine = powers.length > 0 ? `<p>In range of: ${powers.join(', ')}</p>` : '';
+
+            // Build the new layout
             this.container.innerHTML = `
-                <h3>System: ${row.StarSystem || row.Name || systemAddress}</h3>
-                <table>
-                    <tbody>
-                        ${Object.entries(row).map(([k, v]) =>
-                            `<tr><td><strong>${k}</strong></td><td>${typeof v === "object" ? JSON.stringify(v) : v}</td></tr>`
-                        ).join('')}
-                    </tbody>
-                </table>
+                <div class="system-info">
+                    <p style="text-align: center; font-size: 1.5rem; font-weight: bold;">
+                        ${row.StarSystem}
+                    </p>
+                    <p style="text-align: center; font-size: 1.5rem;">
+                        <strong>${row.Activity}</strong>
+                    </p>
+                    ${row.ControllingPower || row.PowerplayState || controlProgress ? `
+                        <p>${row.ControllingPower || ''} ${row.PowerplayState || ''} ${controlProgress || ''}</p>
+                    ` : ''}
+                    ${['Exploited', 'Fortified', 'Stronghold'].includes(row.PowerplayState) ? `
+                        <p>Reinforcement:${row.PowerplayStateReinforcement || 'N/A'}, 
+                        Undermining: ${row.PowerplayStateUndermining || 'N/A'}</p>
+                    ` : ''}
+                    ${conflictProgress}
+                    ${powersLine}
+                    <p>Updated ${timeAgo} at ${lastUpdateDate.toLocaleString(undefined, {dateStyle: "short", timeStyle:"short"})}</p>
+                </div>
             `;
         } catch (err) {
-            this.container.textContent = "Error loading system data.";
+            this.container.textContent = "Unexpected error.";
             console.error(err);
         }
+    }
+
+    getTimeAgo(timestamp) {
+        const now = Date.now();
+        const diff = now - timestamp;
+        const seconds = Math.floor(diff / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+
+        if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+        if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+        if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+        return `${seconds} second${seconds > 1 ? 's' : ''} ago`;
     }
 }
 

@@ -47,8 +47,8 @@ export async function getDbConn() {
         const conn = await db.connect();
         if (!_attached) {
             const attachUrl = location.hostname === "localhost"
-                ? "http://localhost:8000/systems.duckdb"
-                : "https://control-point.pages.dev/systems.duckdb";
+                ? "http://localhost:8000/site-data.duckdb"
+                : "https://control-point.pages.dev/site-data.duckdb";
             await conn.query(`ATTACH '${attachUrl}' as db (READ_ONLY);`);
             _attached = true;
         }

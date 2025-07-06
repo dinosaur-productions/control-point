@@ -1,17 +1,17 @@
 import duckdb
 import os
 
-from constants import DB_SYSTEMS_PATH
+from constants import DB_SITE_PATH
 
 
 
 def make_report_db():
-    if os.path.exists(DB_SYSTEMS_PATH):
-        os.remove(DB_SYSTEMS_PATH)
-    print(f"Creating report database at {DB_SYSTEMS_PATH} ...", end="")
-    out_con = duckdb.connect(DB_SYSTEMS_PATH)
-    out_con.execute("ATTACH 'data.duckdb' as db (READ_ONLY);")
-    out_con.execute("""
+    if os.path.exists(DB_SITE_PATH):
+        os.remove(DB_SITE_PATH)
+    print(f"Creating report database at {DB_SITE_PATH} ...", end="")
+    conn = duckdb.connect(DB_SITE_PATH)
+    conn.execute("ATTACH 'data.duckdb' as db (READ_ONLY);")
+    conn.execute("""
         CREATE OR REPLACE TYPE activity_enum AS ENUM ('Acquire', 'Reinforce', 'Undermine', 'Out of Range', 'Wait Until Next Cycle');
         CREATE OR REPLACE TABLE systems AS
             WITH 
@@ -58,7 +58,66 @@ def make_report_db():
             SELECT * FROM activities
             WHERE Activity NOT IN ('No Powerplay Data')
     """)
-    out_con.close()
+    conn.execute("""
+        CREATE OR REPLACE TABLE infra_failures AS
+        WITH infra_failures AS (
+            -- 1. Find all (SystemAddress, FactionName) pairs with InfrastructureFailure
+            SELECT DISTINCT SystemAddress, Name as FactionName, timestamp
+            FROM (SELECT SystemAddress, timestamp, UNNEST(Factions, recursive:=true) FROM db.system_latest) AS f
+            WHERE list_has_any(f.ActiveStates, ['InfrastructureFailure'])
+        ),
+
+        stations AS (
+            -- 2. Find stations with a market
+            SELECT SystemAddress, MarketID, StationName, StarSystem, StationFaction.Name AS FactionName, timestamp
+            FROM db.station_latest
+            WHERE MarketId IS NOT NULL
+        ),
+
+        infra_stations AS (
+            -- 2b. Only stations in systems and controlled by the faction with InfrastructureFailure
+            SELECT s.*, i.timestamp as InfraFailTimestamp
+            FROM stations s
+            JOIN infra_failures i USING(SystemAddress, FactionName)
+        ),
+
+        stations_with_commodities AS (
+            -- 3. Join to commodities and filter for gold or palladium in stock
+            SELECT
+                s.StarSystem,
+                s.StationName,
+                s.MarketID,
+                s.FactionName,
+                c.Name as Commodity,
+                c.BuyPrice,
+                c.Stock,
+                s.InfraFailTimestamp,
+                c.timestamp AS MarketTimestamp,
+            FROM infra_stations s
+            JOIN (select MarketId, UNNEST(commodities, recursive:=true), timestamp FROM db.commodities_latest) c
+            ON s.MarketId = c.marketId
+            WHERE c.Name IN ('gold', 'silver', 'palladium')
+            AND c.Stock > 0
+        ),
+
+        wash_locations as (
+            SELECT StarSystem, StationName, FactionName, array_agg([Commodity,BuyPrice::VARCHAR,Stock::VARCHAR]) as Commodities ,max(InfraFailTimestamp) AS InfraFailTimestamp, max(MarketTimestamp) AS MarketTimestamp
+            FROM stations_with_commodities
+            GROUP BY ALL
+        )
+
+        SELECT
+            wl.StarSystem,
+            wl.StationName,
+            wl.FactionName,
+            wl.Commodities,
+            wl.InfraFailTimestamp,
+            wl.MarketTimestamp,
+            --round(system_distance('Lembava', wl.StarSystem),0) AS "Distance to Lembava",
+        FROM wash_locations wl
+        ORDER BY InfraFailTimestamp DESC, MarketTimestamp DESC;
+    """)
+    conn.close()
     print("Done.")
 
 if __name__ == "__main__":
