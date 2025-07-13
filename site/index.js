@@ -11,6 +11,7 @@ let _conn = null;
 let _attached = false;
 let _dbPromise = null;
 let _connPromise = null;
+let _attachedTimestamp = null;
 
 export async function getDb() {
     if (_db) return _db;
@@ -31,30 +32,51 @@ export async function getDb() {
         const db = new duckdb.AsyncDuckDB(logger, worker);
         await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
         URL.revokeObjectURL(worker_url);
-        window._db = db;
+        await db.open();
         _db = db;
         return db;
     })();
     return _dbPromise;
 }
 
+function getUrl(filename) {
+    return location.hostname === "localhost"
+        ? `http://localhost:8000/${filename}`
+        : `https://control-point.pages.dev/${filename}`;
+}
+
 export async function getDbConn() {
-    if (_conn) return _conn;
-    if (_connPromise) return _connPromise;
+    const manifestUrl = getUrl("site-data_manifest.json");
+    const response = await fetch(manifestUrl);
+    const manifest = await response.json();
+    const newTimestamp = manifest.generated_at;
+
+    if (_conn && _attachedTimestamp === newTimestamp) {
+        return _conn;
+    }
+
+    if (_connPromise && _attachedTimestamp === newTimestamp) {
+        return _connPromise;
+    }
+
+    _attachedTimestamp = newTimestamp;
     _connPromise = (async () => {
         const db = await getDb();
-        await db.open();
         const conn = await db.connect();
-        if (!_attached) {
-            const attachUrl = location.hostname === "localhost"
-                ? "http://localhost:8000/site-data.duckdb"
-                : "https://control-point.pages.dev/site-data.duckdb";
-            await conn.query(`ATTACH '${attachUrl}' as db (READ_ONLY);`);
-            _attached = true;
+        const attachUrl = getUrl("site-data.duckdb");
+
+        if (_attached) {
+            console.log("Detaching previous database connection.");
+            await conn.query("DETACH db;");
         }
+        console.log(`Attaching database from ${attachUrl}`);
+        await conn.query(`ATTACH '${attachUrl}' as db (READ_ONLY);`);
+        _attached = true;
+        
         _conn = conn;
         return conn;
     })();
+
     return _connPromise;
 }
 

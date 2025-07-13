@@ -48,12 +48,21 @@ export class RouteComponent extends HTMLElement {
         this.routeChangedCallback.apply(this, matches ? matches.slice() : []);
     }
 
-    // can be overridden in subclasses to change show/hide method
+    // This method now checks for onActive() and calls it when active.
     setIsActive(active) {
         this.style.display = active ? 'contents' : 'none';
+        if (active) {
+            if (typeof this.onActive === 'function') this.onActive();
+            const innerComponents = this.querySelectorAll('*');
+            innerComponents.forEach(child => {
+                if (typeof child.onActive === 'function') {
+                    child.onActive();
+                }
+            });
+        }
     }
 
-    // for overriding in subclasses to detect parameters
+    // For overriding in subclasses to detect parameters
     // eslint-disable-next-line no-unused-vars
     routeChangedCallback(...matches) { }
 
@@ -64,7 +73,6 @@ export class RouteComponent extends HTMLElement {
             const activeRoutes =
                 Array.from(this.parentNode.querySelectorAll('.route')).filter(_ => _.isActive);
             if (!activeRoutes.length) matches = ['*'];
-            // normal routes
         } else {
             const regex = new RegExp(`^#${path.replaceAll('/', '\\/')}${exact ? '$' : ''}`, 'gi');
             const currentPath = window.location.hash || '#/';

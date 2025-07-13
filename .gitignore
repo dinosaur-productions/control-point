@@ -4,3 +4,4 @@ src/__pycache__/
 justa.json
 *.duckdb
 .env
+site/site-data_manifest.json

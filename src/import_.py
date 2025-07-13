@@ -164,7 +164,10 @@ def import_jump_jsonl_files(conn, imported):
                 CAST(message->>'BodyId' AS INTEGER) AS BodyId,
                 message->>'BodyType' AS BodyType,
                 CAST(message->>'Population' AS BIGINT) AS Population,
-                message->>'PowerplayState' AS PowerplayState,
+                CASE 
+                    WHEN message->>'PowerplayState' = '' THEN NULL
+                    ELSE message->>'PowerplayState'
+                END AS PowerplayState,
                 message->>'ControllingPower' AS ControllingPower,
                 CAST(message->>'Powers' AS power_enum[]) AS Powers,
                 message->>'PowerplayConflictProgress' AS PowerplayConflictProgress,
@@ -200,8 +203,6 @@ def import_jump_jsonl_files(conn, imported):
                 SystemSecondEconomy, SystemSecurity, StarPos, Conflicts
             FROM extracted
             WHERE rn > ?
-            -- Found some rows with a controllingpower, but no progress, reinforcement or undermining. Ignore these rows?
-            -- AND (ControllingPower IS NULL OR PowerplayStateControlProgress IS NOT NULL)
         """, [last_line])
 
         num_lines = get_num_lines(fpath)

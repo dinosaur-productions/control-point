@@ -12,6 +12,10 @@ class InfraFailuresComponent extends HTMLElement {
         await this.loadData();
     }
 
+    async onActive() {
+        await this.loadData();
+    }
+
     async loadData() {
         try {
             const conn = await getDbConn();

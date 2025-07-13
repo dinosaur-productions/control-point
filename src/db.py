@@ -281,6 +281,7 @@ FSS_SIGNAL_TYPE = [
     "StationBernalSphere",
     "StationONeilCylinder",
     "Installation",
+    "ConstructionDepot"
 ]
 
 def create_schema(conn):
