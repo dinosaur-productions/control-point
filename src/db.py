@@ -234,6 +234,7 @@ COMMODITY_STATUS_FLAG = [
     "Pub Override",
     "AncientRelicTG price override for engineers",
     'designer',
+    'Engineer Unlocking',
 ]
 
 CONFLICT_STATUS = ['active', 'pending', '']
