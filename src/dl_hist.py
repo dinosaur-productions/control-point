@@ -124,4 +124,4 @@ def main(today, lookback_days):
 
 
 if __name__ == "__main__":
-    main(dt.date.today(), lookback_days=2)
+    main(dt.date.today(), lookback_days=3)

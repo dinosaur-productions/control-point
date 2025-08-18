@@ -93,7 +93,7 @@ cells:
     metadata: {}
 metadata:
   conn:
-    id: mqlq5LygeBHE6x5c6115x
+    id: c8e8a3ca7ffa39a9
     name: data.duckdb
   database: data
   schema: main

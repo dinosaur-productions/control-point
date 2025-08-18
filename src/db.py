@@ -217,25 +217,27 @@ COMMODITY_BRACKET = [
     "High",
 ]
 
-COMMODITY_STATUS_FLAG = [
-    "Rare",
-    "Producer",
-    "Consumer",
-    "Not Produced",
-    "Produced",
-    "Low Price",
-    "High Price",
-    "powerplay",
-    "Permit reward",
-    "Legal",
-    "High Demand",
-    "Narrative",
-    "Trailblazer Special Stock",
-    "Pub Override",
-    "AncientRelicTG price override for engineers",
-    'designer',
-    'Engineer Unlocking',
-]
+# COMMODITY_STATUS_FLAG = [
+#     "Rare",
+#     "Producer",
+#     "Consumer",
+#     "Not Produced",
+#     "Produced",
+#     "Low Price",
+#     "High Price",
+#     "powerplay",
+#     "Permit reward",
+#     "Legal",
+#     "High Demand",
+#     "Narrative",
+#     "Trailblazer Special Stock",
+#     "Pub Override",
+#     "AncientRelicTG price override for engineers",
+#     'designer',
+#     'Engineer Unlocking',
+#     'cg:827', # wtf?
+#     'Out of stock',
+# ]
 
 CONFLICT_STATUS = ['active', 'pending', '']
 
@@ -302,8 +304,6 @@ def create_schema(conn):
     CREATE TYPE IF NOT EXISTS faction_state_enum AS ENUM ({', '.join(repr(f) for f in FACTION_STATE)});
     CREATE TYPE IF NOT EXISTS happiness_enum AS ENUM ({', '.join(repr(h) for h in HAPPINESS)});
     CREATE TYPE IF NOT EXISTS commodity_bracket_enum AS ENUM ({', '.join(repr(h) for h in COMMODITY_BRACKET)});
-    --DROP TYPE commodity_status_flag_enum;
-    CREATE TYPE IF NOT EXISTS commodity_status_flag_enum AS ENUM ({', '.join(repr(h) for h in COMMODITY_STATUS_FLAG)});
     CREATE TYPE IF NOT EXISTS reserve_level_enum AS ENUM ({', '.join(repr(h) for h in RESERVE_LEVEL)});
     CREATE TYPE IF NOT EXISTS belt_or_ring_type_enum AS ENUM ({', '.join(repr(h) for h in BELT_OR_RING_TYPE)});
     CREATE TYPE IF NOT EXISTS fss_signal_type_enum AS ENUM ({', '.join(repr(h) for h in FSS_SIGNAL_TYPE)});
@@ -409,7 +409,7 @@ def create_schema(conn):
             StockBracket commodity_bracket_enum,
             Demand INTEGER,
             DemandBracket commodity_bracket_enum,
-            StatusFlags commodity_status_flag_enum[]
+            StatusFlags VARCHAR[]
         )[]
     );
     """)

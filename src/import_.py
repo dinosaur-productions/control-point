@@ -107,7 +107,7 @@ def to_commodities(expr):
                                     WHEN c->>'demandBracket' = '2' THEN 'Med'
                                     WHEN c->>'demandBracket' = '3' THEN 'High'
                                 END,
-                StatusFlags := [replace(flag, 'rare', 'Rare') for flag in CAST(c->'statusFlags' AS VARCHAR[])]
+                StatusFlags := [replace(replace(flag, 'rare', 'Rare'), 'High demand', 'High Demand') for flag in CAST(c->'statusFlags' AS VARCHAR[])]
             )
         )
     """
