@@ -36,7 +36,7 @@ def create_temp_table(fpath):
             WHERE 
                 header->>'gameversion' NOT IN ('CAPI-Legacy-market', '')
                 AND (
-                    header->>'gameversion' IN ('CAPI-journal', 'CAPI-Live-market') 
+                    header->>'gameversion' IN ('CAPI-journal', 'CAPI-Live-market', 'CAPI-market') 
                     OR (
                         SPLIT_PART(header->>'gameversion', '.', 1)::INTEGER >= {GAME_VERSION[0]} AND
                         SPLIT_PART(header->>'gameversion', '.', 2)::INTEGER >= {GAME_VERSION[1]} AND

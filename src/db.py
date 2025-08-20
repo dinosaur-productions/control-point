@@ -157,6 +157,7 @@ SERVICES = [
     "voucherredemption",
     "modulepacks",
     "carriervendor",
+    "squadronBank",
 ]
 
 SIGNAL_TYPE = [
@@ -299,6 +300,7 @@ def create_schema(conn):
     CREATE TYPE IF NOT EXISTS body_type_enum AS ENUM ({', '.join(repr(s) for s in BODY_TYPE)});
     CREATE TYPE IF NOT EXISTS station_type_enum AS ENUM ({', '.join(repr(s) for s in STATION_TYPE)});
     CREATE TYPE IF NOT EXISTS carrier_docking_access_enum AS ENUM ({', '.join(repr(c) for c in CARRIER_DOCKING_ACCESS)});
+    --DROP TYPE service_enum;
     CREATE TYPE IF NOT EXISTS service_enum AS ENUM ({', '.join(repr(s) for s in SERVICES)});
     CREATE TYPE IF NOT EXISTS signal_type_enum AS ENUM ({', '.join(repr(s) for s in SIGNAL_TYPE)});
     CREATE TYPE IF NOT EXISTS faction_state_enum AS ENUM ({', '.join(repr(f) for f in FACTION_STATE)});
@@ -437,6 +439,8 @@ def create_schema(conn):
     """)
 
     conn.execute("""
+    --DROP TABLE docked;
+    --DELETE FROM imported_files WHERE filename LIKE 'Journal.Docked%';
     CREATE TABLE IF NOT EXISTS docked (
         timestamp TIMESTAMP NOT NULL,
         StarSystem VARCHAR,
