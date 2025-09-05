@@ -51,6 +51,7 @@ ECONOMY = [
     "Carrier",
     "Rescue",
     "Prison",
+    "Engineer",
 ]
 
 GOVERNMENT = [
@@ -285,7 +286,10 @@ FSS_SIGNAL_TYPE = [
     "StationBernalSphere",
     "StationONeilCylinder",
     "Installation",
-    "ConstructionDepot"
+    "ConstructionDepot",
+    "Empty",
+    "SquadronCarrier",
+    "Port",
 ]
 
 def create_schema(conn):
@@ -294,6 +298,7 @@ def create_schema(conn):
     CREATE TYPE IF NOT EXISTS power_enum AS ENUM ({', '.join(repr(p) for p in POWER)});
     CREATE TYPE IF NOT EXISTS powerplaystate_enum AS ENUM ({', '.join(repr(s) for s in POWERPLAYSTATE)});
     CREATE TYPE IF NOT EXISTS allegiance_enum AS ENUM ({', '.join(repr(a) for a in ALLEGIANCE)});
+    --DROP TYPE economy_enum;
     CREATE TYPE IF NOT EXISTS economy_enum AS ENUM ({', '.join(repr(e) for e in ECONOMY)});
     CREATE TYPE IF NOT EXISTS government_enum AS ENUM ({', '.join(repr(g) for g in GOVERNMENT)});
     CREATE TYPE IF NOT EXISTS security_enum AS ENUM ({', '.join(repr(s) for s in SECURITY)});
@@ -308,6 +313,7 @@ def create_schema(conn):
     CREATE TYPE IF NOT EXISTS commodity_bracket_enum AS ENUM ({', '.join(repr(h) for h in COMMODITY_BRACKET)});
     CREATE TYPE IF NOT EXISTS reserve_level_enum AS ENUM ({', '.join(repr(h) for h in RESERVE_LEVEL)});
     CREATE TYPE IF NOT EXISTS belt_or_ring_type_enum AS ENUM ({', '.join(repr(h) for h in BELT_OR_RING_TYPE)});
+    --DROP TYPE fss_signal_type_enum;         
     CREATE TYPE IF NOT EXISTS fss_signal_type_enum AS ENUM ({', '.join(repr(h) for h in FSS_SIGNAL_TYPE)});
     """)
 
@@ -417,6 +423,8 @@ def create_schema(conn):
     """)
 
     conn.execute("""
+    --DROP TABLE approach_settlement;
+    --DELETE FROM imported_files WHERE filename LIKE 'Journal.ApproachSettlement%';
     CREATE TABLE IF NOT EXISTS approach_settlement (
         timestamp TIMESTAMP NOT NULL,
         StarSystem VARCHAR,
@@ -676,12 +684,12 @@ def create_schema(conn):
     """)
 
     conn.execute("""
-    --DROP TABLE fsssignaldiscovered_latest;
+    --DROP TABLE fsssignaldiscovered;
     --DELETE FROM imported_files WHERE filename LIKE 'Journal.FSSSignalDiscovered%';
-    CREATE TABLE IF NOT EXISTS fsssignaldiscovered_latest (
+    CREATE TABLE IF NOT EXISTS fsssignaldiscovered (
         timestamp TIMESTAMP NOT NULL,
         StarSystem VARCHAR NOT NULL,
-        SystemAddress BIGINT PRIMARY KEY NOT NULL,
+        SystemAddress BIGINT NOT NULL,
         signals STRUCT(
             IsStation BOOLEAN,
             SignalName VARCHAR,

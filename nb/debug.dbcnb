@@ -83,8 +83,44 @@ cells:
     metadata: {}
   - kind: 2
     languageId: sql
-    value: COPY (SELECT DISTINCT Name FROM systems_populated) TO 'names.parquet'
-      (FORMAT parquet);
+    value: "-- Updating an enum without throwing away what is written is tricky.\r
+
+      \r
+
+      -- 1. back up the existing table.\r
+
+      --CREATE TABLE bak AS SELECT * FROM fsssignaldiscovered;\r
+
+      \r
+
+      -- 2. drop the type and the table.\r
+
+      --DROP TYPE fss_signal_type_enum;   \r
+
+      --DROP TABLE fsssignaldiscovered;\r
+
+      \r
+
+      -- 3. Update the enum definition and run the import. This will run db.py
+      and so create the new enum and table.\r
+
+      -- It's important this comes before the next step, because otherwise the
+      new table\r
+
+      -- will keep the old enum definition, on account of being restored from
+      the backup.\r
+
+      \r
+
+      -- 4. restore the data from the backup table\r
+
+      -- INSERT INTO fsssignaldiscovered SELECT * FROM bak;\r
+
+      \r
+
+      -- 5. Drop the backup\r
+
+      --DROP TABLE bak;\r\n"
     metadata: {}
   - kind: 2
     languageId: sql

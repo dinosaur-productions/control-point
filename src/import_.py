@@ -38,10 +38,12 @@ def create_temp_table(fpath):
                 AND (
                     header->>'gameversion' IN ('CAPI-journal', 'CAPI-Live-market', 'CAPI-market') 
                     OR (
-                        SPLIT_PART(header->>'gameversion', '.', 1)::INTEGER >= {GAME_VERSION[0]} AND
-                        SPLIT_PART(header->>'gameversion', '.', 2)::INTEGER >= {GAME_VERSION[1]} AND
-                        SPLIT_PART(header->>'gameversion', '.', 3)::INTEGER >= {GAME_VERSION[2]} AND
-                        SPLIT_PART(header->>'gameversion', '.', 4)::INTEGER >= {GAME_VERSION[3]}
+                        [
+                            SPLIT_PART(header->>'gameversion', '.', 1)::INTEGER,
+                            SPLIT_PART(header->>'gameversion', '.', 2)::INTEGER,
+                            SPLIT_PART(header->>'gameversion', '.', 3)::INTEGER,
+                            SPLIT_PART(header->>'gameversion', '.', 4)::INTEGER
+                        ] >= [{GAME_VERSION[0]}, {GAME_VERSION[1]}, {GAME_VERSION[2]}, {GAME_VERSION[3]}]
                     )
                 )
                 AND TRY_CAST(header->>'gatewayTimestamp' AS TIMESTAMP) IS NOT NULL
@@ -516,20 +518,19 @@ def import_fsssignaldiscovered_jsonl_files(conn, imported):
                         s -> struct_pack(
                             IsStation := s->>'IsStation' = 'true',
                             SignalName := s->>'SignalName',
-                            SignalType := s->>'SignalType'
+                            SignalType := CASE WHEN s ->>'SignalType' = '' THEN 'Empty' ELSE s->>'SignalType' END
                         )
                     ) AS Signals,
                     rn
                 FROM tmp_fsssignaldiscovered_raw
             )
-            INSERT OR REPLACE INTO fsssignaldiscovered_latest (
+            INSERT INTO fsssignaldiscovered (
                 timestamp, StarSystem, SystemAddress, Signals
             )
             SELECT
-                DISTINCT ON (SystemAddress) timestamp, StarSystem, SystemAddress, Signals
+            timestamp, StarSystem, SystemAddress, Signals
             FROM extracted
             WHERE rn > ?
-            ORDER BY timestamp DESC
         """, [last_line])
 
         num_lines = get_num_lines(fpath)

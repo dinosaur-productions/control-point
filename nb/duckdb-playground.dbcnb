@@ -506,6 +506,90 @@ cells:
       select * from events where \"StarSystem\" = 'Moirai' and Faction =
       'Kausalya Netcoms Organisation' order by timestamp"
     metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "-- Nukamba\r
+
+      -- Graffias\r
+
+      -- Vodyakamana\r
+
+      -- Marfic\r
+
+      -- Upaniklis\r
+
+      \r
+
+      with \r
+
+      \    un as (\r
+
+      \        select timestamp, StarSystem, unnest(signals,RECURSIVE:=True)
+      from fsssignaldiscovered\r
+
+      \    ),\r
+
+      \    mgs as (\r
+
+      \        SELECT SignalName, min(timestamp), array_agg(DISTINCT StarSystem)
+      as route FROM un\r
+
+      \        WHERE SignalType = 'Megaship'\r
+
+      \        GROUP BY SignalName\r
+
+      \    ),\r
+
+      \    names as (\r
+
+      \        SELECT DISTINCT Name FROM systems_populated\r
+
+      \        WHERE editdist3(Name, 'Nukamba') < 2\r
+
+      \        OR editdist3(Name, 'Graffias') < 2\r
+
+      \        OR editdist3(Name, 'Vodyakamana') < 2\r
+
+      \        OR editdist3(Name, 'Marfic') < 2\r
+
+      \        OR editdist3(Name, 'Upaniklis') < 2\r
+
+      \    )\r
+
+      select * \r
+
+      from mgs;\r
+
+      --where EXISTS (select 1 from names where list_has(route, Name)) ;\r
+
+      \r
+
+      --['Nukamba', 'Graffias', 'Vodyakamana', 'Marfic', 'Upaniklis']);\r
+
+      \r
+
+      \r
+
+      \r
+
+      -- with \r
+
+      --     un as (\r
+
+      --         select timestamp, StarSystem, unnest(signals,RECURSIVE:=True)
+      from fsssignaldiscovered\r
+
+      --     )\r
+
+      -- select * from un where SignalType = 'Megaship'; --and SignalName IN
+      ('NER-683 Dionysus-class Cropper', 'UPA-544 Demeter-class Cropper',
+      'RAJ-883 Hercules-class Hauler');  --StarSystem in ('Nukamba', 'Graffias',
+      'Vodyakamana', 'Marfic', 'Upaniklis');\r
+
+      \r
+
+      --select max(timestamp) from fsssignaldiscovered;\r\n"
+    metadata: {}
 metadata:
   conn:
     id: c8e8a3ca7ffa39a9
