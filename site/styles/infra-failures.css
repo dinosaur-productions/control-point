@@ -5,7 +5,7 @@
 }
 
 .infra-failures-table th {
-    font-size: 0.8rem;
+    font-size: 1rem;
     text-align: left;
     padding: 8px;
 }
@@ -13,6 +13,15 @@
 .infra-failures-table td {
     font-size: 0.8rem;
     padding: 6px;
+}
+
+/* Zebra striping for main table rows only */
+.infra-failures-table > tbody > tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.infra-failures-table > tbody > tr:nth-child(odd) {
+    background-color: transparent;
 }
 
 /* Nested table styling */
@@ -24,8 +33,10 @@
 .nested-table td {
     text-align: left;
     line-height: 1.2;
+    background-color: transparent !important;
 }
 
 .nested-table tr {
     margin: 0;
+    background-color: transparent !important;
 }

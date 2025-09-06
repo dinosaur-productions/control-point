@@ -70,7 +70,7 @@ export async function getDbConn() {
             await conn.query("DETACH db;");
         }
         console.log(`Attaching database from ${attachUrl}`);
-        await conn.query(`ATTACH '${attachUrl}' as db (READ_ONLY);`);
+        await conn.query(`ATTACH '${attachUrl}' as db (READ_ONLY); USE db;`);
         _attached = true;
         
         _conn = conn;

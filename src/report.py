@@ -33,7 +33,10 @@ def make_report_db():
                     StarPos,
                     ControllingPower,
                     COALESCE(PowerplayState, 'Unoccupied') AS PowerplayState, 
-                    PowerplayStateControlProgress,
+                    CASE 
+                        WHEN PowerplayStateControlProgress > 12000 THEN -0.001 -- control lost, journal has weird number like 12271.nnn
+                        ELSE PowerplayStateControlProgress
+                    END AS PowerplayStateControlProgress,
                     COALESCE(Powers, []) AS Powers,
                     PowerplayStateReinforcement, PowerplayStateUndermining, PowerplayConflictProgress,
                     CASE 
@@ -56,7 +59,23 @@ def make_report_db():
                 WHERE HasPowerplayData
             )
             SELECT * FROM activities
-            WHERE Activity NOT IN ('No Powerplay Data')
+            WHERE Activity NOT IN ('No Powerplay Data');
+    """)
+    conn.execute("""
+    CREATE OR REPLACE MACRO system_distance(system1, system2) AS
+        (WITH 
+            __p1 AS (SELECT StarPos FROM systems WHERE StarSystem = system1 LIMIT 1),
+            __p2 AS (SELECT StarPos FROM systems WHERE StarSystem = system2 LIMIT 1)
+        SELECT array_distance(__p1.StarPos, __p2.StarPos)
+        FROM __p1, __p2);
+    """)
+    conn.execute("""
+    CREATE OR REPLACE MACRO system__address_distance(system1, system2) AS
+        (WITH 
+            __p1 AS (SELECT StarPos FROM systems WHERE SystemAddress = system1 LIMIT 1),
+            __p2 AS (SELECT StarPos FROM systems WHERE SystemAddress = system2 LIMIT 1)
+        SELECT array_distance(__p1.StarPos, __p2.StarPos)
+        FROM __p1, __p2);
     """)
     conn.execute("""
         CREATE OR REPLACE TABLE infra_failures AS
@@ -85,6 +104,7 @@ def make_report_db():
             -- 3. Join to commodities and filter for gold or palladium in stock
             SELECT
                 s.StarSystem,
+                s.SystemAddress,
                 s.StationName,
                 s.MarketID,
                 s.FactionName,
@@ -101,19 +121,19 @@ def make_report_db():
         ),
 
         wash_locations as (
-            SELECT StarSystem, StationName, FactionName, array_agg([Commodity,BuyPrice::VARCHAR,Stock::VARCHAR]) as Commodities ,max(InfraFailTimestamp) AS InfraFailTimestamp, max(MarketTimestamp) AS MarketTimestamp
+            SELECT StarSystem, SystemAddress, StationName, FactionName, array_agg([Commodity,BuyPrice::VARCHAR,Stock::VARCHAR]) as Commodities ,max(InfraFailTimestamp) AS InfraFailTimestamp, max(MarketTimestamp) AS MarketTimestamp
             FROM stations_with_commodities
             GROUP BY ALL
         )
 
         SELECT
             wl.StarSystem,
+            wl.SystemAddress,
             wl.StationName,
             wl.FactionName,
             wl.Commodities,
             wl.InfraFailTimestamp,
             wl.MarketTimestamp,
-            --round(system_distance('Lembava', wl.StarSystem),0) AS "Distance to Lembava",
         FROM wash_locations wl
         ORDER BY InfraFailTimestamp DESC, MarketTimestamp DESC;
     """)
