@@ -1,4 +1,4 @@
-import { getDbConn } from "../index.js";
+import { getSystemByAddress } from "../data-access.js";
 
 class SystemActivityComponent extends HTMLElement {
     static get observedAttributes() {
@@ -30,18 +30,12 @@ class SystemActivityComponent extends HTMLElement {
         let numSystemAddress = Number(systemAddress);
         this.container.textContent = "Loading system data...";
         try {
-            const conn = await getDbConn();
-            const stmt = await conn.prepare(
-                `SELECT * FROM db.systems WHERE SystemAddress = ?;`
-            );
-            const result = await stmt.query(numSystemAddress);
-
-            const rows = result.toArray().map(row => row.toJSON());
-            if (rows.length === 0) {
+            const row = await getSystemByAddress(numSystemAddress);
+            if (row === null) {
                 this.container.textContent = "System not found.";
                 return;
             }
-            const row = rows[0];
+
 
             // Format the last update time
             const lastUpdateDate = new Date(row.LastUpdate);

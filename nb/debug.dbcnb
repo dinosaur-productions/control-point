@@ -5,8 +5,15 @@ cells:
 
       \r
 
-      SELECT * from jumps_location WHERE StarSystem = 'Arietis Sector ON-T b3-3'
-      ORDER BY timestamp DESC LIMIT 10;"
+      SELECT *\r
+
+      from jumps_location\r
+
+      WHERE StarSystem = 'Sceptrum'\r
+
+      ORDER BY timestamp \r
+
+      --DESC LIMIT 10;"
     metadata: {}
   - kind: 2
     languageId: sql
@@ -35,7 +42,7 @@ cells:
 
       JOIN latest l USING (SystemAddress, timestamp)\r
 
-      WHERE j.StarSystem = 'LP 410-93'\r
+      WHERE j.StarSystem = 'Sceptrum'\r
 
       ORDER BY l.PowerplayStateControlProgress\r
 

@@ -1,4 +1,4 @@
-import { getDbConn } from "../index.js";
+import { searchSystems } from "../data-access.js";
 import { registerAutoCompleteComponent } from "../components/autocomplete.js";
 
 class SystemSearchComponent extends HTMLElement {
@@ -14,13 +14,9 @@ class SystemSearchComponent extends HTMLElement {
 
     async init() {
         this.ac.setLoading(true);
-        const conn = await getDbConn();
+        // Initialize connection by calling data access function
+        await searchSystems("__init__");
         this.ac.setLoading(false);
-
-        // Prepare statement for autocomplete
-        const stmt = await conn.prepare(
-            `SELECT StarSystem,SystemAddress FROM db.systems WHERE LOWER(StarSystem) ILIKE ? LIMIT 10;`
-        );
 
         this.ac.addEventListener('search', async (e) => {
             const val = e.detail;
@@ -28,8 +24,7 @@ class SystemSearchComponent extends HTMLElement {
                 this.ac.setOptions([]);
                 return;
             }
-            const result = await stmt.query(`${val}%`);
-            const options = result.toArray().map(row => row.toJSON());
+            const options = await searchSystems(val);
             this.ac.setOptions(options);
         });
 

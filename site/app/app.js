@@ -1,6 +1,7 @@
 import { registerRouteComponent } from "../components/route.js";
 import { registerSystemRouteComponent } from "./system-route.js";
 import { registerSystemSearchComponent } from "./system-search.js";
+import { registerInfraFailuresRouteComponent } from "./infra-failures-route.js";
 import { registerInfraFailuresComponent } from "./infra-failures.js";
 
 class App extends HTMLElement {
@@ -32,6 +33,7 @@ class App extends HTMLElement {
                 <x-route path="/infra-failures" exact>
                     <x-infra-failures></x-infra-failures>
                 </x-route>
+                <x-infra-failures-route path="/infra-failures/([0-9]+)"></x-infra-failures-route>
                 <x-route path="/mine" exact>
                     <x-mine></x-mine>
                 </x-route>
@@ -61,6 +63,6 @@ export const registerApp = () => {
     registerRouteComponent();
     registerSystemRouteComponent();
     registerSystemSearchComponent();
-    registerInfraFailuresComponent();
+    registerInfraFailuresRouteComponent();
     customElements.define('x-app', App);
 };

@@ -1,27 +1,43 @@
-import { getDbConn } from "../index.js";
+import { getInfraFailures, getSystemByAddress } from "../data-access.js";
 
 class InfraFailuresComponent extends HTMLElement {
+    static get observedAttributes() {
+        return ['origin-system'];
+    }
+
     constructor() {
         super();
         this.innerHTML = `<div class="infra-failures">Loading...</div>`;
         this.container = this.querySelector('.infra-failures');
         this.rows = [];
+        this.originSystemAddress = null;
+        this.originSystemName = null;
     }
 
     async connectedCallback() {
         await this.loadData();
     }
 
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (name === 'origin-system' && oldValue !== newValue) {
+            this.loadData();
+        }
+    }
+
     async onActive() {
-        await this.loadData();
+        // Component will reload automatically via attributeChangedCallback if needed
+    }
+
+    getOriginSystemAddress() {
+        return this.getAttribute('origin-system') || '3824408316259'; // Lembava SystemAddress
     }
 
     async loadData() {
+        this.originSystemAddress = this.getOriginSystemAddress();
+        this.originSystemName = await getSystemByAddress(this.originSystemAddress).then(row => row ? row.StarSystem : 'Unknown');
+        
         try {
-            const conn = await getDbConn();
-            const stmt = await conn.prepare(`SELECT * FROM db.infra_failures;`);
-            const result = await stmt.query();
-            this.rows = result.toArray().map(row => row.toJSON());
+            this.rows = await getInfraFailures(this.originSystemAddress);
 
             if (this.rows.length === 0) {
                 this.container.innerHTML = `<p>No infra failures found.</p>`;
@@ -71,6 +87,9 @@ class InfraFailuresComponent extends HTMLElement {
                     <th data-column="MarketTimestamp" data-direction="${sortColumn === 'MarketTimestamp' ? sortDirection : ''}">
                         Market Update ${sortColumn === 'MarketTimestamp' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
                     </th>
+                    <th data-column="Distance" data-direction="${sortColumn === 'Distance' ? sortDirection : ''}">
+                        Distance ${sortColumn === 'Distance' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
+                    </th>
                 </tr>
             </thead>
         `;
@@ -105,11 +124,13 @@ class InfraFailuresComponent extends HTMLElement {
                     <td>${commoditiesTable}</td>
                     <td>${new Date(row.InfraFailTimestamp).toLocaleString(undefined, {dateStyle: "short", timeStyle: "short"})}</td>
                     <td>${new Date(row.MarketTimestamp).toLocaleString()}</td>
+                    <td>${row.Distance} ly</td>
                 </tr>
             `;
         }).join('');
-
+            //
         this.container.innerHTML = `
+            <p style="margin-bottom: 10px; font-style: italic;">Distances calculated from: <strong>${this.originSystemName}</strong></p>
             <table class="infra-failures-table">
                 ${tableHeaders}
                 <tbody>
