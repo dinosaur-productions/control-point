@@ -68,3 +68,38 @@ footer {
     color: #fff;
     font-size: 0.9rem;
 }
+
+/* External link styling (shared across components) */
+.external-links {
+    white-space: nowrap;
+}
+
+.link-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    text-align: center;
+    font-size: 10px;
+    font-weight: bold;
+    border-radius: 2px;
+    margin-left: 2px;
+    text-decoration: none;
+    color: white;
+    line-height: 16px;
+}
+
+.link-icon.inara {
+    background-color: #4a90e2;
+}
+
+.link-icon.inara:hover {
+    background-color: #357abd;
+}
+
+.link-icon.spansh {
+    background-color: #e24a4a;
+}
+
+.link-icon.spansh:hover {
+    background-color: #bd3535;
+}

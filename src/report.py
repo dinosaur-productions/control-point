@@ -121,7 +121,7 @@ def make_report_db():
         ),
 
         wash_locations as (
-            SELECT StarSystem, SystemAddress, StationName, FactionName, array_agg([Commodity,BuyPrice::VARCHAR,Stock::VARCHAR]) as Commodities ,max(InfraFailTimestamp) AS InfraFailTimestamp, max(MarketTimestamp) AS MarketTimestamp
+            SELECT StarSystem, SystemAddress, StationName, MarketId, FactionName, array_agg([Commodity,BuyPrice::VARCHAR,Stock::VARCHAR]) as Commodities ,max(InfraFailTimestamp) AS InfraFailTimestamp, max(MarketTimestamp) AS MarketTimestamp
             FROM stations_with_commodities
             GROUP BY ALL
         )
@@ -130,6 +130,7 @@ def make_report_db():
             wl.StarSystem,
             wl.SystemAddress,
             wl.StationName,
+            wl.MarketId,
             wl.FactionName,
             wl.Commodities,
             wl.InfraFailTimestamp,

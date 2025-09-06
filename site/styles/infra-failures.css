@@ -40,3 +40,8 @@
     margin: 0;
     background-color: transparent !important;
 }
+
+/* Infra-failures specific external link styling */
+.infra-failures-table .external-links {
+    margin-left: 8px;
+}

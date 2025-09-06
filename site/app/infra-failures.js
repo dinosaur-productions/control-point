@@ -1,4 +1,5 @@
 import { getInfraFailures, getSystemByAddress } from "../data-access.js";
+import { inaraSystemByName, inaraStation, inaraMinorFaction, spanshSystem, spanshStation } from "../links.js";
 
 class InfraFailuresComponent extends HTMLElement {
     static get observedAttributes() {
@@ -116,11 +117,39 @@ class InfraFailuresComponent extends HTMLElement {
                 </table>
             `;
 
+            // Generate links for system
+            const systemInaraLink = inaraSystemByName(row.StarSystem);
+            const systemSpanshLink = spanshSystem(row.SystemAddress);
+            
+            // Generate links for station
+            const stationInaraLink = inaraStation(row.StationName, row.StarSystem);
+            const stationSpanshLink = spanshStation(row.MarketId);
+            
+            // Generate links for faction
+            const factionInaraLink = inaraMinorFaction(row.FactionName);
+
             return `
                 <tr>
-                    <td>${row.StarSystem}</td>
-                    <td>${row.StationName}</td>
-                    <td>${row.FactionName}</td>
+                    <td>
+                        ${row.StarSystem}
+                        <span class="external-links">
+                            <a href="${systemInaraLink}" target="_blank" title="View system on Inara" class="link-icon inara">I</a>
+                            <a href="${systemSpanshLink}" target="_blank" title="View system on Spansh" class="link-icon spansh">S</a>
+                        </span>
+                    </td>
+                    <td>
+                        ${row.StationName}
+                        <span class="external-links">
+                            <a href="${stationInaraLink}" target="_blank" title="View station on Inara" class="link-icon inara">I</a>
+                            <a href="${stationSpanshLink}" target="_blank" title="View station on Spansh" class="link-icon spansh">S</a>
+                        </span>
+                    </td>
+                    <td>
+                        ${row.FactionName}
+                        <span class="external-links">
+                            <a href="${factionInaraLink}" target="_blank" title="View faction on Inara" class="link-icon inara">I</a>
+                        </span>
+                    </td>
                     <td>${commoditiesTable}</td>
                     <td>${new Date(row.InfraFailTimestamp).toLocaleString(undefined, {dateStyle: "short", timeStyle: "short"})}</td>
                     <td>${new Date(row.MarketTimestamp).toLocaleString()}</td>

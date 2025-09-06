@@ -1,4 +1,5 @@
 import { getSystemByAddress } from "../data-access.js";
+import { inaraSystemByName, spanshSystem } from "../links.js";
 
 class SystemActivityComponent extends HTMLElement {
     static get observedAttributes() {
@@ -60,11 +61,19 @@ class SystemActivityComponent extends HTMLElement {
             const powers = row.Powers && typeof row.Powers.toArray === 'function' ? row.Powers.toArray() : [];
             const powersLine = powers.length > 0 ? `<p>In range of: ${powers.join(', ')}</p>` : '';
 
+            // Generate external links for the system
+            const systemInaraLink = inaraSystemByName(row.StarSystem);
+            const systemSpanshLink = spanshSystem(numSystemAddress);
+
             // Build the new layout
             this.container.innerHTML = `
                 <div class="system-info">
                     <p style="text-align: center; font-size: 1.5rem; font-weight: bold;">
                         ${row.StarSystem}
+                        <span class="external-links" style="margin-left: 12px;">
+                            <a href="${systemInaraLink}" target="_blank" title="View system on Inara" class="link-icon inara">I</a>
+                            <a href="${systemSpanshLink}" target="_blank" title="View system on Spansh" class="link-icon spansh">S</a>
+                        </span>
                     </p>
                     <p style="text-align: center; font-size: 1.5rem;">
                         <strong>${row.Activity}</strong>
