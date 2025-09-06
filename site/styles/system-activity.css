@@ -1,0 +1,379 @@
+/* System Activity Component Styles */
+.system-info {
+    max-width: 100%;
+}
+
+/* Header Section */
+.system-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #444;
+    padding-bottom: 1rem;
+}
+
+.system-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.system-name h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #f8f8f2;
+}
+
+.last-update {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.last-update small {
+    font-size: 0.8rem;
+    color: #aaa;
+}
+
+/* Activity Section */
+.activity-section {
+    margin-bottom: 1.5rem;
+}
+
+.activity-value {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #4a90e2;
+    margin-bottom: 0.5rem;
+}
+
+.powers-info {
+    color: #ccc;
+    font-size: 0.9rem;
+}
+
+.powers-info p {
+    margin: 0;
+}
+
+/* Powerplay Banner */
+.powerplay-banner {
+    margin: 1.5rem 0;
+    border-radius: 8px;
+    border: 2px solid #888;
+    background: #333;
+    overflow: hidden;
+}
+
+.powerplay-banner.neutral {
+    border-color: #666;
+    background: #3a3a3a;
+}
+
+.powerplay-banner.unoccupied {
+    border-color: #888;
+    background: #333;
+}
+
+.banner-content {
+    padding: 1rem;
+}
+
+.power-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.power-name {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #fff;
+}
+
+.state-name {
+    font-size: 1.2rem;
+    color: #fff;
+    font-style: italic;
+    font-weight: bold;
+}
+
+/* Progress Section */
+.progress-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.5rem 0;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: #4CAF50;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 0.9rem;
+    color: #fff;
+    font-weight: bold;
+    min-width: 40px;
+}
+
+/* Powerplay Stats */
+.powerplay-stats {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.powerplay-stats .stat {
+    color: #ccc;
+}
+
+/* Tug of War */
+.tug-of-war {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 0.5rem 0;
+}
+
+.undermining-side, .reinforcement-side {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.reinforcement-side {
+    flex-direction: row-reverse;
+}
+
+.tug-label {
+    font-size: 0.8rem;
+    color: #ccc;
+    margin-bottom: 0.2rem;
+}
+
+.tug-value {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.undermining-value {
+    color: #e74c3c;
+}
+
+.reinforcement-value {
+    color: #3498db;
+}
+
+/* Four State Progress Bar */
+.four-state-progress {
+    margin-top: 2rem;
+}
+
+.state-bar {
+    position: relative;
+    display: flex;
+    height: 30px;
+    border-radius: 4px;
+    overflow: visible;
+    margin-bottom: 0.5rem;
+}
+
+.state-segment {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border-right: 1px solid #333;
+}
+
+.state-segment:last-child {
+    border-right: none;
+}
+
+.state-label {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.7);
+}
+
+.state-indicator {
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    width: 3px;
+    background-color: #fff;
+    border-radius: 2px;
+    transform: translateX(-50%);
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+    z-index: 10;
+}
+
+.progress-label {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.7rem;
+    color: #fff;
+    text-align: center;
+    line-height: 1.1;
+    white-space: nowrap;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 2px 4px;
+    border-radius: 2px;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.current-state {
+    font-weight: bold;
+    color: #fff;
+}
+
+.progress-detail {
+    color: #ccc;
+}
+
+/* Conflict Progress */
+.conflict-progress {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.conflict-progress p {
+    margin: 0.2rem 0;
+    font-size: 0.9rem;
+    color: #ccc;
+}
+
+/* Unoccupied System Conflict Bars */
+.conflict-bars {
+    margin-top: 1rem;
+}
+
+.power-conflict-bar {
+    margin-bottom: 1rem;
+}
+
+.power-conflict-bar:last-child {
+    margin-bottom: 0;
+}
+
+.power-conflict-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.3rem;
+}
+
+.conflict-power-name {
+    font-weight: bold;
+    color: #fff;
+    font-size: 0.95rem;
+}
+
+.conflict-points {
+    font-size: 0.9rem;
+    color: #ddd;
+}
+
+/* Multi-threshold progress bar */
+.multi-threshold-bar {
+    position: relative;
+    height: 20px;
+}
+
+.threshold-bar-bg {
+    position: relative;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: visible;
+}
+
+.progress-fill-multi {
+    height: 100%;
+    background: #4CAF50;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.threshold-marker {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 2px;
+    background-color: #ccc;
+    z-index: 2;
+}
+
+.threshold-marker.conflict-marker {
+    background-color: #ddd;
+}
+
+.threshold-marker.control-marker {
+    background-color: #fff;
+}
+
+.threshold-label {
+    position: absolute;
+    top: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.7rem;
+    color: #ccc;
+    text-align: center;
+    line-height: 1.1;
+    white-space: nowrap;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 2px 4px;
+    border-radius: 2px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .system-header {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .last-update {
+        text-align: left;
+    }
+    
+    .power-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.2rem;
+    }
+    
+    .powerplay-stats {
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+}

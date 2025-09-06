@@ -134,6 +134,11 @@ cells:
     value: select MarketId, UNNEST(commodities,RECURSIVE:=true) FROM
       commodities_latest limit 1;
     metadata: {}
+  - kind: 2
+    languageId: sql
+    value: select MarketId, StarSystem, SystemAddress from station_latest where
+      StationName = 'Ray Gateway';
+    metadata: {}
 metadata:
   conn:
     id: c8e8a3ca7ffa39a9
