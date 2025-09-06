@@ -82,6 +82,12 @@ class InfraFailuresComponent extends HTMLElement {
                         Faction ${sortColumn === 'FactionName' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
                     </th>
                     <th>Commodities</th>
+                    <th data-column="ControllingPower" data-direction="${sortColumn === 'ControllingPower' ? sortDirection : ''}">
+                        Power ${sortColumn === 'ControllingPower' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
+                    </th>
+                    <th data-column="PowerplayState" data-direction="${sortColumn === 'PowerplayState' ? sortDirection : ''}">
+                        State ${sortColumn === 'PowerplayState' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
+                    </th>
                     <th data-column="InfraFailTimestamp" data-direction="${sortColumn === 'InfraFailTimestamp' ? sortDirection : ''}">
                         Faction Update ${sortColumn === 'InfraFailTimestamp' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
                     </th>
@@ -89,12 +95,11 @@ class InfraFailuresComponent extends HTMLElement {
                         Market Update ${sortColumn === 'MarketTimestamp' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
                     </th>
                     <th data-column="Distance" data-direction="${sortColumn === 'Distance' ? sortDirection : ''}">
-                        Distance ${sortColumn === 'Distance' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
+                        Dist ${this.originSystemName} ${sortColumn === 'Distance' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
                     </th>
                 </tr>
             </thead>
         `;
-
         const tableRows = this.rows.map(row => {
             const commoditiesTable = `
                 <table class="nested-table">
@@ -151,6 +156,8 @@ class InfraFailuresComponent extends HTMLElement {
                         </span>
                     </td>
                     <td>${commoditiesTable}</td>
+                    <td>${row.ControllingPower || ''}</td>
+                    <td>${row.PowerplayState || ''}</td>
                     <td>${new Date(row.InfraFailTimestamp).toLocaleString(undefined, {dateStyle: "short", timeStyle: "short"})}</td>
                     <td>${new Date(row.MarketTimestamp).toLocaleString()}</td>
                     <td>${row.Distance} ly</td>
@@ -159,7 +166,6 @@ class InfraFailuresComponent extends HTMLElement {
         }).join('');
             //
         this.container.innerHTML = `
-            <p style="margin-bottom: 10px; font-style: italic;">Distances calculated from: <strong>${this.originSystemName}</strong></p>
             <table class="infra-failures-table">
                 ${tableHeaders}
                 <tbody>

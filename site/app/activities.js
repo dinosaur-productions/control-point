@@ -227,7 +227,7 @@ const ACTIVITIES = [
         reinforcement: true,
         undermining: false,
         legal: true,
-        details: "Merits per system, not per page – cheap systems get nothing",
+        details: "Merits per system, not per page - cheap systems get nothing",
         pickup: "Anywhere >20LY",
         handIn: "Station in target system",
         notes: "Data collected after 7 Nov 3310 only",

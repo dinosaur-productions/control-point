@@ -34,8 +34,11 @@ def make_report_db():
                     ControllingPower,
                     COALESCE(PowerplayState, 'Unoccupied') AS PowerplayState, 
                     CASE 
-                        WHEN PowerplayStateControlProgress > 12000 THEN -0.001 -- control lost, journal has weird number like 12271.nnn
-                        ELSE PowerplayStateControlProgress
+                        WHEN PowerplayStateControlProgress > 12000 
+                            -- control lost, journal has weird number like 12271.nnn
+                            THEN (PowerplayStateReinforcement - PowerplayStateUndermining) / 120000.0
+                        ELSE
+                            PowerplayStateControlProgress
                     END AS PowerplayStateControlProgress,
                     COALESCE(Powers, []) AS Powers,
                     PowerplayStateReinforcement, PowerplayStateUndermining, PowerplayConflictProgress,
@@ -135,7 +138,10 @@ def make_report_db():
             wl.Commodities,
             wl.InfraFailTimestamp,
             wl.MarketTimestamp,
+            s.ControllingPower,
+            s.PowerplayState
         FROM wash_locations wl
+        JOIN systems s ON s.SystemAddress = wl.SystemAddress
         ORDER BY InfraFailTimestamp DESC, MarketTimestamp DESC;
     """)
     conn.close()
