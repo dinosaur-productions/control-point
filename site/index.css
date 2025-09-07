@@ -1,6 +1,7 @@
 @import "./styles/reset.css";
 @import "./components/autocomplete.css";
 @import "./styles/app.css";
+@import "./styles/sortable-table.css";
 
 body {
     font-family: Arial, sans-serif;

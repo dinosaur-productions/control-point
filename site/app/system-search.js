@@ -1,4 +1,4 @@
-import { searchSystems } from "../data-access.js";
+import { searchSystems } from "../utils/data-access.js";
 import { registerAutoCompleteComponent } from "../components/autocomplete.js";
 
 class SystemSearchComponent extends HTMLElement {

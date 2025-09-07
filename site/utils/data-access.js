@@ -1,4 +1,4 @@
-import { getDbConn } from "./index.js";
+import { getDbConn } from "../index.js";
 
 /**
  * Search for systems with names matching the given pattern

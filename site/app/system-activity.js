@@ -1,5 +1,5 @@
-import { getSystemByAddress } from "../data-access.js";
-import { inaraSystemByName, spanshSystem } from "../links.js";
+import { getSystemByAddress } from "../utils/data-access.js";
+import { inaraSystemByName, spanshSystem } from "../utils/links.js";
 
 class SystemActivityComponent extends HTMLElement {
     static get observedAttributes() {

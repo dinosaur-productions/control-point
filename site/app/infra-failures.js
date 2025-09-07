@@ -1,5 +1,6 @@
-import { getInfraFailures, getSystemByAddress } from "../data-access.js";
-import { inaraSystemByName, inaraStation, inaraMinorFaction, spanshSystem, spanshStation } from "../links.js";
+import { getInfraFailures, getSystemByAddress } from "../utils/data-access.js";
+import { inaraSystemByName, inaraStation, inaraMinorFaction, spanshSystem, spanshStation } from "../utils/links.js";
+import { SortableTable } from "../utils/tables.js";
 
 class InfraFailuresComponent extends HTMLElement {
     static get observedAttributes() {
@@ -53,54 +54,22 @@ class InfraFailuresComponent extends HTMLElement {
     }
 
     renderTable(sortColumn = null, sortDirection = 'asc') {
-        if (sortColumn) {
-            this.rows.sort((a, b) => {
-                const valueA = a[sortColumn];
-                const valueB = b[sortColumn];
+        // Create table with headers
+        const table = new SortableTable([
+            { key: 'StarSystem', label: 'System', sortable: true },
+            { key: 'StationName', label: 'Station', sortable: true },
+            { key: 'FactionName', label: 'Faction', sortable: true },
+            { key: 'Commodities', label: 'Commodities', sortable: false },
+            { key: 'ControllingPower', label: 'Power', sortable: true },
+            { key: 'PowerplayState', label: 'State', sortable: true },
+            { key: 'InfraFailTimestamp', label: 'Faction Update', sortable: true },
+            { key: 'MarketTimestamp', label: 'Market Update', sortable: true },
+            { key: 'Distance', label: `Dist ${this.originSystemName}`, sortable: true }
+        ]);
 
-                if (typeof valueA === 'string') {
-                    return sortDirection === 'asc'
-                        ? valueA.localeCompare(valueB)
-                        : valueB.localeCompare(valueA);
-                } else if (typeof valueA === 'number' || valueA instanceof Date) {
-                    return sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
-                }
-                return 0;
-            });
-        }
-
-        const tableHeaders = `
-            <thead>
-                <tr>
-                    <th data-column="StarSystem" data-direction="${sortColumn === 'StarSystem' ? sortDirection : ''}">
-                        System ${sortColumn === 'StarSystem' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
-                    </th>
-                    <th data-column="StationName" data-direction="${sortColumn === 'StationName' ? sortDirection : ''}">
-                        Station ${sortColumn === 'StationName' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
-                    </th>
-                    <th data-column="FactionName" data-direction="${sortColumn === 'FactionName' ? sortDirection : ''}">
-                        Faction ${sortColumn === 'FactionName' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
-                    </th>
-                    <th>Commodities</th>
-                    <th data-column="ControllingPower" data-direction="${sortColumn === 'ControllingPower' ? sortDirection : ''}">
-                        Power ${sortColumn === 'ControllingPower' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
-                    </th>
-                    <th data-column="PowerplayState" data-direction="${sortColumn === 'PowerplayState' ? sortDirection : ''}">
-                        State ${sortColumn === 'PowerplayState' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
-                    </th>
-                    <th data-column="InfraFailTimestamp" data-direction="${sortColumn === 'InfraFailTimestamp' ? sortDirection : ''}">
-                        Faction Update ${sortColumn === 'InfraFailTimestamp' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
-                    </th>
-                    <th data-column="MarketTimestamp" data-direction="${sortColumn === 'MarketTimestamp' ? sortDirection : ''}">
-                        Market Update ${sortColumn === 'MarketTimestamp' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
-                    </th>
-                    <th data-column="Distance" data-direction="${sortColumn === 'Distance' ? sortDirection : ''}">
-                        Dist ${this.originSystemName} ${sortColumn === 'Distance' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
-                    </th>
-                </tr>
-            </thead>
-        `;
-        const tableRows = this.rows.map(row => {
+        // Add rows with processed data
+        this.rows.forEach(row => {
+            // Generate commodities table
             const commoditiesTable = `
                 <table class="nested-table">
                     ${row.Commodities.toArray()
@@ -133,56 +102,46 @@ class InfraFailuresComponent extends HTMLElement {
             // Generate links for faction
             const factionInaraLink = inaraMinorFaction(row.FactionName);
 
-            return `
-                <tr>
-                    <td>
-                        ${row.StarSystem}
-                        <span class="external-links">
-                            <a href="${systemInaraLink}" target="_blank" title="View system on Inara" class="link-icon inara">I</a>
-                            <a href="${systemSpanshLink}" target="_blank" title="View system on Spansh" class="link-icon spansh">S</a>
-                        </span>
-                    </td>
-                    <td>
-                        ${row.StationName}
-                        <span class="external-links">
-                            <a href="${stationInaraLink}" target="_blank" title="View station on Inara" class="link-icon inara">I</a>
-                            <a href="${stationSpanshLink}" target="_blank" title="View station on Spansh" class="link-icon spansh">S</a>
-                        </span>
-                    </td>
-                    <td>
-                        ${row.FactionName}
-                        <span class="external-links">
-                            <a href="${factionInaraLink}" target="_blank" title="View faction on Inara" class="link-icon inara">I</a>
-                        </span>
-                    </td>
-                    <td>${commoditiesTable}</td>
-                    <td>${row.ControllingPower || ''}</td>
-                    <td>${row.PowerplayState || ''}</td>
-                    <td>${new Date(row.InfraFailTimestamp).toLocaleString(undefined, {dateStyle: "short", timeStyle: "short"})}</td>
-                    <td>${new Date(row.MarketTimestamp).toLocaleString()}</td>
-                    <td>${row.Distance} ly</td>
-                </tr>
-            `;
-        }).join('');
-            //
-        this.container.innerHTML = `
-            <table class="infra-failures-table">
-                ${tableHeaders}
-                <tbody>
-                    ${tableRows}
-                </tbody>
-            </table>
-        `;
-
-        this.container.querySelectorAll('th[data-column]').forEach(header => {
-            header.addEventListener('click', () => {
-                const column = header.getAttribute('data-column');
-                const currentDirection = header.getAttribute('data-direction') || 'asc';
-                const newDirection = currentDirection === 'asc' ? 'desc' : 'asc';
-
-                this.renderTable(column, newDirection);
+            table.addRow({
+                StarSystem: `
+                    ${row.StarSystem}
+                    <span class="external-links">
+                        <a href="${systemInaraLink}" target="_blank" title="View system on Inara" class="link-icon inara">I</a>
+                        <a href="${systemSpanshLink}" target="_blank" title="View system on Spansh" class="link-icon spansh">S</a>
+                    </span>
+                `,
+                StationName: `
+                    ${row.StationName}
+                    <span class="external-links">
+                        <a href="${stationInaraLink}" target="_blank" title="View station on Inara" class="link-icon inara">I</a>
+                        <a href="${stationSpanshLink}" target="_blank" title="View station on Spansh" class="link-icon spansh">S</a>
+                    </span>
+                `,
+                FactionName: `
+                    ${row.FactionName}
+                    <span class="external-links">
+                        <a href="${factionInaraLink}" target="_blank" title="View faction on Inara" class="link-icon inara">I</a>
+                    </span>
+                `,
+                Commodities: commoditiesTable,
+                ControllingPower: row.ControllingPower || '',
+                PowerplayState: row.PowerplayState || '',
+                InfraFailTimestamp: new Date(row.InfraFailTimestamp).toLocaleString(undefined, {dateStyle: "short", timeStyle: "short"}),
+                MarketTimestamp: new Date(row.MarketTimestamp).toLocaleString(),
+                Distance: row.Distance
             });
         });
+
+        // Apply sorting if specified
+        if (sortColumn) {
+            table.sort(sortColumn, sortDirection);
+        }
+
+        // Render table
+        this.container.innerHTML = `<div class="table-container">${table.getHTML()}</div>`;
+        
+        // Attach sort listeners
+        table.attachSortListeners(this.container.querySelector('.table-container'));
     }
 }
 
