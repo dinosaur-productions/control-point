@@ -63,11 +63,11 @@ cells:
 
       \                    WHEN PowerplayState = 'Exploited' AND
       PowerplayStateControlProgress < 0.05 AND (PowerplayStateReinforcement -
-      PowerplayStateUndermining) / 230000 <= -0.05 THEN 'Reinforce (>5%
+      PowerplayStateUndermining) / 350000 <= -0.05 THEN 'Reinforce (>5%
       undermining, risk of loss)'\r
 
       \                    WHEN PowerplayState = 'Exploited' AND
-      (PowerplayStateReinforcement - PowerplayStateUndermining) / 230000 <=
+      (PowerplayStateReinforcement - PowerplayStateUndermining) / 350000 <=
       -0.05 THEN 'Reinforce (>5% undermining)'\r
 
       \                    WHEN PowerplayState = 'Exploited' AND
@@ -78,11 +78,11 @@ cells:
 
       \                    WHEN PowerplayState = 'Fortified' AND
       PowerplayStateControlProgress < 0.05 AND (PowerplayStateReinforcement -
-      PowerplayStateUndermining) / 317000 <= -0.05 THEN 'Reinforce (>5%
+      PowerplayStateUndermining) / 650000 <= -0.05 THEN 'Reinforce (>5%
       undermining, risk of fort loss)'\r
 
       \                    WHEN PowerplayState = 'Fortified' AND
-      (PowerplayStateReinforcement - PowerplayStateUndermining) / 317000 <=
+      (PowerplayStateReinforcement - PowerplayStateUndermining) / 650000 <=
       -0.05 THEN 'Reinforce (>5% undermining)'\r
 
       \                    WHEN PowerplayState = 'Fortified' AND
@@ -93,11 +93,11 @@ cells:
 
       \                    WHEN PowerplayState = 'Stronghold' AND
       PowerplayStateControlProgress < 0.05 AND (PowerplayStateReinforcement -
-      PowerplayStateUndermining) / 333000 <= -0.05 THEN 'Reinforce (>5%
+      PowerplayStateUndermining) / 1000000 <= -0.05 THEN 'Reinforce (>5%
       undermining, risk of sh loss)'\r
 
       \                    WHEN PowerplayState = 'Stronghold' AND
-      (PowerplayStateReinforcement - PowerplayStateUndermining) / 333000 <=
+      (PowerplayStateReinforcement - PowerplayStateUndermining) / 1000000 <=
       -0.05 THEN 'Reinforce (>5% undermining)'\r
 
       \                    WHEN PowerplayState = 'Stronghold' AND

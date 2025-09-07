@@ -42,7 +42,7 @@ cells:
 
       JOIN latest l USING (SystemAddress, timestamp)\r
 
-      WHERE j.StarSystem = 'Sceptrum'\r
+      WHERE j.StarSystem = 'Diaguandri'\r
 
       ORDER BY l.PowerplayStateControlProgress\r
 
@@ -136,8 +136,36 @@ cells:
     metadata: {}
   - kind: 2
     languageId: sql
-    value: select MarketId, StarSystem, SystemAddress from station_latest where
-      StationName = 'Ray Gateway';
+    value: "select * from jumps_location \r
+
+      where PowerplayStateControlProgress > 1.4 \r
+
+      and PowerplayStateControlProgress < 1000 \r
+
+      and \"PowerplayState\" = 'Exploited'\r
+
+      and timestamp < '2025-09-04' and timestamp > '2025-09-01' order by
+      timestamp desc;\r
+
+      \r
+
+      -- select *\r
+
+      -- from jumps_location\r
+
+      -- where StarSystem = 'Beta Sculptoris'"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "select timestamp,\"ControllingPower\", \"PowerplayState\",
+      \"PowerplayStateControlProgress\", \"PowerplayStateReinforcement\",
+      \"PowerplayStateUndermining\"\r
+
+      from jumps_location\r
+
+      where StarSystem = 'Inarajajara'\r
+
+      and timestamp > '2025-09-01'"
     metadata: {}
 metadata:
   conn:

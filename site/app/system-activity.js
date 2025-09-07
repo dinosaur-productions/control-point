@@ -1,5 +1,6 @@
 import { getSystemByAddress } from "../utils/data-access.js";
 import { inaraSystemByName, spanshSystem } from "../utils/links.js";
+import { getAvailableActivities, SystemInfo } from "../utils/activities.js";
 
 class SystemActivityComponent extends HTMLElement {
     static get observedAttributes() {
@@ -72,16 +73,21 @@ class SystemActivityComponent extends HTMLElement {
                         </div>
                     </div>
 
-                    <!-- Activity Section -->
-                    <div class="activity-section">
-                        <div class="activity-value">${row.Activity}</div>
-                        ${powersLine ? `<div class="powers-info">${powersLine}</div>` : ''}
-                    </div>
+                    ${powersLine ? `<div class="powers-info">${powersLine}</div>` : ''}
 
                     <!-- Powerplay Banner -->
                     ${this.renderPowerplayBanner(row, controlProgress)}
+
+                    <!-- Activity Section with Category Navigation -->
+                    ${this.renderActivitySection(row)}
+
+                    <!-- Available Activities -->
+                    ${this.renderActivitiesSection(row)}
                 </div>
             `;
+
+            // Add event listeners for category navigation
+            this.setupCategoryNavigation();
         } catch (err) {
             this.container.textContent = "Unexpected error.";
             console.error(err);
@@ -231,6 +237,152 @@ class SystemActivityComponent extends HTMLElement {
         `;
 
         return bannerContent;
+    }
+
+    renderActivitySection(row) {
+        // Create SystemInfo for the system to get available categories
+        const systemInfo = new SystemInfo({
+            controllingPower: row.ControllingPower || '',
+            inConflict: row.PowerplayConflictProgress && 
+                        typeof row.PowerplayConflictProgress.toArray === 'function' && 
+                        row.PowerplayConflictProgress.toArray().length > 0
+        });
+
+        const action = row.Activity;
+        const activities = getAvailableActivities(row.StarSystem, action, systemInfo);
+
+        // Group activities by category to get available categories
+        const groupedActivities = {};
+        activities.forEach(activity => {
+            const category = activity.category || 'Misc';
+            if (!groupedActivities[category]) {
+                groupedActivities[category] = [];
+            }
+            groupedActivities[category].push(activity);
+        });
+
+        // Get available categories in the specified order
+        const categoryOrder = ['Hauling', 'Mining', 'Space Combat', 'On Foot', 'Misc'];
+        const availableCategories = categoryOrder.filter(category => groupedActivities[category]);
+
+        return `
+            <div class="activity-section">
+                <div class="activities-header">
+                    <h3>${action}</h3>
+                    <div class="category-nav">
+                        ${availableCategories.map(category => 
+                            `<button type="button" class="category-link" data-category="${category.toLowerCase().replace(/\s+/g, '-')}">${category}</button>`
+                        ).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    renderActivitiesSection(row) {
+        // Create SystemInfo for the system
+        const systemInfo = new SystemInfo({
+            controllingPower: row.ControllingPower || '',
+            inConflict: row.PowerplayConflictProgress && 
+                        typeof row.PowerplayConflictProgress.toArray === 'function' && 
+                        row.PowerplayConflictProgress.toArray().length > 0
+        });
+
+        // Use the system's specific activity
+        const action = row.Activity;
+        
+        // Get activities for this specific action
+        const activities = getAvailableActivities(row.StarSystem, action, systemInfo);
+        
+        if (activities.length === 0) {
+            return `
+                <div class="activities-section">
+                    <p class="no-activities">No activities available for ${action} in this system.</p>
+                </div>
+            `;
+        }
+
+        // Group activities by category
+        const groupedActivities = {};
+        activities.forEach(activity => {
+            const category = activity.category || 'Misc';
+            if (!groupedActivities[category]) {
+                groupedActivities[category] = [];
+            }
+            groupedActivities[category].push(activity);
+        });
+
+        // Get available categories in the specified order
+        const categoryOrder = ['Hauling', 'Mining', 'Space Combat', 'On Foot', 'Misc'];
+        const availableCategories = categoryOrder.filter(category => groupedActivities[category]);
+
+        let activitiesHTML = `
+            <div class="activities-section">
+                <div class="activities-list">
+        `;
+
+        // Render each category
+        availableCategories.forEach(category => {
+            activitiesHTML += `
+                <div class="category-section" id="category-${category.toLowerCase().replace(/\s+/g, '-')}">
+                    <h4 class="category-title">${category}</h4>
+                    <div class="category-activities">
+            `;
+
+            groupedActivities[category].forEach(activity => {
+                const legalBadge = activity.legal ? 
+                    '<span class="legal-badge legal">Legal</span>' : 
+                    '<span class="legal-badge illegal">Illegal</span>';
+
+                activitiesHTML += `
+                    <div class="activity-item">
+                        <div class="activity-header">
+                            <span class="activity-name">${activity.activity}</span>
+                            ${legalBadge}
+                        </div>
+                        <div class="activity-details">
+                            <div class="activity-detail">
+                                ${activity.details}
+                            </div>
+                            <div class="activity-detail pickup-handin">
+                                Pick up ${activity.pickup}${activity.handIn ? `, Hand in ${activity.handIn}` : ''}
+                            </div>
+                            ${activity.notes ? `
+                                <div class="activity-detail">
+                                    <strong>Notes:</strong> ${activity.notes}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            activitiesHTML += `
+                    </div>
+                </div>
+            `;
+        });
+
+        activitiesHTML += `
+                </div>
+            </div>
+        `;
+
+        return activitiesHTML;
+    }
+
+    setupCategoryNavigation() {
+        const categoryLinks = this.container.querySelectorAll('.category-link');
+        categoryLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const categoryId = e.target.getAttribute('data-category');
+                const targetElement = this.container.querySelector(`#category-${categoryId}`);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
     }
 
     getTimeAgo(timestamp) {
