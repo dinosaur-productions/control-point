@@ -46,11 +46,11 @@ cells:
 
       \        ControllingPower,\r
 
-      \        COALESCE(PowerplayState, 'Unoccupied') AS PowerplayState, \r
+      \        PowerplayState, \r
 
       \        PowerplayStateControlProgress,\r
 
-      \        COALESCE(Powers, []) AS Powers,\r
+      \        Powers,\r
 
       \        PowerplayStateReinforcement, PowerplayStateUndermining,
       PowerplayConflictProgress,\r
@@ -173,8 +173,6 @@ cells:
 
       \    LEFT JOIN system_latest pp ON pp.SystemAddress = sys.Id64\r
 
-      \r
-
       ),\r
 
       activities AS (\r
@@ -189,14 +187,39 @@ cells:
 
       \        ControllingPower,\r
 
-      \        COALESCE(PowerplayState, 'Unoccupied') AS PowerplayState, \r
+      \        PowerplayState,\r
+
+      \        EXISTS (\r
+
+      \            SELECT 1\r
+
+      \            FROM station_latest st\r
+
+      \            WHERE st.SystemAddress = populated.Id64\r
+
+      \            -- AND st.StationType = 'MegaShip' due to a data bug, the
+      type is actually recorded as 'SurfaceSettlement' :(\r
+
+      \            AND st.StationName IN (\r
+
+      \                'Stronghold Carrier', 'Porte-vaisseaux de forteresse',\r
+
+      \                'Transportadora da potência', 'Носитель-база',
+      'Portanaves bastión', 'Hochburg-Carrier')\r
+
+      \            LIMIT 1\r
+
+      \        ) AS PowerplayHasStrongholdCarrier,\r
 
       \        PowerplayStateControlProgress,\r
 
-      \        COALESCE(Powers, []) AS Powers,\r
+      \        Powers,\r
 
-      \        PowerplayStateReinforcement, PowerplayStateUndermining,
-      PowerplayConflictProgress,\r
+      \        PowerplayStateReinforcement, \r
+
+      \        PowerplayStateUndermining, \r
+
+      \        PowerplayConflictProgress,\r
 
       \        CASE \r
 

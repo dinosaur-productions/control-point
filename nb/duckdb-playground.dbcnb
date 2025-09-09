@@ -508,19 +508,7 @@ cells:
     metadata: {}
   - kind: 2
     languageId: sql
-    value: "-- Nukamba\r
-
-      -- Graffias\r
-
-      -- Vodyakamana\r
-
-      -- Marfic\r
-
-      -- Upaniklis\r
-
-      \r
-
-      with \r
+    value: "with \r
 
       \    un as (\r
 
@@ -534,61 +522,114 @@ cells:
       \        SELECT SignalName, min(timestamp), array_agg(DISTINCT StarSystem)
       as route FROM un\r
 
-      \        WHERE SignalType = 'Megaship'\r
+      \        WHERE SignalType = 'StationMegaShip'\r
+
+      \        --AND \"StarSystem\" = 'Ebor'\r
 
       \        GROUP BY SignalName\r
 
-      \    ),\r
-
-      \    names as (\r
-
-      \        SELECT DISTINCT Name FROM systems_populated\r
-
-      \        WHERE editdist3(Name, 'Nukamba') < 2\r
-
-      \        OR editdist3(Name, 'Graffias') < 2\r
-
-      \        OR editdist3(Name, 'Vodyakamana') < 2\r
-
-      \        OR editdist3(Name, 'Marfic') < 2\r
-
-      \        OR editdist3(Name, 'Upaniklis') < 2\r
-
       \    )\r
 
-      select * \r
+      \    -- names as (\r
+
+      \    --     SELECT DISTINCT Name FROM systems_populated\r
+
+      \    --     WHERE editdist3(Name, 'Nukamba') < 2\r
+
+      \    --     OR editdist3(Name, 'Graffias') < 2\r
+
+      \    --     OR editdist3(Name, 'Vodyakamana') < 2\r
+
+      \    --     OR editdist3(Name, 'Marfic') < 2\r
+
+      \    --     OR editdist3(Name, 'Upaniklis') < 2\r
+
+      \    -- )\r
+
+      select DISTINCT SignalName\r
 
       from mgs;\r
 
-      --where EXISTS (select 1 from names where list_has(route, Name)) ;\r
+      \r\n"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "WITH\r
+
+      populated AS (\r
+
+      \    SELECT \r
+
+      \        pp.* EXCLUDE (PowerplayState, Powers),\r
+
+      \        COALESCE(PowerplayState, 'Unoccupied') AS PowerplayState, \r
+
+      \        COALESCE(Powers, []) AS Powers,\r
+
+      \    FROM system_latest pp \r
+
+      \    WHERE Population > 0\r
+
+      ),\r
+
+      supporting AS (\r
+
+      \    SELECT *, CASE WHEN PowerplayState = 'Stronghold' THEN 30 ELSE 20 END
+      AS MaxDistance\r
+
+      \    FROM populated\r
+
+      \    WHERE  ControllingPower = 'Li Yong-Rui'\r
+
+      \    AND PowerplayState IN ('Stronghold', 'Fortified')\r
+
+      ),\r
+
+      supported AS (\r
+
+      \    SELECT *\r
+
+      \    FROM populated\r
+
+      \    WHERE  'Li Yong-Rui' IN Powers\r
+
+      \    AND PowerplayState IN ('Exploited', 'Unoccupied')\r
+
+      )\r
 
       \r
 
-      --['Nukamba', 'Graffias', 'Vodyakamana', 'Marfic', 'Upaniklis']);\r
+      SELECT\r
 
-      \r
+      \    t1.StarSystem AS SupportingStarSystem, t1.SystemAddress as
+      SupportingSystemAddress,\r
 
-      \r
+      \    t2.StarSystem AS SupportedStarSystem, t2.SystemAddress as
+      SupportedSystemAddress,\r
 
-      \r
+      \    SQRT(\r
 
-      -- with \r
+      \        POW(t2.StarPos[1] - t1.StarPos[1], 2) +\r
 
-      --     un as (\r
+      \        POW(t2.StarPos[2] - t1.StarPos[2], 2) +\r
 
-      --         select timestamp, StarSystem, unnest(signals,RECURSIVE:=True)
-      from fsssignaldiscovered\r
+      \        POW(t2.StarPos[3] - t1.StarPos[3], 2)\r
 
-      --     )\r
+      \    ) AS Distance\r
 
-      -- select * from un where SignalType = 'Megaship'; --and SignalName IN
-      ('NER-683 Dionysus-class Cropper', 'UPA-544 Demeter-class Cropper',
-      'RAJ-883 Hercules-class Hauler');  --StarSystem in ('Nukamba', 'Graffias',
-      'Vodyakamana', 'Marfic', 'Upaniklis');\r
+      FROM supporting AS t1\r
 
-      \r
+      JOIN supported AS t2 \r
 
-      --select max(timestamp) from fsssignaldiscovered;\r\n"
+      \    ON SQRT(\r
+
+      \        POW(t2.StarPos[1] - t1.StarPos[1], 2) +\r
+
+      \        POW(t2.StarPos[2] - t1.StarPos[2], 2) +\r
+
+      \        POW(t2.StarPos[3] - t1.StarPos[3], 2)\r
+
+      \    )  <= t1.MaxDistance;"
     metadata: {}
 metadata:
   conn:

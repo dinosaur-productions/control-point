@@ -1,5 +1,5 @@
-import { getSystemByAddress } from "../utils/data-access.js";
-import { inaraSystemByName, spanshSystem } from "../utils/links.js";
+import { getSystemByAddress, getSupportingSystems, getSupportedSystems } from "../utils/data-access.js";
+import { inaraSystemByName, spanshSystem, linkifySupportingSystems } from "../utils/links.js";
 import { getAvailableActivities, SystemInfo } from "../utils/activities.js";
 
 class SystemActivityComponent extends HTMLElement {
@@ -77,6 +77,12 @@ class SystemActivityComponent extends HTMLElement {
 
                     <!-- Powerplay Banner -->
                     ${this.renderPowerplayBanner(row, controlProgress)}
+
+                    <!-- Supporting Systems -->
+                    ${await this.renderSupportingSystems(row)}
+
+                    <!-- Supported Systems -->
+                    ${await this.renderSupportedSystems(row)}
 
                     <!-- Activity Section with Category Navigation -->
                     ${this.renderActivitySection(row)}
@@ -279,6 +285,98 @@ class SystemActivityComponent extends HTMLElement {
         `;
     }
 
+    async renderSupportingSystems(row) {
+        // Only show supporting systems for systems that can be acquired (Unoccupied + Li Yong-Rui in range)
+        // or systems that are Exploited by Li Yong-Rui
+        const shouldShowSupport = (
+            row.PowerplayState === 'Unoccupied' && 
+            row.Powers && typeof row.Powers.toArray === 'function' && 
+            row.Powers.toArray().includes('Li Yong-Rui')) ||
+            (row.PowerplayState === 'Exploited' && row.ControllingPower === 'Li Yong-Rui');
+
+        if (!shouldShowSupport) {
+            return '';
+        }
+
+        try {
+            const supportingSystems = await getSupportingSystems(row.SystemAddress);
+            
+            if (supportingSystems.length === 0) {
+                return '';
+            }
+
+            const systemsList = supportingSystems.map(system => 
+                `<li class="supporting-system-item">
+                    <span class="system-name">${system.SupportingSystemName}</span>
+                    <span class="system-distance">${Math.round(system.Distance)} LY</span>
+                    <span class="system-state">${system.PowerplayState}</span>
+                </li>`
+            ).join('');
+
+            return `
+                <div class="supporting-systems-section">
+                    <details class="supporting-systems-details" id="supporting-systems-details">
+                        <summary class="supporting-systems-header">
+                            <span>Supporting Systems (${supportingSystems.length})</span>
+                        </summary>
+                        <div class="supporting-systems-content">
+                            <ul class="supporting-systems-list">
+                                ${systemsList}
+                            </ul>
+                        </div>
+                    </details>
+                </div>
+            `;
+        } catch (error) {
+            console.error('Error loading supporting systems:', error);
+            return '';
+        }
+    }
+
+    async renderSupportedSystems(row) {
+        // Only show supported systems for Li Yong-Rui Fortified or Stronghold systems
+        const shouldShowSupported = row.ControllingPower === 'Li Yong-Rui' && 
+                                   (row.PowerplayState === 'Fortified' || row.PowerplayState === 'Stronghold');
+
+        if (!shouldShowSupported) {
+            return '';
+        }
+
+        try {
+            const supportedSystems = await getSupportedSystems(row.SystemAddress);
+            
+            if (supportedSystems.length === 0) {
+                return '';
+            }
+
+            const systemsList = supportedSystems.map(system => 
+                `<li class="supported-system-item">
+                    <span class="system-name">${system.SupportedSystemName}</span>
+                    <span class="system-distance">${Math.round(system.Distance)} LY</span>
+                    <span class="system-state">${system.PowerplayState}</span>
+                </li>`
+            ).join('');
+
+            return `
+                <div class="supported-systems-section">
+                    <details class="supported-systems-details">
+                        <summary class="supported-systems-header">
+                            <span>Supported Systems (${supportedSystems.length})</span>
+                        </summary>
+                        <div class="supported-systems-content">
+                            <ul class="supported-systems-list">
+                                ${systemsList}
+                            </ul>
+                        </div>
+                    </details>
+                </div>
+            `;
+        } catch (error) {
+            console.error('Error loading supported systems:', error);
+            return '';
+        }
+    }
+
     renderActivitiesSection(row) {
         // Create SystemInfo for the system
         const systemInfo = new SystemInfo({
@@ -345,7 +443,7 @@ class SystemActivityComponent extends HTMLElement {
                                 ${activity.details}
                             </div>
                             <div class="activity-detail pickup-handin">
-                                Pick up ${activity.pickup}${activity.handIn ? `, Hand in ${activity.handIn}` : ''}
+                                Pick up ${linkifySupportingSystems(activity.pickup)}${activity.handIn ? `, Hand in ${linkifySupportingSystems(activity.handIn)}` : ''}
                             </div>
                             ${activity.notes ? `
                                 <div class="activity-detail">

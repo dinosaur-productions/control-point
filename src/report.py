@@ -24,7 +24,6 @@ def make_report_db():
                     (pp.SystemAddress IS NOT NULL) AS HasPowerplayData,
                 FROM db.systems_populated sys
                 LEFT JOIN db.system_latest pp ON pp.SystemAddress = sys.Id64
-
             ),
             activities AS (
                 SELECT 
@@ -32,7 +31,7 @@ def make_report_db():
                     Name AS StarSystem,
                     StarPos,
                     ControllingPower,
-                    COALESCE(PowerplayState, 'Unoccupied') AS PowerplayState, 
+                    PowerplayState, 
                     CASE 
                         WHEN PowerplayStateControlProgress > 12000 
                             -- control lost, journal has weird number like 12271.nnn
@@ -40,16 +39,12 @@ def make_report_db():
                         ELSE
                             PowerplayStateControlProgress
                     END AS PowerplayStateControlProgress,
-                    COALESCE(Powers, []) AS Powers,
-                    PowerplayStateReinforcement, PowerplayStateUndermining, PowerplayConflictProgress,
+                    Powers,
+                    PowerplayStateReinforcement, 
+                    PowerplayStateUndermining, 
+                    PowerplayConflictProgress,
                     CASE 
-                        WHEN ControllingPower = 'Li Yong-Rui' THEN
-                            CASE
-                                WHEN PowerplayState = 'Exploited' AND PowerplayStateControlProgress < 1 THEN 'Reinforce'
-                                WHEN PowerplayState = 'Fortified' AND PowerplayStateControlProgress < 1.25 THEN 'Reinforce'
-                                WHEN PowerplayState = 'Stronghold' THEN 'Reinforce'
-                                ELSE 'Wait Until Next Cycle'
-                            END
+                        WHEN ControllingPower = 'Li Yong-Rui' THEN 'Reinforce'
                         ELSE
                             CASE
                                 WHEN PowerplayState = 'Unoccupied' AND 'Li Yong-Rui' IN Powers THEN 'Acquire'
@@ -63,6 +58,46 @@ def make_report_db():
             )
             SELECT * FROM activities
             WHERE Activity NOT IN ('No Powerplay Data');
+    """)
+    conn.execute("""
+        CREATE OR REPLACE TABLE powerplay_support AS
+        WITH
+        populated AS (
+            SELECT 
+                pp.* EXCLUDE (PowerplayState, Powers),
+                COALESCE(PowerplayState, 'Unoccupied') AS PowerplayState, 
+                COALESCE(Powers, []) AS Powers,
+            FROM db.system_latest pp 
+            WHERE Population > 0
+        ),
+        supporting AS (
+            SELECT *, CASE WHEN PowerplayState = 'Stronghold' THEN 30 ELSE 20 END AS MaxDistance
+            FROM populated
+            WHERE ControllingPower = 'Li Yong-Rui'
+            AND PowerplayState IN ('Stronghold', 'Fortified')
+        ),
+        supported AS (
+            SELECT *
+            FROM populated
+            WHERE  'Li Yong-Rui' IN Powers
+            AND PowerplayState IN ('Exploited', 'Unoccupied')
+        )
+
+        SELECT
+            t1.SystemAddress as SupportingSystemAddress,
+            t2.SystemAddress as SupportedSystemAddress,
+            SQRT(
+                POW(t2.StarPos[1] - t1.StarPos[1], 2) +
+                POW(t2.StarPos[2] - t1.StarPos[2], 2) +
+                POW(t2.StarPos[3] - t1.StarPos[3], 2)
+            ) AS Distance
+        FROM supporting AS t1
+        JOIN supported AS t2 
+            ON SQRT(
+                POW(t2.StarPos[1] - t1.StarPos[1], 2) +
+                POW(t2.StarPos[2] - t1.StarPos[2], 2) +
+                POW(t2.StarPos[3] - t1.StarPos[3], 2)
+            )  <= t1.MaxDistance;
     """)
     conn.execute("""
     CREATE OR REPLACE MACRO system_distance(system1, system2) AS
