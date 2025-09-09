@@ -1,5 +1,5 @@
 import { getInfraFailures, getSystemByAddress } from "../utils/data-access.js";
-import { inaraSystemByName, inaraStation, inaraMinorFaction, spanshSystem, spanshStation } from "../utils/links.js";
+import { generateSystemLinks, generateStationLinks, generateFactionLinks } from "../utils/links.js";
 import { SortableTable } from "../utils/tables.js";
 
 class InfraFailuresComponent extends HTMLElement {
@@ -91,38 +91,26 @@ class InfraFailuresComponent extends HTMLElement {
                 </table>
             `;
 
-            // Generate links for system
-            const systemInaraLink = inaraSystemByName(row.StarSystem);
-            const systemSpanshLink = spanshSystem(row.SystemAddress);
+            // Generate links for system, station, and faction
+            const systemLinks = generateSystemLinks({
+                name: row.StarSystem,
+                address: row.SystemAddress
+            });
             
-            // Generate links for station
-            const stationInaraLink = inaraStation(row.StationName, row.StarSystem);
-            const stationSpanshLink = spanshStation(row.MarketId);
+            const stationLinks = generateStationLinks({
+                name: row.StationName,
+                systemName: row.StarSystem,
+                marketId: row.MarketId
+            });
             
-            // Generate links for faction
-            const factionInaraLink = inaraMinorFaction(row.FactionName);
+            const factionLinks = generateFactionLinks({
+                name: row.FactionName
+            });
 
             table.addRow({
-                StarSystem: `
-                    ${row.StarSystem}
-                    <span class="external-links">
-                        <a href="${systemInaraLink}" target="_blank" title="View system on Inara" class="link-icon inara">I</a>
-                        <a href="${systemSpanshLink}" target="_blank" title="View system on Spansh" class="link-icon spansh">S</a>
-                    </span>
-                `,
-                StationName: `
-                    ${row.StationName}
-                    <span class="external-links">
-                        <a href="${stationInaraLink}" target="_blank" title="View station on Inara" class="link-icon inara">I</a>
-                        <a href="${stationSpanshLink}" target="_blank" title="View station on Spansh" class="link-icon spansh">S</a>
-                    </span>
-                `,
-                FactionName: `
-                    ${row.FactionName}
-                    <span class="external-links">
-                        <a href="${factionInaraLink}" target="_blank" title="View faction on Inara" class="link-icon inara">I</a>
-                    </span>
-                `,
+                StarSystem: `${row.StarSystem}${systemLinks}`,
+                StationName: `${row.StationName}${stationLinks}`,
+                FactionName: `${row.FactionName}${factionLinks}`,
                 Commodities: commoditiesTable,
                 ControllingPower: row.ControllingPower || '',
                 PowerplayState: row.PowerplayState || '',

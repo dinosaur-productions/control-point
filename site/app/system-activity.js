@@ -1,5 +1,5 @@
 import { getSystemByAddress, getSupportingSystems, getSupportedSystems } from "../utils/data-access.js";
-import { inaraSystemByName, spanshSystem, linkifySupportingSystems } from "../utils/links.js";
+import { generateSystemLinks, linkifySupportingSystems } from "../utils/links.js";
 import { getAvailableActivities, SystemInfo } from "../utils/activities.js";
 
 class SystemActivityComponent extends HTMLElement {
@@ -52,8 +52,10 @@ class SystemActivityComponent extends HTMLElement {
             const powersLine = powers.length > 0 ? `<p>In range of: ${powers.join(', ')}</p>` : 'Not in range of any power';
 
             // Generate external links for the system
-            const systemInaraLink = inaraSystemByName(row.StarSystem);
-            const systemSpanshLink = spanshSystem(numSystemAddress);
+            const systemLinks = generateSystemLinks({
+                name: row.StarSystem,
+                address: numSystemAddress
+            });
 
             // Build the new layout
             this.container.innerHTML = `
@@ -62,10 +64,7 @@ class SystemActivityComponent extends HTMLElement {
                     <div class="system-header">
                         <div class="system-name">
                             <h1>${row.StarSystem}</h1>
-                            <span class="external-links">
-                                <a href="${systemInaraLink}" target="_blank" title="View system on Inara" class="link-icon inara">I</a>
-                                <a href="${systemSpanshLink}" target="_blank" title="View system on Spansh" class="link-icon spansh">S</a>
-                            </span>
+                            ${systemLinks}
                         </div>
                         <div class="last-update">
                             <small>Updated ${timeAgo}</small>
@@ -305,13 +304,18 @@ class SystemActivityComponent extends HTMLElement {
                 return '';
             }
 
-            const systemsList = supportingSystems.map(system => 
-                `<li class="supporting-system-item">
-                    <span class="system-name">${system.SupportingSystemName}</span>
+            const systemsList = supportingSystems.map(system => {
+                const systemLinks = generateSystemLinks({
+                    name: system.SupportingSystemName,
+                    address: system.SupportingSystemAddress
+                });
+                
+                return `<li class="supporting-system-item">
+                    <span class="system-name">${system.SupportingSystemName}${systemLinks}</span>
                     <span class="system-distance">${Math.round(system.Distance)} LY</span>
                     <span class="system-state">${system.PowerplayState}</span>
-                </li>`
-            ).join('');
+                </li>`;
+            }).join('');
 
             return `
                 <div class="supporting-systems-section">
@@ -349,13 +353,18 @@ class SystemActivityComponent extends HTMLElement {
                 return '';
             }
 
-            const systemsList = supportedSystems.map(system => 
-                `<li class="supported-system-item">
-                    <span class="system-name">${system.SupportedSystemName}</span>
+            const systemsList = supportedSystems.map(system => {
+                const systemLinks = generateSystemLinks({
+                    name: system.SupportedSystemName,
+                    address: system.SupportedSystemAddress
+                });
+                
+                return `<li class="supported-system-item">
+                    <span class="system-name">${system.SupportedSystemName}${systemLinks}</span>
                     <span class="system-distance">${Math.round(system.Distance)} LY</span>
                     <span class="system-state">${system.PowerplayState}</span>
-                </li>`
-            ).join('');
+                </li>`;
+            }).join('');
 
             return `
                 <div class="supported-systems-section">

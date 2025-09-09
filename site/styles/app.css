@@ -104,3 +104,11 @@ footer {
 .link-icon.spansh:hover {
     background-color: #bd3535;
 }
+
+.link-icon.internal {
+    background-color: #50c878;
+}
+
+.link-icon.internal:hover {
+    background-color: #3da85c;
+}

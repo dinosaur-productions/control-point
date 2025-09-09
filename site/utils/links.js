@@ -82,6 +82,15 @@ export function spanshBody(bodyId) {
 }
 
 /**
+ * Generate an internal link to the system-activity page for a system
+ * @param {number|string} systemAddress - The system address
+ * @returns {string} Internal URL to the system-activity page
+ */
+export function internalSystemLink(systemAddress) {
+    return `#/system/${systemAddress}`;
+}
+
+/**
  * Process text to convert "supporting system" mentions into internal links
  * @param {string} text - The text to process
  * @returns {string} Text with "supporting system" converted to clickable links
@@ -94,4 +103,93 @@ export function linkifySupportingSystems(text) {
         /supporting system/gi,
         '<a href="#" onclick="document.getElementById(\'supporting-systems-details\')?.scrollIntoView({behavior: \'smooth\'}); document.getElementById(\'supporting-systems-details\')?.setAttribute(\'open\', \'true\'); return false;" class="internal-link">supporting system</a>'
     );
+}
+
+/**
+ * Generate external links HTML for a system
+ * @param {Object} systemData - System data object
+ * @param {string} systemData.name - The system name
+ * @param {number|string} systemData.address - The system address
+ * @returns {string} HTML string with external links
+ */
+export function generateSystemLinks(systemData) {
+    if (!systemData || !systemData.name) return '';
+    
+    const internalLink = systemData.address ? internalSystemLink(systemData.address) : null;
+    const inaraLink = inaraSystemByName(systemData.name);
+    const spanshLink = systemData.address ? spanshSystem(systemData.address) : null;
+    
+    return `
+        <span class="external-links">
+            ${internalLink ? `<a href="${internalLink}" title="View system details" class="link-icon internal">c</a>` : ''}
+            <a href="${inaraLink}" target="_blank" title="View system on Inara" class="link-icon inara">I</a>
+            ${spanshLink ? `<a href="${spanshLink}" target="_blank" title="View system on Spansh" class="link-icon spansh">S</a>` : ''}
+        </span>
+    `;
+}
+
+/**
+ * Generate external links HTML for a station
+ * @param {Object} stationData - Station data object
+ * @param {string} stationData.name - The station name
+ * @param {string} stationData.systemName - The system name where the station is located
+ * @param {number|string} [stationData.marketId] - The market ID of the station
+ * @returns {string} HTML string with external links
+ */
+export function generateStationLinks(stationData) {
+    if (!stationData || !stationData.name || !stationData.systemName) return '';
+    
+    const inaraLink = inaraStation(stationData.name, stationData.systemName);
+    const spanshLink = stationData.marketId ? spanshStation(stationData.marketId) : null;
+    
+    return `
+        <span class="external-links">
+            <a href="${inaraLink}" target="_blank" title="View station on Inara" class="link-icon inara">I</a>
+            ${spanshLink ? `<a href="${spanshLink}" target="_blank" title="View station on Spansh" class="link-icon spansh">S</a>` : ''}
+        </span>
+    `;
+}
+
+/**
+ * Generate external links HTML for a faction
+ * @param {Object} factionData - Faction data object
+ * @param {string} factionData.name - The faction name
+ * @returns {string} HTML string with external links
+ */
+export function generateFactionLinks(factionData) {
+    if (!factionData || !factionData.name) return '';
+    
+    const inaraLink = inaraMinorFaction(factionData.name);
+    
+    return `
+        <span class="external-links">
+            <a href="${inaraLink}" target="_blank" title="View faction on Inara" class="link-icon inara">I</a>
+        </span>
+    `;
+}
+
+/**
+ * Generate all external links for a complete entity (system, station, faction)
+ * @param {Object} entityData - Entity data object
+ * @param {Object} [entityData.system] - System data with name and address
+ * @param {Object} [entityData.station] - Station data with name, systemName, and marketId
+ * @param {Object} [entityData.faction] - Faction data with name
+ * @returns {Object} Object containing formatted HTML links for each entity type
+ */
+export function generateAllLinks(entityData) {
+    const links = {};
+    
+    if (entityData.system) {
+        links.system = generateSystemLinks(entityData.system);
+    }
+    
+    if (entityData.station) {
+        links.station = generateStationLinks(entityData.station);
+    }
+    
+    if (entityData.faction) {
+        links.faction = generateFactionLinks(entityData.faction);
+    }
+    
+    return links;
 }
