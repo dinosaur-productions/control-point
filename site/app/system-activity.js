@@ -115,12 +115,18 @@ class SystemActivityComponent extends HTMLElement {
         // Handle occupied systems
         const progressValue = controlProgress ? parseFloat(row.PowerplayStateControlProgress) : 0;
         
+        // Modify powerplay state display for stronghold carriers
+        let displayState = row.PowerplayState || 'Unknown';
+        if (row.PowerplayState === 'Stronghold' && row.PowerplayHasStrongholdCarrier) {
+            displayState = 'Stronghold + Carrier';
+        }
+        
         let bannerContent = `
             <div class="powerplay-banner">
                 <div class="banner-content">
                     <div class="power-info">
                         <span class="power-name">${row.ControllingPower}</span>
-                        <span class="state-name">${row.PowerplayState || 'Unknown'}</span>
+                        <span class="state-name">${displayState}</span>
                     </div>
                     ${this.renderTugOfWar(row)}
                     ${this.renderFourStateProgressBar(row, progressValue)}
@@ -254,7 +260,12 @@ class SystemActivityComponent extends HTMLElement {
         });
 
         const action = row.Activity;
-        const activities = getAvailableActivities(row.StarSystem, action, systemInfo);
+        let activities = getAvailableActivities(row.StarSystem, action, systemInfo);
+        
+        // Filter activities for stronghold carrier undermining
+        if (action === 'Undermine' && row.PowerplayHasStrongholdCarrier) {
+            activities = activities.filter(activity => activity.strongholdCarrierUndermining === true);
+        }
 
         // Group activities by category to get available categories
         const groupedActivities = {};
@@ -399,7 +410,12 @@ class SystemActivityComponent extends HTMLElement {
         const action = row.Activity;
         
         // Get activities for this specific action
-        const activities = getAvailableActivities(row.StarSystem, action, systemInfo);
+        let activities = getAvailableActivities(row.StarSystem, action, systemInfo);
+        
+        // Filter activities for stronghold carrier undermining
+        if (action === 'Undermine' && row.PowerplayHasStrongholdCarrier) {
+            activities = activities.filter(activity => activity.strongholdCarrierUndermining === true);
+        }
         
         if (activities.length === 0) {
             return `

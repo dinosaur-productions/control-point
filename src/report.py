@@ -32,6 +32,16 @@ def make_report_db():
                     StarPos,
                     ControllingPower,
                     PowerplayState, 
+                    EXISTS (
+                        SELECT 1
+                        FROM db.station_latest st
+                        WHERE st.SystemAddress = populated.Id64
+                        -- AND st.StationType = 'MegaShip' due to a data bug, the type is actually recorded as 'SurfaceSettlement' :(
+                        AND st.StationName IN (
+                            'Stronghold Carrier', 'Porte-vaisseaux de forteresse',
+                            'Transportadora da potência', 'Носитель-база', 'Portanaves bastión', 'Hochburg-Carrier')
+                        LIMIT 1
+                    ) AS PowerplayHasStrongholdCarrier,
                     CASE 
                         WHEN PowerplayStateControlProgress > 12000 
                             -- control lost, journal has weird number like 12271.nnn
