@@ -93,14 +93,14 @@ jobs:
         ls -la data.duckdb || echo "Database file not found"
     
     - name: Upload Elite Control Point Site
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: elite-control-point-site-${{ steps.date.outputs.today }}
         path: site/
         retention-days: 30
     
     - name: Upload build logs and debug info
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: build-debug-${{ steps.date.outputs.today }}
