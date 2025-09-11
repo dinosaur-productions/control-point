@@ -55,7 +55,17 @@ jobs:
     - name: Aggressive cleanup for GitHub Actions cache
       run: |
         echo "Running aggressive cleanup to minimize cache size..."
-        poetry run python src/clean_github.py --data-dump data-dump
+        echo "Current directory: $(pwd)"
+        echo "Checking data-dump directory:"
+        if [ -d "data-dump" ]; then
+          echo "✓ data-dump directory exists"
+          echo "Contents:"
+          ls -la data-dump/ | head -10
+        else
+          echo "✗ data-dump directory does not exist"
+        fi
+        echo "Running cleanup script..."
+        poetry run python -m clean_github
     
     - name: Verify site generation
       run: |
