@@ -524,13 +524,14 @@ def import_fsssignaldiscovered_jsonl_files(conn, imported):
                     rn
                 FROM tmp_fsssignaldiscovered_raw
             )
-            INSERT INTO fsssignaldiscovered (
+            INSERT OR REPLACE INTO fsssignaldiscovered_latest (
                 timestamp, StarSystem, SystemAddress, Signals
             )
             SELECT
-            timestamp, StarSystem, SystemAddress, Signals
+                DISTINCT ON (SystemAddress) timestamp, StarSystem, SystemAddress, Signals
             FROM extracted
             WHERE rn > ?
+            ORDER BY timestamp DESC
         """, [last_line])
 
         num_lines = get_num_lines(fpath)

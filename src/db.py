@@ -686,10 +686,10 @@ def create_schema(conn):
     conn.execute("""
     --DROP TABLE fsssignaldiscovered;
     --DELETE FROM imported_files WHERE filename LIKE 'Journal.FSSSignalDiscovered%';
-    CREATE TABLE IF NOT EXISTS fsssignaldiscovered (
+    CREATE TABLE IF NOT EXISTS fsssignaldiscovered_latest (
         timestamp TIMESTAMP NOT NULL,
         StarSystem VARCHAR NOT NULL,
-        SystemAddress BIGINT NOT NULL,
+        SystemAddress BIGINT PRIMARY KEY NOT NULL,
         signals STRUCT(
             IsStation BOOLEAN,
             SignalName VARCHAR,

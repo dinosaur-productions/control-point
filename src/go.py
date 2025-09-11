@@ -1,6 +1,6 @@
 import datetime as dt
 
-from constants import DB_MAIN_PATH, DB_SITE_PATH
+from constants import DB_MAIN_PATH, DB_SITE_PATH, DIR_DATA_DUMP
 import dl_hist
 import dl_today
 import import_
@@ -8,6 +8,7 @@ import compress
 import report
 import json
 import os
+import clean
 
 def write_manifest(db_path):
     manifest = {
@@ -27,3 +28,4 @@ if __name__ == "__main__":
     report.make_report_db()
     compress.compress_database(DB_SITE_PATH)
     write_manifest(DB_SITE_PATH)
+    clean.clean_data_dump(DIR_DATA_DUMP)
