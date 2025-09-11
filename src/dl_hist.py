@@ -116,7 +116,7 @@ def compress_jsonl_files_except_today():
 
 
 def main(today, lookback_days):
-    for days_ago in range(1, lookback_days):
+    for days_ago in range(1, lookback_days + 1):
         date = today - dt.timedelta(days=days_ago)
         for event_type in EVENT_TYPES:
             download_and_decompress_daily_file(event_type, date)
@@ -124,4 +124,4 @@ def main(today, lookback_days):
 
 
 if __name__ == "__main__":
-    main(dt.date.today(), lookback_days=3)
+    main(dt.date.today(), lookback_days=1)

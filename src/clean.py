@@ -85,11 +85,11 @@ def clean_data_dump(data_dump_path, default_days=30, commodity_days=7, dry_run=F
     deleted_count = 0
     total_size = 0
     
-    print(f"Scanning directory: {data_dump_path}")
-    print(f"Default retention: {default_days} days")
-    print(f"Commodity retention: {commodity_days} days")
-    print(f"Mode: {'DRY RUN' if dry_run else 'DELETE'}")
-    print("-" * 50)
+    # print(f"Scanning directory: {data_dump_path}")
+    # print(f"Default retention: {default_days} days")
+    # print(f"Commodity retention: {commodity_days} days")
+    # print(f"Mode: {'DRY RUN' if dry_run else 'DELETE'}")
+    # print("-" * 50)
     
     for filepath in data_dump_path.iterdir():
         if not filepath.is_file():
@@ -139,7 +139,7 @@ def clean_data_dump(data_dump_path, default_days=30, commodity_days=7, dry_run=F
     else:
         total_size_str = f"{total_size} bytes"
     
-    print("-" * 50)
+    # print("-" * 50)
     print(f"{'Would delete' if dry_run else 'Deleted'} {deleted_count} files")
     print(f"{'Would free' if dry_run else 'Freed'} {total_size_str} of space")
 

@@ -1,9 +1,61 @@
 import requests
 import os
 import datetime as dt
+import re
+from urllib.parse import urljoin
 
 from constants import DIR_DATA_DUMP, EVENT_TYPES, URL_BASE_EDGALAXYDATA
 from multiprocessing.pool import ThreadPool
+
+
+def get_today_from_website():
+    """
+    Determine the current 'today' date by checking what JSONL files are available
+    on the edgalaxydata.space website. Returns the most recent date for which
+    files are available.
+    
+    Returns:
+        datetime.date: The most recent date with available files, or today's date if unable to determine
+    """
+    try:
+        # Get the directory listing from the website
+        response = requests.get(URL_BASE_EDGALAXYDATA, timeout=30)
+        response.raise_for_status()
+        
+        # Parse HTML to find .jsonl files with dates
+        html_content = response.text
+        
+        # Look for patterns like "Commodity-2025-09-11.jsonl" in the HTML
+        # This regex matches the date pattern YYYY-MM-DD in .jsonl filenames
+        date_pattern = r'(?:Commodity|Journal\.(?:ApproachSettlement|CarrierJump|Docked|FSDJump|FSSBodySignals|FSSSignalDiscovered|Location|SAASignalsFound))-(\d{4}-\d{2}-\d{2})\.jsonl'
+        
+        dates_found = set()
+        for match in re.finditer(date_pattern, html_content):
+            date_str = match.group(1)
+            try:
+                parsed_date = dt.datetime.strptime(date_str, '%Y-%m-%d').date()
+                dates_found.add(parsed_date)
+            except ValueError:
+                continue  # Skip invalid dates
+        
+        if dates_found:
+            # Return the most recent date found
+            latest_date = max(dates_found)
+            print(f"Detected latest available date from website: {latest_date}")
+            return latest_date
+        else:
+            print("Warning: No dated JSONL files found on website, using today's date")
+            return dt.date.today()
+            
+    except requests.RequestException as e:
+        print(f"Error checking website for available dates: {e}")
+        print("Falling back to today's date")
+        return dt.date.today()
+    except Exception as e:
+        print(f"Unexpected error determining date from website: {e}")
+        print("Falling back to today's date")
+        return dt.date.today()
+
 
 def get_last_downloaded_position(local_data_path):
     if not os.path.exists(local_data_path):
@@ -118,11 +170,13 @@ def dl_event(event_type_today):
     return event_type
     
 
-def main(today):
+def main():
+    today = get_today_from_website()
     results = ThreadPool(8).imap_unordered(dl_event, [(event_type, today) for event_type in EVENT_TYPES])
     for i, event_type in enumerate(results):
         print(f"Done: {event_type} ({i+1}/{len(EVENT_TYPES)})")
+    return today
         
 
 if __name__ == "__main__":
-    main(dt.date.today())
+    main()
