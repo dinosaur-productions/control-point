@@ -21,7 +21,7 @@ def write_manifest(db_path):
 
 if __name__ == "__main__":
     today = dl_today.main()
-    dl_hist.main(today, lookback_days=5)
+    dl_hist.main(today, lookback_days=1)
     import_.main()
     compress.compress_database(DB_MAIN_PATH)
     report.make_report_db()
