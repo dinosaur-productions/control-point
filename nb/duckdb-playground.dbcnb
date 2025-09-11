@@ -631,9 +631,15 @@ cells:
 
       \    )  <= t1.MaxDistance;"
     metadata: {}
-metadata:
-  conn:
-    id: c8e8a3ca7ffa39a9
-    name: data.duckdb
-  database: data
-  schema: main
+  - kind: 2
+    languageId: sql
+    value: "select * exclude signals, unnest(signals, recursive:=true),
+      generate_subscripts(signals, 1) AS index\r
+
+      from fsssignaldiscovered\r
+
+      where StarSystem = 'Ebor'\r
+
+      order by timestamp desc"
+    metadata: {}
+metadata: {}

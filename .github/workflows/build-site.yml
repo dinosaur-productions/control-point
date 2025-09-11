@@ -1,0 +1,110 @@
+name: Build Elite Control Point Site
+
+on:
+  workflow_dispatch:  # Manual trigger only
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: latest
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+    
+    - name: Get dates for cache keys
+      id: date
+      run: |
+        echo "today=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+    
+    - name: Cache Elite Dangerous data files
+      uses: actions/cache@v3
+      with:
+        path: |
+          data-dump/
+          data.duckdb
+        key: elite-data-cache
+        restore-keys: |
+          elite-data-cache
+    
+    - name: Install dependencies
+      run: |
+        poetry install --only=main
+    
+    - name: Create data-dump directory if it doesn't exist
+      run: |
+        mkdir -p data-dump
+    
+    - name: Run Elite Dangerous data processing pipeline
+      run: |
+        poetry run python -m go
+      env:
+        PYTHONPATH: src
+    
+    - name: Aggressive cleanup for GitHub Actions cache
+      run: |
+        echo "Running aggressive cleanup to minimize cache size..."
+        poetry run python src/clean_github.py --data-dump data-dump
+    
+    - name: Verify site generation
+      run: |
+        echo "Checking generated site files:"
+        if [ -d "site" ]; then
+          echo "✓ Site directory exists"
+          echo "Site contents:"
+          ls -la site/
+          echo "Site size: $(du -sh site/ | cut -f1)"
+        else
+          echo "✗ Site directory not found!"
+          exit 1
+        fi
+        
+        echo "Checking database files:"
+        if [ -f "data.duckdb" ]; then
+          echo "✓ Main database exists ($(du -sh data.duckdb | cut -f1))"
+        else
+          echo "✗ Main database not found!"
+        fi
+        
+        if [ -f "site/site-data.duckdb" ]; then
+          echo "✓ Site database exists ($(du -sh site/site-data.duckdb | cut -f1))"
+        else
+          echo "✗ Site database not found!"
+        fi
+    
+    - name: List cached data files for next run
+      run: |
+        echo "Files that will be cached for incremental updates:"
+        echo "Data-dump directory contents:"
+        ls -la data-dump/ | head -10 || echo "No data-dump files found"
+        
+        echo "Database file:"
+        ls -la data.duckdb || echo "Database file not found"
+    
+    - name: Upload Elite Control Point Site
+      uses: actions/upload-artifact@v3
+      with:
+        name: elite-control-point-site-${{ steps.date.outputs.today }}
+        path: site/
+        retention-days: 30
+    
+    - name: Upload build logs and debug info
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: build-debug-${{ steps.date.outputs.today }}
+        path: |
+          data-dump/*.lastmodified
+        retention-days: 7
+        if-no-files-found: ignore
