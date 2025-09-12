@@ -6,7 +6,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: read
+      deployments: write
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -146,6 +148,5 @@ jobs:
         accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         projectName: control-point
         directory: site
-        # Optional: Override the Branch
         gitHubToken: ${{ secrets.GITHUB_TOKEN }}
         wranglerVersion: '3'
