@@ -139,3 +139,14 @@ jobs:
           data-dump/*.lastmodified
         retention-days: 7
         if-no-files-found: ignore
+    
+    - name: Deploy to CloudFlare Pages
+      uses: cloudflare/pages-action@v1
+      with:
+        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        projectName: control-point
+        directory: site
+        # Optional: Override the Branch
+        gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+        wranglerVersion: '3'
