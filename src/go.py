@@ -12,7 +12,7 @@ import clean
 
 def write_manifest(db_path):
     manifest = {
-        "generated_at": dt.datetime.now().isoformat()
+        "generated_at": dt.datetime.now(dt.timezone.utc).isoformat()
     }
     manifest_path = os.path.splitext(db_path)[0] + "_manifest.json"
     with open(manifest_path, "w") as f:
