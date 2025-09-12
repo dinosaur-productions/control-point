@@ -1,0 +1,121 @@
+name: Seed Cache from R2
+
+on:
+  workflow_dispatch:  # Manual trigger only
+    inputs:
+      force_download:
+        description: 'Force download even if cache exists'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  seed-cache:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: latest
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+    
+    - name: Install dependencies
+      run: |
+        poetry install --only=main
+    
+    - name: Get timestamp for cache key
+      id: date
+      run: |
+        echo "timestamp=$(date +'%Y-%m-%d-%H%M%S')" >> $GITHUB_OUTPUT
+        echo "Cache timestamp: $(date +'%Y-%m-%d-%H%M%S')"
+    
+    - name: Check existing cache
+      if: ${{ !inputs.force_download }}
+      uses: actions/cache@v3
+      id: cache-check
+      with:
+        path: |
+          data-dump/
+          data.duckdb
+        key: cache-check-dummy  # This won't match anything
+        restore-keys: |
+          elite-data-cache-
+        lookup-only: true
+    
+    - name: Download cache files from R2
+      env:
+        R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+        R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      run: |
+        echo "Downloading cache files from R2..."
+        
+        if [[ "${{ inputs.force_download }}" == "true" ]]; then
+          echo "Force download enabled - will download regardless of existing cache"
+        elif [[ "${{ steps.cache-check.outputs.cache-hit }}" == "true" ]]; then
+          echo "Cache already exists and force_download is false - skipping download"
+          echo "Use force_download=true to override"
+          exit 0
+        else
+          echo "No existing cache found - proceeding with download"
+        fi
+        
+        # Create directories
+        mkdir -p data-dump
+        
+        # Run the download script
+        poetry run python src/download_cache_r2.py
+    
+    - name: Verify downloaded files
+      run: |
+        echo "Verifying downloaded cache files..."
+        
+        if [ -f "data.duckdb" ]; then
+          echo "✓ data.duckdb exists ($(du -sh data.duckdb | cut -f1))"
+        else
+          echo "✗ data.duckdb not found"
+        fi
+        
+        if [ -d "data-dump" ]; then
+          file_count=$(ls data-dump/ | wc -l)
+          echo "✓ data-dump directory exists with $file_count files"
+          
+          # Show a few example files
+          echo "Sample files:"
+          ls -la data-dump/ | head -10
+        else
+          echo "✗ data-dump directory not found"
+        fi
+    
+    - name: Cache the downloaded files
+      uses: actions/cache@v3
+      with:
+        path: |
+          data-dump/
+          data.duckdb
+        key: elite-data-cache-${{ steps.date.outputs.timestamp }}
+    
+    - name: Summary
+      run: |
+        echo "🎉 Cache seeding complete!"
+        echo "The downloaded files are now cached and will be available for future workflow runs."
+        echo ""
+        echo "Cache key: elite-data-cache-${{ steps.date.outputs.timestamp }}"
+        echo ""
+        echo "Files cached:"
+        if [ -f "data.duckdb" ]; then
+          echo "  - data.duckdb ($(du -sh data.duckdb | cut -f1))"
+        fi
+        if [ -d "data-dump" ]; then
+          echo "  - data-dump/ directory with $(ls data-dump/ | wc -l) files"
+        fi
