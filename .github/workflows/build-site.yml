@@ -39,7 +39,6 @@ jobs:
         key: elite-data-cache-${{ steps.date.outputs.timestamp }}
         restore-keys: |
           elite-data-cache-
-          elite-data-cache
     
     - name: Check cache status and existing data
       run: |
