@@ -23,10 +23,12 @@ jobs:
         virtualenvs-create: true
         virtualenvs-in-project: true
     
-    - name: Get dates for cache keys
+    - name: Get dates and timestamps for cache keys
       id: date
       run: |
         echo "today=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+        echo "timestamp=$(date +'%Y-%m-%d-%H%M%S')" >> $GITHUB_OUTPUT
+        echo "Cache timestamp: $(date +'%Y-%m-%d-%H%M%S')"
     
     - name: Cache Elite Dangerous data files
       uses: actions/cache@v3
@@ -34,9 +36,27 @@ jobs:
         path: |
           data-dump/
           data.duckdb
-        key: elite-data-cache
+        key: elite-data-cache-${{ steps.date.outputs.timestamp }}
         restore-keys: |
-          elite-data-cache
+          elite-data-cache-
+    
+    - name: Check cache status and existing data
+      run: |
+        echo "Cache key used: elite-data-cache-${{ steps.date.outputs.timestamp }}"
+        echo "Checking for restored data..."
+        if [ -d "data-dump" ]; then
+          echo "✓ data-dump directory exists (restored from cache or created)"
+          echo "Files in data-dump: $(ls data-dump/ | wc -l)"
+          echo "Most recent files:"
+          ls -la data-dump/ | tail -5
+        else
+          echo "✗ data-dump directory not found"
+        fi
+        if [ -f "data.duckdb" ]; then
+          echo "✓ Main database exists ($(du -sh data.duckdb | cut -f1))"
+        else
+          echo "✗ Main database not found"
+        fi
     
     - name: Install dependencies
       run: |
