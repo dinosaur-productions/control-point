@@ -4,7 +4,8 @@ Upload local cache files to R2 for seeding GitHub Actions cache.
 
 This script uploads:
 - All .jsonl files from data-dump/
-- All .lastmodified files from data-dump/
+- Only .jsonl.bz2.lastmodified files from the day before the .jsonl files date
+- systemsPopulated.json.gz.lastmodified file (always)
 - The main data.duckdb file
 
 Usage:
@@ -57,18 +58,21 @@ def upload_file(s3_client, local_path, remote_key):
         print(f"  ✗ Upload failed: {e}")
         return False
 
-def get_latest_jsonl_file(data_dump_dir):
-    """Find the latest .jsonl file based on filename date."""
+def get_all_jsonl_files(data_dump_dir):
+    """Get all .jsonl files from data-dump directory."""
+    return glob.glob(str(data_dump_dir / "*.jsonl"))
+
+def get_jsonl_date(data_dump_dir):
+    """Extract the common date from .jsonl files."""
     import re
+    from datetime import datetime
     
-    jsonl_files = glob.glob(str(data_dump_dir / "*.jsonl"))
-    
+    jsonl_files = get_all_jsonl_files(data_dump_dir)
     if not jsonl_files:
         return None
     
-    # Extract dates from filenames and find the latest
-    dated_files = []
     date_pattern = r'(\d{4}-\d{2}-\d{2})'
+    dates_found = set()
     
     for file_path in jsonl_files:
         filename = Path(file_path).name
@@ -76,20 +80,49 @@ def get_latest_jsonl_file(data_dump_dir):
         if match:
             date_str = match.group(1)
             try:
-                # Parse date for comparison
-                from datetime import datetime
                 file_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-                dated_files.append((file_date, file_path))
+                dates_found.add(file_date)
             except ValueError:
-                continue  # Skip files with invalid dates
+                continue
     
-    if not dated_files:
-        # If no dated files found, just return the first one alphabetically
-        return sorted(jsonl_files)[0] if jsonl_files else None
+    if len(dates_found) == 1:
+        return list(dates_found)[0]
+    elif len(dates_found) > 1:
+        print(f"Warning: Found multiple dates in .jsonl files: {sorted(dates_found)}")
+        return max(dates_found)  # Return the latest date
+    else:
+        return None
+
+def get_filtered_lastmodified_files(data_dump_dir, jsonl_date):
+    """Get specific .lastmodified files based on the jsonl date."""
+    from datetime import timedelta
     
-    # Return the file with the latest date
-    latest_file = max(dated_files, key=lambda x: x[0])[1]
-    return latest_file
+    if jsonl_date is None:
+        return []
+    
+    # Calculate the day before the jsonl date
+    day_before = jsonl_date - timedelta(days=1)
+    day_before_str = day_before.strftime('%Y-%m-%d')
+    
+    # Get all .lastmodified files
+    all_lastmodified = glob.glob(str(data_dump_dir / "*.lastmodified"))
+    
+    filtered_files = []
+    
+    for file_path in all_lastmodified:
+        filename = Path(file_path).name
+        
+        # Always include systemsPopulated.json.gz.lastmodified
+        if filename == "systemsPopulated.json.gz.lastmodified":
+            filtered_files.append(file_path)
+            continue
+        
+        # Include .jsonl.bz2.lastmodified files from the day before
+        if filename.endswith(".jsonl.bz2.lastmodified") and day_before_str in filename:
+            filtered_files.append(file_path)
+    
+    return filtered_files
+
 
 def upload_cache_files():
     """Upload all cache files to R2."""
@@ -117,25 +150,33 @@ def upload_cache_files():
     if data_dump_dir.exists():
         print(f"\nScanning {data_dump_dir}/ for cache files...")
         
-        # Get the latest .jsonl file
-        latest_jsonl = get_latest_jsonl_file(data_dump_dir)
+        # Get all .jsonl files
+        jsonl_files = get_all_jsonl_files(data_dump_dir)
         
-        # Get all .lastmodified files
-        lastmodified_files = glob.glob(str(data_dump_dir / "*.lastmodified"))
+        # Get the common date from .jsonl files
+        jsonl_date = get_jsonl_date(data_dump_dir)
+        
+        # Get filtered .lastmodified files
+        lastmodified_files = get_filtered_lastmodified_files(data_dump_dir, jsonl_date)
         
         # Combine files to upload
         files_to_upload = []
-        if latest_jsonl:
-            files_to_upload.append(latest_jsonl)
-            print(f"Latest .jsonl file: {Path(latest_jsonl).name}")
+        
+        if jsonl_files:
+            files_to_upload.extend(jsonl_files)
+            print(f"Found {len(jsonl_files)} .jsonl files")
+            if jsonl_date:
+                print(f"  Date from .jsonl files: {jsonl_date}")
         else:
             print("No .jsonl files found")
         
         if lastmodified_files:
             files_to_upload.extend(lastmodified_files)
-            print(f"Found {len(lastmodified_files)} .lastmodified files")
+            print(f"Found {len(lastmodified_files)} filtered .lastmodified files:")
+            for f in lastmodified_files:
+                print(f"  - {Path(f).name}")
         else:
-            print("No .lastmodified files found")
+            print("No relevant .lastmodified files found")
         
         if files_to_upload:
             print(f"Total files to upload from data-dump: {len(files_to_upload)}")
@@ -184,21 +225,29 @@ def list_cache_files():
     # Check data-dump files
     data_dump_dir = Path("data-dump")
     if data_dump_dir.exists():
-        # Get the latest .jsonl file
-        latest_jsonl = get_latest_jsonl_file(data_dump_dir)
+        # Get all .jsonl files
+        jsonl_files = get_all_jsonl_files(data_dump_dir)
         
-        # Get all .lastmodified files
-        lastmodified_files = glob.glob(str(data_dump_dir / "*.lastmodified"))
+        # Get the common date from .jsonl files
+        jsonl_date = get_jsonl_date(data_dump_dir)
         
-        # List the latest jsonl file
-        if latest_jsonl:
-            local_path = Path(latest_jsonl)
+        # Get filtered .lastmodified files
+        lastmodified_files = get_filtered_lastmodified_files(data_dump_dir, jsonl_date)
+        
+        # List all jsonl files
+        print(f"All .jsonl files ({len(jsonl_files)}):")
+        for local_file in sorted(jsonl_files):
+            local_path = Path(local_file)
             size = os.path.getsize(local_path)
-            print(f"{local_path.name} (latest .jsonl) ({size:,} bytes)")
+            print(f"{local_path.name} ({size:,} bytes)")
             total_size += size
             file_count += 1
         
-        # List all lastmodified files
+        if jsonl_date:
+            print(f"Date from .jsonl files: {jsonl_date}")
+        
+        # List filtered lastmodified files
+        print(f"Filtered .lastmodified files ({len(lastmodified_files)}):")
         for local_file in sorted(lastmodified_files):
             local_path = Path(local_file)
             size = os.path.getsize(local_path)
