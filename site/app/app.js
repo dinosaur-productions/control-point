@@ -5,6 +5,12 @@ import { registerInfraFailuresRouteComponent } from "./infra-failures-route.js";
 import { registerInfraFailuresComponent } from "./infra-failures.js";
 
 class App extends HTMLElement {
+    constructor() {
+        super();
+        this.manifest = null;
+        this.manifestCheckInterval = null;
+    }
+
     async connectedCallback() {
         // Load manifest data for footer
         await this.loadManifest();
@@ -60,6 +66,39 @@ class App extends HTMLElement {
             ${this.renderLastUpdated()}
         </footer>
         `;
+        
+        // Start periodic manifest checking (every 5 minutes)
+        this.startManifestChecking();
+    }
+    
+    disconnectedCallback() {
+        // Clean up the interval when component is removed
+        if (this.manifestCheckInterval) {
+            clearInterval(this.manifestCheckInterval);
+        }
+    }
+    
+    startManifestChecking() {
+        // Check every 5 minutes for manifest updates
+        this.manifestCheckInterval = setInterval(async () => {
+            const previousGeneratedAt = this.manifest?.generated_at;
+            await this.loadManifest();
+            
+            // If the manifest has been updated, refresh the footer
+            if (this.manifest?.generated_at !== previousGeneratedAt) {
+                this.updateFooter();
+            }
+        }, 60 * 1000); // 1 minute
+    }
+    
+    updateFooter() {
+        const footer = this.querySelector('footer');
+        if (footer) {
+            const lastUpdatedElement = footer.querySelector('.last-updated');
+            if (lastUpdatedElement) {
+                lastUpdatedElement.outerHTML = this.renderLastUpdated();
+            }
+        }
     }
     
     async loadManifest() {
@@ -88,24 +127,22 @@ class App extends HTMLElement {
         
         const isRecent = generatedAt > hourAgo;
         const statusClass = isRecent ? 'status-recent' : 'status-stale';
-        const statusDot = isRecent ? '🟢' : '🔴';
         
-        // Format the date for display
-        const formatter = new Intl.DateTimeFormat('en-US', {
+        // Format the date for display in local format
+        const formatter = new Intl.DateTimeFormat(undefined, {
             year: 'numeric',
-            month: 'short', 
+            month: 'numeric', 
             day: 'numeric',
             hour: '2-digit',
-            minute: '2-digit',
-            timeZoneName: 'short'
+            minute: '2-digit'
         });
         
         const formattedDate = formatter.format(generatedAt);
         
         return `
             <p class="last-updated ${statusClass}">
-                <span class="status-dot">${statusDot}</span>
-                Last updated: ${formattedDate}
+                <span class="status-dot">●</span>
+                <span>Last updated: ${formattedDate}</span>
             </p>
         `;
     }

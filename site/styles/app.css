@@ -68,6 +68,7 @@ footer {
     background-color: #333;
     color: #fff;
     font-size: 0.9rem;
+    position: relative;
 }
 
 /* Last updated display */
@@ -76,8 +77,12 @@ footer {
     font-size: 0.8rem;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
     gap: 5px;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .status-dot {
@@ -85,12 +90,12 @@ footer {
     line-height: 1;
 }
 
-.status-recent {
-    color: #a8e6a3;
+.status-recent .status-dot {
+    color: #4ade80; /* Green for recent */
 }
 
-.status-stale {
-    color: #ffcccb;
+.status-stale .status-dot {
+    color: #f87171; /* Red for stale */
 }
 
 /* External link styling (shared across components) */

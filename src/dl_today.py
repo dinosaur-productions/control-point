@@ -96,7 +96,7 @@ def download_incremental(remote_url, local_data_path, verbose=False):
     if verbose:
         print(f"Requesting range: {range_header}")
     
-    response = requests.get(remote_url, headers=headers, stream=True, timeout=60)
+    response = requests.get(remote_url, headers=headers, stream=True, timeout=120)
 
     # Check the response status code
     if response.status_code == 206: # 206 Partial Content - Success!

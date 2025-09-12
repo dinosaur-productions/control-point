@@ -27,7 +27,8 @@ class InfraFailuresComponent extends HTMLElement {
     }
 
     async onActive() {
-        // Component will reload automatically via attributeChangedCallback if needed
+        // Always reload data when component becomes active (via route or direct URL)
+        await this.loadData();
     }
 
     getOriginSystemAddress() {
