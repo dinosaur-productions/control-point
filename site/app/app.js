@@ -19,7 +19,7 @@ class App extends HTMLElement {
         <header>
             <nav class="navbar">
                 <div class="navbar-brand">
-                    <h2>Elite Dangerous Control Point</h2>
+                    <h2 title="Elite Dangerous Control Point">EDCP</h2>
                 </div>
                 <div>
                     <x-system-search></x-system-search>
