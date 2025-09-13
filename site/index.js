@@ -8,35 +8,30 @@ window.duckdbduckdbWasm = duckdbduckdbWasm;
 // --- Lazy DuckDB connection singleton ---
 let _db = null;
 let _conn = null;
-let _attached = false;
-let _dbPromise = null;
 let _connPromise = null;
 let _attachedTimestamp = null;
 
 export async function getDb() {
     if (_db) return _db;
-    if (_dbPromise) return _dbPromise;
-    _dbPromise = (async () => {
-        const duckdb = window.duckdbduckdbWasm;
-        const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
-        const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
 
-        const worker_url = URL.createObjectURL(
-            new Blob([`importScripts("${bundle.mainWorker}");`], {
-                type: "text/javascript",
-            })
-        );
+    const duckdb = window.duckdbduckdbWasm;
+    const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
+    const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
 
-        const worker = new Worker(worker_url);
-        const logger = new duckdb.ConsoleLogger();
-        const db = new duckdb.AsyncDuckDB(logger, worker);
-        await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
-        URL.revokeObjectURL(worker_url);
-        await db.open();
-        _db = db;
-        return db;
-    })();
-    return _dbPromise;
+    const worker_url = URL.createObjectURL(
+        new Blob([`importScripts("${bundle.mainWorker}");`], {
+            type: "text/javascript",
+        })
+    );
+
+    const worker = new Worker(worker_url);
+    const logger = new duckdb.ConsoleLogger();
+    const db = new duckdb.AsyncDuckDB(logger, worker);
+    await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+    URL.revokeObjectURL(worker_url);
+    await db.open();
+    _db = db;
+    return db;
 }
 
 function getUrl(filename) {
@@ -59,20 +54,20 @@ export async function getDbConn() {
         return _connPromise;
     }
 
+    // timestamp changed. Refresh everything.
+    if (_conn ||_connPromise) {
+        _conn = null;
+        _connPromise = null;
+        location.reload();
+    }
+
     _attachedTimestamp = newTimestamp;
     _connPromise = (async () => {
         const db = await getDb();
         const conn = await db.connect();
         const attachUrl = getUrl("site-data.duckdb");
-
-        if (_attached) {
-            console.log("Detaching previous database connection.");
-            await conn.query("DETACH db;");
-        }
         console.log(`Attaching database from ${attachUrl}`);
-        await conn.query(`ATTACH '${attachUrl}' as db (READ_ONLY); USE db;`);
-        _attached = true;
-        
+        await conn.query(`ATTACH '${attachUrl}' as db (READ_ONLY); USE db;`);       
         _conn = conn;
         return conn;
     })();
