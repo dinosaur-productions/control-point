@@ -189,15 +189,8 @@ cells:
     metadata: {}
   - kind: 2
     languageId: sql
-    value: "select timestamp,\"ControllingPower\", \"PowerplayState\",
-      \"PowerplayStateControlProgress\", \"PowerplayStateReinforcement\",
-      \"PowerplayStateUndermining\", \"PowerplayConflictProgress\"\r
-
-      from jumps_location\r
-
-      where StarSystem = 'Col 285 Sector ZQ-C c13-20'\r
-
-      --and timestamp > '2025-09-01'"
+    value: "select starsystem, timestamp from system_latest where timestamp IN
+      (select max(timestamp) from system_latest )\r\n"
     metadata: {}
 metadata:
   conn:

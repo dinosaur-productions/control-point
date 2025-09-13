@@ -1,15 +1,24 @@
 import duckdb
 import os
 
-from constants import DB_SITE_PATH
+from constants import SITE_DIR, DB_SITE_NAME
+import glob
 
 
 
-def make_report_db():
-    if os.path.exists(DB_SITE_PATH):
-        os.remove(DB_SITE_PATH)
-    print(f"Creating report database at {DB_SITE_PATH} ...", end="")
-    conn = duckdb.connect(DB_SITE_PATH)
+def make_report_db(generated_at):
+    pattern = os.path.join(SITE_DIR, f"{DB_SITE_NAME}*.duckdb")
+    for path in glob.glob(pattern):
+        try:
+            os.remove(path)
+            print(f"Removed existing report database: {path}")
+        except OSError:
+            print(f"Could not remove {path}, skipping.")
+
+    db_site_path = os.path.join(SITE_DIR, f"{DB_SITE_NAME}_{generated_at.strftime('%Y%m%d_%H%M%S')}.duckdb")
+
+    print(f"Creating report database at {db_site_path} ...", end="")
+    conn = duckdb.connect(db_site_path)
     conn.execute("ATTACH 'data.duckdb' as db (READ_ONLY);")
     conn.execute("""
         CREATE OR REPLACE TYPE activity_enum AS ENUM ('Acquire', 'Reinforce', 'Undermine', 'Out of Range', 'Wait Until Next Cycle');
@@ -191,6 +200,7 @@ def make_report_db():
     """)
     conn.close()
     print("Done.")
+    return db_site_path
 
 if __name__ == "__main__":
     make_report_db()

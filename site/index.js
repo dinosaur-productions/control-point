@@ -10,6 +10,7 @@ let _db = null;
 let _conn = null;
 let _connPromise = null;
 let _attachedTimestamp = null;
+let _counter = 0;
 
 export async function getDb() {
     if (_db) return _db;
@@ -45,29 +46,43 @@ export async function getDbConn() {
     const response = await fetch(manifestUrl);
     const manifest = await response.json();
     const newTimestamp = manifest.generated_at;
+    const db_name = manifest.db_name;
 
-    if (_conn && _attachedTimestamp === newTimestamp) {
-        return _conn;
-    }
+    // if (_conn && _attachedTimestamp === newTimestamp) {
+    //     return _conn;
+    // }
 
     if (_connPromise && _attachedTimestamp === newTimestamp) {
         return _connPromise;
     }
 
     // timestamp changed. Refresh everything.
-    if (_conn ||_connPromise) {
-        _conn = null;
+    if (_connPromise) {
+
+        //if (_conn) await _conn.close();
+        // _conn = null;
         _connPromise = null;
-        location.reload();
+        // location.reload();
     }
 
     _attachedTimestamp = newTimestamp;
     _connPromise = (async () => {
+        
         const db = await getDb();
+        if (_conn) await _conn.close();
         const conn = await db.connect();
-        const attachUrl = getUrl("site-data.duckdb");
+
+        const attachUrl = getUrl(db_name);
+        
+        if (_counter > 0)
+            await conn.query(`DETACH DATABASE db${_counter};`).catch((e) => {
+                console.log("Error detaching previous database", e);
+            });
+        _counter++;
         console.log(`Attaching database from ${attachUrl}`);
-        await conn.query(`ATTACH '${attachUrl}' as db (READ_ONLY); USE db;`);       
+        await conn.query(`ATTACH '${attachUrl}' as db${_counter} (READ_ONLY); USE db${_counter};`);
+        const attachedDbs = await conn.query(`SHOW DATABASES`);
+        console.log("Attached databases:", attachedDbs.toArray().map(r => r.toJSON()));
         _conn = conn;
         return conn;
     })();

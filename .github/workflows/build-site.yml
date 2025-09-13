@@ -110,12 +110,6 @@ jobs:
         else
           echo "✗ Main database not found!"
         fi
-        
-        if [ -f "site/site-data.duckdb" ]; then
-          echo "✓ Site database exists ($(du -sh site/site-data.duckdb | cut -f1))"
-        else
-          echo "✗ Site database not found!"
-        fi
     
     - name: List cached data files for next run
       run: |

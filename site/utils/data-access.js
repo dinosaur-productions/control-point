@@ -8,7 +8,7 @@ import { getDbConn } from "../index.js";
 export async function searchSystems(searchPattern) {
     const conn = await getDbConn();
     const stmt = await conn.prepare(
-        `SELECT StarSystem,SystemAddress FROM db.systems WHERE LOWER(StarSystem) ILIKE ? LIMIT 20;`
+        `SELECT StarSystem,SystemAddress FROM systems WHERE LOWER(StarSystem) ILIKE ? LIMIT 20;`
     );
     const result = await stmt.query(`${searchPattern}%`);
     return result.toArray().map(row => row.toJSON());
@@ -22,7 +22,7 @@ export async function searchSystems(searchPattern) {
 export async function getInfraFailures(originSystemAddress) {
     const conn = await getDbConn();
     const stmt = await conn.prepare(
-        `SELECT *, round(system__address_distance(?, SystemAddress),0) AS "Distance" FROM db.infra_failures;`
+        `SELECT *, round(system__address_distance(?, SystemAddress),0) AS "Distance" FROM infra_failures;`
     );
     const result = await stmt.query(originSystemAddress.toString());
     return result.toArray().map(row => row.toJSON());
@@ -41,8 +41,8 @@ export async function getSupportingSystems(systemAddress) {
             ps.Distance,
             s.StarSystem as SupportingSystemName,
             s.PowerplayState
-        FROM db.powerplay_support ps
-        JOIN db.systems s ON s.SystemAddress = ps.SupportingSystemAddress
+        FROM powerplay_support ps
+        JOIN systems s ON s.SystemAddress = ps.SupportingSystemAddress
         WHERE ps.SupportedSystemAddress = ?
         ORDER BY ps.Distance ASC;`
     );
@@ -63,8 +63,8 @@ export async function getSupportedSystems(systemAddress) {
             ps.Distance,
             s.StarSystem as SupportedSystemName,
             s.PowerplayState
-        FROM db.powerplay_support ps
-        JOIN db.systems s ON s.SystemAddress = ps.SupportedSystemAddress
+        FROM powerplay_support ps
+        JOIN systems s ON s.SystemAddress = ps.SupportedSystemAddress
         WHERE ps.SupportingSystemAddress = ?
         ORDER BY ps.Distance ASC;`
     );
@@ -80,7 +80,7 @@ export async function getSupportedSystems(systemAddress) {
 export async function getSystemByAddress(systemAddress) {
     const conn = await getDbConn();
     const stmt = await conn.prepare(
-        `SELECT * FROM db.systems WHERE SystemAddress = ?;`
+        `SELECT * FROM systems WHERE SystemAddress = ?;`
     );
     const result = await stmt.query(systemAddress.toString());
     const rows = result.toArray();
