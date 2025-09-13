@@ -2,6 +2,7 @@ import requests
 import os
 import datetime as dt
 import re
+import time
 from urllib.parse import urljoin
 
 from constants import DIR_DATA_DUMP, EVENT_TYPES, URL_BASE_EDGALAXYDATA
@@ -96,7 +97,22 @@ def download_incremental(remote_url, local_data_path, verbose=False):
     if verbose:
         print(f"Requesting range: {range_header}")
     
-    response = requests.get(remote_url, headers=headers, stream=True, timeout=120)
+    # Retry logic for GET request in case of ReadTimeout
+    max_retries = 3
+    retry_delay = 10  # seconds
+    
+    for attempt in range(max_retries):
+        try:
+            response = requests.get(remote_url, headers=headers, stream=True, timeout=120)
+            break  # Success, exit retry loop
+        except requests.exceptions.ReadTimeout as e:
+            if attempt < max_retries - 1:  # Don't sleep on the last attempt
+                print(f"Read timeout on attempt {attempt + 1}/{max_retries}. Retrying in {retry_delay} seconds...")
+                time.sleep(retry_delay)
+                retry_delay *= 2  # Exponential backoff
+            else:
+                print(f"Failed after {max_retries} attempts due to read timeout.")
+                raise e  # Re-raise the exception after all retries failed
 
     # Check the response status code
     if response.status_code == 206: # 206 Partial Content - Success!
