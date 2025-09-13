@@ -97,22 +97,7 @@ def download_incremental(remote_url, local_data_path, verbose=False):
     if verbose:
         print(f"Requesting range: {range_header}")
     
-    # Retry logic for GET request in case of ReadTimeout
-    max_retries = 3
-    retry_delay = 10  # seconds
-    
-    for attempt in range(max_retries):
-        try:
-            response = requests.get(remote_url, headers=headers, stream=True, timeout=120)
-            break  # Success, exit retry loop
-        except requests.exceptions.ReadTimeout as e:
-            if attempt < max_retries - 1:  # Don't sleep on the last attempt
-                print(f"Read timeout on attempt {attempt + 1}/{max_retries}. Retrying in {retry_delay} seconds...")
-                time.sleep(retry_delay)
-                retry_delay *= 2  # Exponential backoff
-            else:
-                print(f"Failed after {max_retries} attempts due to read timeout.")
-                raise e  # Re-raise the exception after all retries failed
+    response = requests.get(remote_url, headers=headers, stream=True, timeout=120)
 
     # Check the response status code
     if response.status_code == 206: # 206 Partial Content - Success!
@@ -182,7 +167,21 @@ def dl_event(event_type_today):
     event_type, today = event_type_today
     filename = f"{event_type}-{today.strftime('%Y-%m-%d')}.jsonl"
     local_file = DIR_DATA_DUMP + filename
-    download_incremental(URL_BASE_EDGALAXYDATA + filename, local_file)
+    max_retries = 3
+    retry_delay = 10  # seconds
+    
+    for attempt in range(max_retries):
+        try:
+            download_incremental(URL_BASE_EDGALAXYDATA + filename, local_file)
+            break
+        except requests.exceptions.ReadTimeout as e:
+            if attempt < max_retries - 1:
+                print(f"Read timeout on attempt {attempt + 1}/{max_retries}. Retrying in {retry_delay} seconds...")
+                time.sleep(retry_delay)
+                retry_delay *= 2  # Exponential backoff
+            else:
+                print(f"Failed after {max_retries} attempts due to read timeout.")
+                raise e  # Re-raise the exception after all retries failed
     return event_type
     
 
