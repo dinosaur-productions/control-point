@@ -209,7 +209,12 @@ FACTION_STATE = [
 ]
 
 HAPPINESS = [
-    "Elated", "Happy", "Discontented", "Unhappy", "Despondent", "Unknown"
+    "Elated", 
+    "Happy", 
+    "Discontented", 
+    "Unhappy", 
+    "Despondent", 
+    "Unknown"
 ]
 
 COMMODITY_BRACKET = [
@@ -521,6 +526,8 @@ def create_schema(conn):
     """)
 
     conn.execute("""
+    --DROP TABLE IF EXISTS saasignalsfound;
+    --DELETE FROM imported_files WHERE filename LIKE 'Journal.SAASignalsFound%';
     CREATE TABLE IF NOT EXISTS saasignalsfound (
         timestamp TIMESTAMP NOT NULL,
         StarSystem VARCHAR,
@@ -530,6 +537,14 @@ def create_schema(conn):
         Genuses STRUCT(Genus VARCHAR)[],
         Signals STRUCT(Count INTEGER, Type signal_type_enum)[],
         StarPos DOUBLE[3]
+    );
+    """)
+
+    conn.execute("""
+    CREATE OR REPLACE VIEW saasignalsfound_latest AS (
+        SELECT DISTINCT ON (SystemAddress, BodyName) *
+        FROM saasignalsfound
+        ORDER BY SystemAddress, BodyName, timestamp DESC
     );
     """)
 

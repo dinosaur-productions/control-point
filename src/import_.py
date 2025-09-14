@@ -55,8 +55,8 @@ def to_economy_enum(expr):
     return f"REGEXP_REPLACE(REGEXP_REPLACE({expr}, '^\\$economy_', ''), ';$', '')"
 
 def to_economy_enum_proportion(expr):
-    get_name = "e->>'Name'"
-    return f"list_transform(CAST({expr} AS JSON[]), e -> struct_pack(Name := {to_economy_enum(get_name)}, Proportion:= e->>'Proportion'))"
+    get_name = "e->>'name'"
+    return f"list_transform(CAST({expr} AS JSON[]), e -> struct_pack(Name := {to_economy_enum(get_name)}, Proportion:= e->>'proportion'))"
 
 def to_government_enum(expr):
     return f"REGEXP_REPLACE(REGEXP_REPLACE({expr}, '^\\$government_', ''), ';$', '')"
@@ -476,7 +476,7 @@ def import_saasignalsfound_jsonl_files(conn, imported):
                     CAST(message->>'timestamp' AS TIMESTAMP) AS timestamp,
                     message->>'StarSystem' AS StarSystem,
                     CAST(message->>'SystemAddress' AS BIGINT) AS SystemAddress,
-                    CAST(message->>'BodyId' AS INTEGER) AS BodyId,
+                    CAST(message->>'BodyID' AS INTEGER) AS BodyId,
                     message->>'BodyName' AS BodyName,
                     CAST(message->'Genuses' AS STRUCT(Genus VARCHAR)[]) AS Genuses,
                     {to_count_signal_type_enum("message->'Signals'")} AS Signals,

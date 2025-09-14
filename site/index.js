@@ -48,21 +48,13 @@ export async function getDbConn() {
     const newTimestamp = manifest.generated_at;
     const db_name = manifest.db_name;
 
-    // if (_conn && _attachedTimestamp === newTimestamp) {
-    //     return _conn;
-    // }
-
     if (_connPromise && _attachedTimestamp === newTimestamp) {
         return _connPromise;
     }
 
-    // timestamp changed. Refresh everything.
+    // timestamp changed. Refresh DB.
     if (_connPromise) {
-
-        //if (_conn) await _conn.close();
-        // _conn = null;
         _connPromise = null;
-        // location.reload();
     }
 
     _attachedTimestamp = newTimestamp;
@@ -81,8 +73,8 @@ export async function getDbConn() {
         _counter++;
         console.log(`Attaching database from ${attachUrl}`);
         await conn.query(`ATTACH '${attachUrl}' as db${_counter} (READ_ONLY); USE db${_counter};`);
-        const attachedDbs = await conn.query(`SHOW DATABASES`);
-        console.log("Attached databases:", attachedDbs.toArray().map(r => r.toJSON()));
+        // const attachedDbs = await conn.query(`SHOW DATABASES`);
+        // console.log("Attached databases:", attachedDbs.toArray().map(r => r.toJSON()));
         _conn = conn;
         return conn;
     })();

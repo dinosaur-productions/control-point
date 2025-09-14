@@ -92,19 +92,19 @@ def make_report_db(generated_at):
         supporting AS (
             SELECT *, CASE WHEN PowerplayState = 'Stronghold' THEN 30 ELSE 20 END AS MaxDistance
             FROM populated
-            WHERE ControllingPower = 'Li Yong-Rui'
-            AND PowerplayState IN ('Stronghold', 'Fortified')
+            WHERE PowerplayState IN ('Stronghold', 'Fortified')
         ),
         supported AS (
-            SELECT *
+            SELECT * EXCLUDE (Powers), unnest(Powers) as Power
             FROM populated
-            WHERE  'Li Yong-Rui' IN Powers
+            WHERE Powers != []
             AND PowerplayState IN ('Exploited', 'Unoccupied')
         )
 
         SELECT
             t1.SystemAddress as SupportingSystemAddress,
             t2.SystemAddress as SupportedSystemAddress,
+            --t2.Power AS Power,
             SQRT(
                 POW(t2.StarPos[1] - t1.StarPos[1], 2) +
                 POW(t2.StarPos[2] - t1.StarPos[2], 2) +
@@ -112,11 +112,13 @@ def make_report_db(generated_at):
             ) AS Distance
         FROM supporting AS t1
         JOIN supported AS t2 
-            ON SQRT(
+            ON t1.ControllingPower = t2.Power
+            AND SQRT(
                 POW(t2.StarPos[1] - t1.StarPos[1], 2) +
                 POW(t2.StarPos[2] - t1.StarPos[2], 2) +
                 POW(t2.StarPos[3] - t1.StarPos[3], 2)
-            )  <= t1.MaxDistance;
+            )  <= t1.MaxDistance
+        WHERE t2.Power = 'Li Yong-Rui'; -- keep only LYR for now.
     """)
     conn.execute("""
     CREATE OR REPLACE MACRO system_distance(system1, system2) AS
