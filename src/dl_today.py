@@ -174,14 +174,14 @@ def dl_event(event_type_today):
         try:
             download_incremental(URL_BASE_EDGALAXYDATA + filename, local_file)
             break
-        except requests.exceptions.ReadTimeout as e:
+        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as e:
             if attempt < max_retries - 1:
-                print(f"Read timeout on attempt {attempt + 1}/{max_retries}. Retrying in {retry_delay} seconds...")
+                print(f"Error on attempt {attempt + 1}/{max_retries}. Retrying in {retry_delay} seconds...")
                 time.sleep(retry_delay)
-                retry_delay *= 2  # Exponential backoff
+                retry_delay *= 2
             else:
-                print(f"Failed after {max_retries} attempts due to read timeout.")
-                raise e  # Re-raise the exception after all retries failed
+                print(f"Failed after {max_retries} attempts.")
+                raise e
     return event_type
     
 
