@@ -103,7 +103,7 @@ class App extends HTMLElement {
     
     async loadManifest() {
         try {
-            const response = await fetch('site-data_manifest.json');
+            const response = await fetch('sitedata_manifest.json');
             if (response.ok) {
                 this.manifest = await response.json();
             } else {

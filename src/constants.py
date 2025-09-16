@@ -6,7 +6,7 @@ DB_MAIN_PATH = 'data.duckdb'
 
 SITE_DIR = "site/"
 
-DB_SITE_NAME ="site-data"
+DB_SITE_NAME ="sitedata"
 
 URL_BASE_EDGALAXYDATA = "https://edgalaxydata.space/EDDN/"
 URL_EDSM_SYSTEMS_POPULATED = "https://www.edsm.net/dump/systemsPopulated.json.gz"

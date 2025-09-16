@@ -42,7 +42,7 @@ function getUrl(filename) {
 }
 
 export async function getDbConn() {
-    const manifestUrl = getUrl("site-data_manifest.json");
+    const manifestUrl = getUrl("sitedata_manifest.json");
     const response = await fetch(manifestUrl);
     const manifest = await response.json();
     const newTimestamp = manifest.generated_at;

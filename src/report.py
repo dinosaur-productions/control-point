@@ -15,6 +15,15 @@ def make_report_db(generated_at):
         except OSError:
             print(f"Could not remove {path}, skipping.")
 
+    # old file name - this part can be removed after first run on GitHub.
+    pattern = os.path.join(SITE_DIR, f"site-data_*.duckdb")
+    for path in glob.glob(pattern):
+        try:
+            os.remove(path)
+            print(f"Removed existing report database: {path}")
+        except OSError:
+            print(f"Could not remove {path}, skipping.")
+
     db_site_path = os.path.join(SITE_DIR, f"{DB_SITE_NAME}_{generated_at.strftime('%Y%m%d_%H%M%S')}.duckdb")
 
     print(f"Creating report database at {db_site_path} ...", end="")
