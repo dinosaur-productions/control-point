@@ -314,7 +314,7 @@ const ACTIVITIES = [
         details: "Sell any actually mined goods, note location requirements",
         pickup: "at mining sites in target system",
         handIn: "at stations in target system",
-        notes: "Location requirement is unusually harsh, and not documented. Merits proportional to sale price.",
+        notes: "Merits proportional to sale price. For undermining, goods must be in demand.",
         bgsEffect: "Positive for station owner",
         requirements: (systemInfo, action) => true
     },

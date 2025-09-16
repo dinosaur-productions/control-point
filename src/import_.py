@@ -204,7 +204,8 @@ def import_jump_jsonl_files(conn, imported):
                 SystemAllegiance, SystemEconomy, SystemGovernment,
                 SystemSecondEconomy, SystemSecurity, StarPos, Conflicts
             FROM extracted
-            WHERE rn > ?
+            WHERE rn > ? 
+            AND (SystemSecurity IS NOT NULL AND SystemEconomy IS NOT NULL) -- bad data
         """, [last_line])
 
         num_lines = get_num_lines(fpath)
@@ -410,7 +411,7 @@ def import_location_jsonl_files(conn, imported):
                     CAST(message->>'Docked' AS BOOLEAN) AS Docked,
                     CAST(message->>'MarketID' AS BIGINT) AS MarketID,
                     CAST(message->>'Population' AS BIGINT) AS Population,
-                    message->>'PowerplayState' AS PowerplayState,
+                    CASE WHEN message->>'PowerplayState' = '' THEN NULL ELSE message->>'PowerplayState' END AS PowerplayState,
                     message->>'ControllingPower' AS ControllingPower,
                     CAST(message->>'Powers' AS power_enum[]) AS Powers,
                     message->>'PowerplayConflictProgress' AS PowerplayConflictProgress,
@@ -456,6 +457,7 @@ def import_location_jsonl_files(conn, imported):
                 SystemFaction, SystemGovernment, SystemSecondEconomy, SystemSecurity, Conflicts
             FROM extracted
             WHERE rn > ?
+            AND (SystemSecurity IS NOT NULL AND SystemEconomy IS NOT NULL) -- bad data
         """, [last_line])
 
         num_lines = get_num_lines(fpath)

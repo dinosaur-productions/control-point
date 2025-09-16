@@ -1,8 +1,8 @@
 name: Build Elite Control Point Site
 
 on:
- # schedule:
- #   - cron: '0 * * * *'  # Run every hour at the top of the hour
+  schedule:
+    - cron: '0 * * * *'  # Run every hour at the top of the hour
   workflow_dispatch:  # Manual trigger also available
 
 jobs:
