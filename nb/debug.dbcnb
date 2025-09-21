@@ -3,54 +3,15 @@ cells:
     languageId: sql
     value: "-- check a system history\r
 
-      \r
-
       SELECT *\r
 
       from jumps_location\r
 
       WHERE StarSystem = 'Sceptrum'\r
 
-      ORDER BY timestamp \r
+      ORDER BY timestamp DESC;\r
 
       --DESC LIMIT 10;"
-    metadata: {}
-  - kind: 2
-    languageId: sql
-    value: "WITH latest AS (\r
-
-      \    SELECT SystemAddress,\r
-
-      \    MAX(timestamp) AS timestamp, \r
-
-      \    any_value(timestamp ORDER BY timestamp DESC) FILTER
-      (PowerplayStateControlProgress IS NOT NULL) AS pptimestamp,\r
-
-      \    any_value(PowerplayStateControlProgress ORDER BY timestamp DESC) AS
-      PowerplayStateControlProgress\r
-
-      \    FROM jumps_location\r
-
-      \    GROUP BY ALL\r
-
-      )\r
-
-      SELECT DISTINCT ON (j.SystemAddress) j.* EXCLUDE
-      (PowerplayStateControlProgress), l.PowerplayStateControlProgress\r
-
-      FROM jumps_location j\r
-
-      JOIN latest l USING (SystemAddress, timestamp)\r
-
-      WHERE j.StarSystem = 'Diaguandri'\r
-
-      ORDER BY l.PowerplayStateControlProgress\r
-
-      --ORDER BY j.ControllingPower\r
-
-      \r
-
-      \r\n"
     metadata: {}
   - kind: 2
     languageId: sql
@@ -131,11 +92,6 @@ cells:
     metadata: {}
   - kind: 2
     languageId: sql
-    value: select MarketId, UNNEST(commodities,RECURSIVE:=true) FROM
-      commodities_latest limit 1;
-    metadata: {}
-  - kind: 2
-    languageId: sql
     value: "select timestamp, StarSystem, COLUMNS('Powerplay')\r
 
       from jumps_location \r
@@ -150,13 +106,7 @@ cells:
 
       order by timestamp desc;\r
 
-      \r
-
-      -- select *\r
-
-      -- from jumps_location\r
-
-      -- where StarSystem = 'Beta Sculptoris'"
+      \r\n"
     metadata: {}
   - kind: 2
     languageId: sql
@@ -189,8 +139,57 @@ cells:
     metadata: {}
   - kind: 2
     languageId: sql
-    value: "select starsystem, timestamp from system_latest where timestamp IN
-      (select max(timestamp) from system_latest )\r\n"
+    value: "-- select Name, avg(SellPrice) FILTER (Demand > 0)\r
+
+      -- from (\r
+
+      --     select * exclude Commodities, unnest(Commodities,
+      recursive:=true)\r
+
+      --     from commodities_latest\r
+
+      -- )\r
+
+      -- WHERE Name in ('Rhodplumsite', 'LowTemperatureDiamond', 'Serendibite',
+      'Benitoite',\r
+
+      --     'Grandidierite', 'Tritium', 'Bromellite', 'Musgravite', 'Opal',
+      'Monazite',\r
+
+      --     'Painite', 'Platinum', 'Alexandrite')\r
+
+      -- GROUP BY Name;\r
+
+      \r
+
+      select * EXCLUDE (Prohibited, Economies, CarrierDockingAccess,
+      StationType)\r
+
+      from (\r
+
+      \    select * exclude Commodities, unnest(Commodities, recursive:=true)\r
+
+      \    from commodities_latest\r
+
+      )\r
+
+      WHERE Name  in ('Rhodplumsite', 'LowTemperatureDiamond', 'Serendibite',
+      'Benitoite',\r
+
+      \    'Grandidierite', 'Tritium', 'Bromellite', 'Musgravite', 'Opal',
+      'Monazite',\r
+
+      \    'Painite', 'Platinum', 'Alexandrite')\r
+
+      AND Demand > 5000\r
+
+      AND SellPrice >= 200000 \r
+
+      --LIMIT 100;\r
+
+      \r
+
+      --limit 100;"
     metadata: {}
 metadata:
   conn:

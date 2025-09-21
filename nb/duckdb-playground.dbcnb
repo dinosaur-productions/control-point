@@ -579,25 +579,25 @@ cells:
 
       \    FROM populated\r
 
-      \    WHERE  ControllingPower = 'Li Yong-Rui'\r
-
-      \    AND PowerplayState IN ('Stronghold', 'Fortified')\r
+      \    WHERE PowerplayState IN ('Stronghold', 'Fortified')\r
 
       ),\r
 
       supported AS (\r
 
-      \    SELECT *\r
+      \    SELECT * EXCLUDE (Powers), unnest(Powers) as Power\r
 
       \    FROM populated\r
 
-      \    WHERE  'Li Yong-Rui' IN Powers\r
+      \    WHERE Powers != []\r
 
       \    AND PowerplayState IN ('Exploited', 'Unoccupied')\r
 
-      )\r
+      ),\r
 
-      \r
+      support_relations AS (\r
+
+      \    \r
 
       SELECT\r
 
@@ -606,6 +606,8 @@ cells:
 
       \    t2.StarSystem AS SupportedStarSystem, t2.SystemAddress as
       SupportedSystemAddress,\r
+
+      \    t2.Power AS Power,\r
 
       \    SQRT(\r
 
@@ -621,7 +623,9 @@ cells:
 
       JOIN supported AS t2 \r
 
-      \    ON SQRT(\r
+      \    ON t1.ControllingPower = t2.Power\r
+
+      \    AND SQRT(\r
 
       \        POW(t2.StarPos[1] - t1.StarPos[1], 2) +\r
 
@@ -629,17 +633,155 @@ cells:
 
       \        POW(t2.StarPos[3] - t1.StarPos[3], 2)\r
 
-      \    )  <= t1.MaxDistance;"
+      \    )  <= t1.MaxDistance\r
+
+      )\r
+
+      SELECT SupportedStarSystem, SupportingStarSystem, Power, Distance\r
+
+      FROM support_relations\r
+
+      WHERE --SupportingPower = 'Li Yong-Rui' --and SupportedPower = 'Li
+      Yong-Rui'\r
+
+      \ SupportedStarSystem = 'Hyades Sector XG-K b9-1'\r
+
+      -- GROUP BY SupportedStarSystem\r
+
+      -- ORDER BY NbOfSupporters ASC;\r\n"
     metadata: {}
   - kind: 2
     languageId: sql
-    value: "select * exclude signals, unnest(signals, recursive:=true),
-      generate_subscripts(signals, 1) AS index\r
+    value: "-- \"Platinum\",\r
 
-      from fsssignaldiscovered\r
+      \r
 
-      where StarSystem = 'Ebor'\r
+      with \r
 
-      order by timestamp desc"
+      res_site as (\r
+
+      \    select * EXCLUDE (SignalName),\r
+
+      \        CASE \r
+
+      \            WHEN SignalName = '$MULTIPLAYER_SCENARIO77_TITLE;' THEN
+      'Resource Extraction Site [Low]'\r
+
+      \            WHEN SignalName = '$MULTIPLAYER_SCENARIO78_TITLE;' THEN
+      'Resource Extraction Site [High]'\r
+
+      \            WHEN SignalName = '$MULTIPLAYER_SCENARIO79_TITLE;' THEN
+      'Resource Extraction Site [Hazardous]'\r
+
+      \            WHEN SignalName = '$MULTIPLAYER_SCENARIO14_TITLE;' THEN
+      'Resource Extraction Site'\r
+
+      \            ELSE 'Unknown'\r
+
+      \        END AS SignalName\r
+
+      \    from (\r
+
+      \        select * exclude signals, unnest(signals,recursive:=true)\r
+
+      \        from fsssignaldiscovered_latest\r
+
+      \        \r
+
+      \    )\r
+
+      \    where SignalType = 'ResourceExtraction'\r
+
+      ),\r
+
+      hotspot as (\r
+
+      \    select * EXCLUDE (StarSystem, StarPos, Genuses)\r
+
+      \    from (\r
+
+      \        select * EXCLUDE signals, unnest(signals,recursive:=true)\r
+
+      \        from saasignalsfound_latest\r
+
+      \    )\r
+
+      \    where Type IN ('Rhodplumsite', 'LowTemperatureDiamond',\r
+
+      \    'Serendibite',\r
+
+      \    'Benitoite',\r
+
+      \    'Grandidierite',\r
+
+      \    'Tritium',\r
+
+      \    'Bromellite',\r
+
+      \    'Musgravite',\r
+
+      \    'Opal',\r
+
+      \    'Monazite',\r
+
+      \    'Painite',\r
+
+      \    'Platinum',\r
+
+      \    'Alexandrite')\r
+
+      ),\r
+
+      belt_ring as (\r
+
+      \    SELECT SystemAddress, SystemName, BodyId, BodyName, BodyType,
+      DistanceToArrival, ReserveLevel, \r
+
+      \    name as AsteroidSiteName, type as AsteroidSiteType\r
+
+      \    FROM (\r
+
+      \        SELECT Id64 AS SystemAddress, Name as SystemName, bodyId AS
+      BodyId, name_1 as BodyName, type AS BodyType,\r
+
+      \        distanceToArrival AS DistanceToArrival, reserveLevel as
+      ReserveLevel, \r
+
+      \        unnest(list_concat(belts, rings),recursive:=true)\r
+
+      \        FROM (\r
+
+      \            SELECT * EXCLUDE Bodies, unnest(Bodies,recursive:=true) \r
+
+      \            from systems_populated\r
+
+      \        )\r
+
+      \    )\r
+
+      )\r
+
+      \r
+
+      select * EXCLUDE (BodyId)\r
+
+      from belt_ring as br\r
+
+      join hotspot as h ON br.SystemAddress = h.SystemAddress AND
+      br.AsteroidSiteName = h.BodyName\r
+
+      --join \r
+
+      limit 100;\r
+
+      \r
+
+      -- StarSystem, SystemAddress, DistanceToArrival, AsteroidSiteName,
+      AsteroidSiteType, ReserveLevel, \r\n"
     metadata: {}
-metadata: {}
+metadata:
+  conn:
+    id: c8e8a3ca7ffa39a9
+    name: data.duckdb
+  database: data
+  schema: main
