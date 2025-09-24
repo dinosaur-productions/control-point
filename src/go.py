@@ -12,7 +12,7 @@ import json
 import clean
 
 def get_auto_lookback_days(data_dump_dir, today_date):
-    pattern = re.compile(r'Journal\.FSDJump-(\d{4}-\d{2}-\d{2})\.jsonl$')
+    pattern = re.compile(r'Journal\.FSDJump-(\d{4}-\d{2}-\d{2})\.jsonl\.bz2\.lastmodified$')
     latest_fsd_date = None
     for filename in os.listdir(data_dump_dir):
         match = pattern.match(filename)
