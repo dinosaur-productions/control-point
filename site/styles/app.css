@@ -4,25 +4,17 @@
 @import './infra-failures.css';
 @import './system-activity.css';
 
-/* General reset */
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-}
-
-/* Header styling */
 header {
     background-color: #333;
     color: #fff;
     padding: 10px 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 /* Navbar container */
 .navbar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 20px;
 }
 
 /* Navbar brand (title) */
@@ -59,20 +51,7 @@ header {
     color: #fff;
 }
 
-/* Main content container */
 main .container {
+    max-width: 1200px;
     padding: 20px;
 }
-
-/* Footer styling */
-footer {
-    text-align: center;
-    padding: 10px;
-    background-color: #333;
-    color: #fff;
-    font-size: 0.9rem;
-    position: relative;
-}
-
-
-

@@ -24,10 +24,8 @@ class App extends HTMLElement {
                 <ul class="navbar-links">
                     <li><a href="#/infra-failures">Infra Failures</a></li>
                     <li><a href="#/mine">Mine</a></li>
-                    <li><a href="#/acquire">Acquire</a></li>
-                    <li><a href="#/reinforce">Reinforce</a></li>
-                    <li><a href="#/undermine">Undermine</a></li>
                 </ul>
+                <x-last-updated></x-last-updated>
             </nav>
         </header>
 
@@ -43,28 +41,16 @@ class App extends HTMLElement {
                 <x-route path="/mine" exact>
                     <x-mine></x-mine>
                 </x-route>
-                <x-route path="/acquire">
-                    <x-acquire></x-acquire>
-                </x-route>
-                <x-route path="/reinforce">
-                    <x-reinforce></x-reinforce>
-                </x-route>
-                <x-route path="/undermine">
-                    <x-undermine></x-undermine>
-                </x-route>
                 <x-system-route path="/system/([0-9]+)"></x-system-route>
             </div>
         </main>
-
-        <footer>
-            <p>
-                Data provided by <a href="https://eddn.edcd.io/">EDDN</a> via <a href="https://edgalaxydata.space/">ED Galaxy Data</a> and <a href="https://www.edsm.net/en/nightly-dumps">EDSM's Populated systems dump</a>.
-            </p>
-            <x-last-updated></x-last-updated>
-        </footer>
         `;
     }
 }
+// TODO
+// <p>
+//     Data provided by <a href="https://eddn.edcd.io/">EDDN</a> via <a href="https://edgalaxydata.space/">ED Galaxy Data</a> and <a href="https://www.edsm.net/en/nightly-dumps">EDSM's Populated systems dump</a>.
+// </p>
 
 export const registerApp = () => {
     registerRouteComponent();
