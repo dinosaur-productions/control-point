@@ -1,5 +1,5 @@
 import { registerRouteComponent } from "../components/route.js";
-import { registerSystemRouteComponent } from "./system-activity-route.js";
+import { registerSystemActivityRouteComponent } from "./system-activity-route.js";
 import { registerSystemSearchComponent } from "./system-search.js";
 import { registerInfraFailuresRouteComponent } from "./infra-failures-route.js";
 import { registerLastUpdatedComponent } from "../components/last-updated.js";
@@ -57,7 +57,7 @@ class App extends HTMLElement {
 
 export const registerApp = () => {
     registerRouteComponent();
-    registerSystemRouteComponent();
+    registerSystemActivityRouteComponent();
     registerSystemSearchComponent();
     registerInfraFailuresRouteComponent();
     registerLastUpdatedComponent();
