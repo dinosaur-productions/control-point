@@ -2,49 +2,10 @@
 @import "./styles/app.css";
 
 body {
-    font-family: Arial, sans-serif;
     background: #181c20;
     color: #f8f8f2;
-    margin: 0;
-    padding: 0;
 }
+
 .container {
     max-width: 1200px;
-    width: 95%;
-    margin: 60px auto;
-    background: #23272e;
-    padding: 2em;
-    border-radius: 10px;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
-    position: relative;
-}
-h1 {
-    text-align: center;
-    margin-bottom: 1em;
-}
-.form-row {
-    display: flex;
-    align-items: center;
-    gap: 1em;
-    margin-bottom: 1em;
-}
-
-label {
-    display: block;
-    margin-bottom: 0.5em;
-    margin-right: 8px;
-} 
-
-footer {
-    font-size: 0.9em;
-    color: #aaa;
-    text-align: center;
-    padding: 1em 0;
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    background: #181c20;
-    border-top: 1px solid #23272e;
-    z-index: 100;
 }
