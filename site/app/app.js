@@ -3,6 +3,7 @@ import { registerSystemRouteComponent } from "./system-route.js";
 import { registerSystemSearchComponent } from "./system-search.js";
 import { registerInfraFailuresRouteComponent } from "./infra-failures-route.js";
 import { registerLastUpdatedComponent } from "../components/last-updated.js";
+import { registerExternalLinksComponent } from "../components/external-links.js";
 
 class App extends HTMLElement {
     constructor() {
@@ -43,7 +44,7 @@ class App extends HTMLElement {
                     <x-mine></x-mine>
                 </x-route>
                 <x-route path="/acquire">
-                    <x-contest></x-acquire>
+                    <x-acquire></x-acquire>
                 </x-route>
                 <x-route path="/reinforce">
                     <x-reinforce></x-reinforce>
@@ -71,5 +72,6 @@ export const registerApp = () => {
     registerSystemSearchComponent();
     registerInfraFailuresRouteComponent();
     registerLastUpdatedComponent();
+    registerExternalLinksComponent();
     customElements.define('x-app', App);
 };

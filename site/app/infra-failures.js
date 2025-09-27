@@ -1,6 +1,5 @@
 import { registerSortableTableComponent } from "../components/sortable-table.js";
 import { getInfraFailures, getSystemByAddress } from "../utils/data-access.js";
-import { generateSystemLinks, generateStationLinks, generateFactionLinks } from "../utils/links.js";
 
 class InfraFailuresComponent extends HTMLElement {
     static get observedAttributes() {
@@ -99,21 +98,10 @@ class InfraFailuresComponent extends HTMLElement {
                 </table>
             `;
 
-            // Generate links for system, station, and faction
-            const systemLinks = generateSystemLinks({
-                name: row.StarSystem,
-                address: row.SystemAddress
-            });
-            
-            const stationLinks = generateStationLinks({
-                name: row.StationName,
-                systemName: row.StarSystem,
-                marketId: row.MarketId
-            });
-            
-            const factionLinks = generateFactionLinks({
-                name: row.FactionName
-            });
+            // Generate external links using Web Components
+            const systemLinks = `<x-external-links system-name="${row.StarSystem}" system-address="${row.SystemAddress}"></x-external-links>`;
+            const stationLinks = `<x-external-links station-name="${row.StationName}" station-system="${row.StarSystem}" station-market-id="${row.MarketId}"></x-external-links>`;
+            const factionLinks = `<x-external-links faction-name="${row.FactionName}"></x-external-links>`;
 
             return {
                 StarSystem: `${row.StarSystem}${systemLinks}`,

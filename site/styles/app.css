@@ -1,5 +1,6 @@
 @import "../components/autocomplete.css";
 @import "../components/last-updated.css";
+@import "../components/external-links.css";
 @import './infra-failures.css';
 @import './system-activity.css';
 
@@ -75,45 +76,3 @@ footer {
 
 
 
-/* External link styling (shared across components) */
-.external-links {
-    white-space: nowrap;
-}
-
-.link-icon {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    text-align: center;
-    font-size: 10px;
-    font-weight: bold;
-    border-radius: 2px;
-    margin-left: 2px;
-    text-decoration: none;
-    color: white;
-    line-height: 16px;
-}
-
-.link-icon.inara {
-    background-color: #4a90e2;
-}
-
-.link-icon.inara:hover {
-    background-color: #357abd;
-}
-
-.link-icon.spansh {
-    background-color: #e24a4a;
-}
-
-.link-icon.spansh:hover {
-    background-color: #bd3535;
-}
-
-.link-icon.internal {
-    background-color: #50c878;
-}
-
-.link-icon.internal:hover {
-    background-color: #3da85c;
-}

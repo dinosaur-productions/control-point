@@ -1,5 +1,5 @@
 import { getSystemByAddress, getSupportingSystems, getSupportedSystems } from "../utils/data-access.js";
-import { generateSystemLinks, linkifySupportingSystems } from "../utils/links.js";
+import { linkifySupportingSystems } from "../utils/links.js";
 import { getAvailableActivities, SystemInfo } from "../utils/activities.js";
 
 class SystemActivityComponent extends HTMLElement {
@@ -52,10 +52,7 @@ class SystemActivityComponent extends HTMLElement {
             const powersLine = powers.length > 0 ? `<p>In range of: ${powers.join(', ')}</p>` : 'Not in range of any power';
 
             // Generate external links for the system
-            const systemLinks = generateSystemLinks({
-                name: row.StarSystem,
-                address: numSystemAddress
-            });
+            const systemLinks = `<x-external-links system-name="${row.StarSystem}" system-address="${numSystemAddress}"></x-external-links>`;
 
             // Build the new layout
             this.container.innerHTML = `
@@ -316,10 +313,7 @@ class SystemActivityComponent extends HTMLElement {
             }
 
             const systemsList = supportingSystems.map(system => {
-                const systemLinks = generateSystemLinks({
-                    name: system.SupportingSystemName,
-                    address: system.SupportingSystemAddress
-                });
+                const systemLinks = `<x-external-links system-name="${system.SupportingSystemName}" system-address="${system.SupportingSystemAddress}"></x-external-links>`;
                 
                 return `<li class="supporting-system-item">
                     <span class="system-name">${system.SupportingSystemName}${systemLinks}</span>
@@ -365,10 +359,7 @@ class SystemActivityComponent extends HTMLElement {
             }
 
             const systemsList = supportedSystems.map(system => {
-                const systemLinks = generateSystemLinks({
-                    name: system.SupportedSystemName,
-                    address: system.SupportedSystemAddress
-                });
+                const systemLinks = `<x-external-links system-name="${system.SupportedSystemName}" system-address="${system.SupportedSystemAddress}"></x-external-links>`;
                 
                 return `<li class="supported-system-item">
                     <span class="system-name">${system.SupportedSystemName}${systemLinks}</span>
