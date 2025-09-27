@@ -1,92 +1,78 @@
 class LastUpdatedComponent extends HTMLElement {
+    static get observedAttributes() {
+        return ['timestamp', 'stale-threshold'];
+    }
+
     constructor() {
         super();
-        this.manifest = null;
-        this.manifestCheckInterval = null;
         this.innerHTML = `
-            <p class="last-updated">
-                <span class="status-dot">●</span>
-                <span class="status-text">Last updated: Loading...</span>
-            </p>
+            <div class="last-updated">
+                <small class="time-ago">Updated loading...</small>
+                <small class="timestamp">
+                    <span class="status-dot">●</span>
+                    <span class="formatted-date">Loading...</span>
+                </small>
+            </div>
         `;
-        this.statusElement = this.querySelector('.last-updated');
-        this.statusTextElement = this.querySelector('.status-text');
+        this.timeAgoElement = this.querySelector('.time-ago');
+        this.timestampElement = this.querySelector('.timestamp');
+        this.statusDotElement = this.querySelector('.status-dot');
+        this.formattedDateElement = this.querySelector('.formatted-date');
     }
 
-    async connectedCallback() {
-        await this.loadManifest();
+    connectedCallback() {
         this.render();
-        this.startManifestChecking();
     }
 
-    disconnectedCallback() {
-        // Clean up the interval when component is removed
-        if (this.manifestCheckInterval) {
-            clearInterval(this.manifestCheckInterval);
+    attributeChangedCallback() {
+        if (this.timeAgoElement) {
+            this.render();
         }
     }
 
-    startManifestChecking() {
-        // Check every minute for manifest updates
-        this.manifestCheckInterval = setInterval(async () => {
-            const previousGeneratedAt = this.manifest?.generated_at;
-            await this.loadManifest();
-            
-            // If the manifest has been updated, refresh the display
-            if (this.manifest?.generated_at !== previousGeneratedAt) {
-                this.render();
-            }
-        }, 60 * 1000); // 1 minute
-    }
+    getTimeAgo(timestamp) {
+        const now = Date.now();
+        const diff = now - timestamp;
+        const seconds = Math.floor(diff / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
 
-    async loadManifest() {
-        try {
-            const response = await fetch('sitedata_manifest.json');
-            if (response.ok) {
-                this.manifest = await response.json();
-            } else {
-                console.warn('Could not load manifest file');
-                this.manifest = null;
-            }
-        } catch (error) {
-            console.warn('Error loading manifest:', error);
-            this.manifest = null;
-        }
+        if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+        if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+        if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+        return `${seconds} second${seconds > 1 ? 's' : ''} ago`;
     }
 
     render() {
-        if (!this.manifest || !this.manifest.generated_at) {
-            this.statusElement.className = 'last-updated';
-            this.statusTextElement.textContent = 'Last updated: Unknown';
+        const timestampAttr = this.getAttribute('timestamp');
+        const staleThresholdHours = parseInt(this.getAttribute('stale-threshold')) || 1;
+        
+        if (!timestampAttr) {
+            this.timeAgoElement.textContent = 'Updated unknown';
+            this.formattedDateElement.textContent = 'Unknown';
+            this.timestampElement.className = 'timestamp status-stale';
             return;
         }
+
+        const timestamp = new Date(timestampAttr);
+        const timeAgo = this.getTimeAgo(timestamp.getTime());
         
-        const generatedAt = new Date(this.manifest.generated_at);
+        // Check if stale
         const now = new Date();
-        const hourAgo = new Date(now.getTime() - 60 * 60 * 1000); // 1 hour ago
-        
-        const isRecent = generatedAt > hourAgo;
+        const staleThreshold = new Date(now.getTime() - staleThresholdHours * 60 * 60 * 1000);
+        const isRecent = timestamp > staleThreshold;
         const statusClass = isRecent ? 'status-recent' : 'status-stale';
         
-        // Format the date for display in local format
-        const formatter = new Intl.DateTimeFormat(undefined, {
-            year: 'numeric',
-            month: 'numeric', 
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
+        // Format the date for display
+        const formattedDate = timestamp.toLocaleString(undefined, {
+            dateStyle: "short", 
+            timeStyle: "short"
         });
         
-        const formattedDate = formatter.format(generatedAt);
-        
-        this.statusElement.className = `last-updated ${statusClass}`;
-        this.statusTextElement.textContent = `Last updated: ${formattedDate}`;
-    }
-
-    // Public method to manually trigger update (for compatibility)
-    async updateDisplay() {
-        await this.loadManifest();
-        this.render();
+        this.timeAgoElement.textContent = `Updated ${timeAgo}`;
+        this.formattedDateElement.textContent = formattedDate;
+        this.timestampElement.className = `timestamp ${statusClass}`;
     }
 }
 

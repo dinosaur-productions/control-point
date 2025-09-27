@@ -3,6 +3,7 @@ import { registerSystemRouteComponent } from "./system-activity-route.js";
 import { registerSystemSearchComponent } from "./system-search.js";
 import { registerInfraFailuresRouteComponent } from "./infra-failures-route.js";
 import { registerLastUpdatedComponent } from "../components/last-updated.js";
+import { registerCheckManifestComponent } from "../components/check-manifest.js";
 import { registerExternalLinksComponent } from "../components/external-links.js";
 
 class App extends HTMLElement {
@@ -25,7 +26,7 @@ class App extends HTMLElement {
                     <li><a href="#/infra-failures">Infra Failures</a></li>
                     <li><a href="#/mine">Mine</a></li>
                 </ul>
-                <x-last-updated></x-last-updated>
+                <x-check-manifest></x-check-manifest>
             </nav>
         </header>
 
@@ -58,6 +59,7 @@ export const registerApp = () => {
     registerSystemSearchComponent();
     registerInfraFailuresRouteComponent();
     registerLastUpdatedComponent();
+    registerCheckManifestComponent();
     registerExternalLinksComponent();
     customElements.define('x-app', App);
 };
