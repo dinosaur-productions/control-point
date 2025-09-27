@@ -3,5 +3,6 @@ docs
 src/__pycache__/
 justa.json
 *.duckdb
+*.duckdb.wal
 .env
 site/sitedata_manifest.json
