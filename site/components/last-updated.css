@@ -1,0 +1,26 @@
+/* last-updated.css */
+.last-updated {
+    margin: 5px 0 0 0;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.status-dot {
+    font-size: 0.7rem;
+    line-height: 1;
+}
+
+.status-recent .status-dot {
+    color: #4ade80; /* Green for recent */
+}
+
+.status-stale .status-dot {
+    color: #f87171; /* Red for stale */
+}
