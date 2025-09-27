@@ -1,6 +1,6 @@
+import { registerSortableTableComponent } from "../components/sortable-table.js";
 import { getInfraFailures, getSystemByAddress } from "../utils/data-access.js";
 import { generateSystemLinks, generateStationLinks, generateFactionLinks } from "../utils/links.js";
-import { SortableTable } from "../utils/tables.js";
 
 class InfraFailuresComponent extends HTMLElement {
     static get observedAttributes() {
@@ -9,8 +9,15 @@ class InfraFailuresComponent extends HTMLElement {
 
     constructor() {
         super();
-        this.innerHTML = `<div class="infra-failures">Loading...</div>`;
+        this.innerHTML = `
+            <div class="infra-failures">
+                <div class="loading">Loading...</div>
+                <x-sortable-table style="display: none;"></x-sortable-table>
+            </div>
+        `;
         this.container = this.querySelector('.infra-failures');
+        this.loadingElement = this.querySelector('.loading');
+        this.table = this.querySelector('x-sortable-table');
         this.rows = [];
         this.originSystemAddress = null;
         this.originSystemName = null;
@@ -43,20 +50,20 @@ class InfraFailuresComponent extends HTMLElement {
             this.rows = await getInfraFailures(this.originSystemAddress);
 
             if (this.rows.length === 0) {
-                this.container.innerHTML = `<p>No infra failures found.</p>`;
+                this.loadingElement.innerHTML = `<p>No infra failures found.</p>`;
                 return;
             }
 
             this.renderTable();
         } catch (err) {
             console.error("Error loading infra failures:", err);
-            this.container.innerHTML = `<p>Error loading infra failures data.</p>`;
+            this.loadingElement.innerHTML = `<p>Error loading infra failures data.</p>`;
         }
     }
 
     renderTable(sortColumn = null, sortDirection = 'asc') {
-        // Create table with headers
-        const table = new SortableTable([
+        // Set up table headers
+        this.table.setHeaders([
             { key: 'StarSystem', label: 'System', sortable: true },
             { key: 'StationName', label: 'Station', sortable: true },
             { key: 'FactionName', label: 'Faction', sortable: true },
@@ -68,8 +75,8 @@ class InfraFailuresComponent extends HTMLElement {
             { key: 'Distance', label: `Dist ${this.originSystemName}`, sortable: true }
         ]);
 
-        // Add rows with processed data
-        this.rows.forEach(row => {
+        // Process and add rows
+        const processedRows = this.rows.map(row => {
             // Generate commodities table
             const commoditiesTable = `
                 <table class="nested-table">
@@ -108,7 +115,7 @@ class InfraFailuresComponent extends HTMLElement {
                 name: row.FactionName
             });
 
-            table.addRow({
+            return {
                 StarSystem: `${row.StarSystem}${systemLinks}`,
                 StationName: `${row.StationName}${stationLinks}`,
                 FactionName: `${row.FactionName}${factionLinks}`,
@@ -118,22 +125,24 @@ class InfraFailuresComponent extends HTMLElement {
                 InfraFailTimestamp: new Date(row.InfraFailTimestamp).toLocaleString(undefined, {dateStyle: "short", timeStyle: "short"}),
                 MarketTimestamp: new Date(row.MarketTimestamp).toLocaleString(),
                 Distance: row.Distance
-            });
+            };
         });
+
+        // Set rows in table
+        this.table.setRows(processedRows);
 
         // Apply sorting if specified
         if (sortColumn) {
-            table.sort(sortColumn, sortDirection);
+            this.table.sort(sortColumn, sortDirection);
         }
 
-        // Render table
-        this.container.innerHTML = `<div class="table-container">${table.getHTML()}</div>`;
-        
-        // Attach sort listeners
-        table.attachSortListeners(this.container.querySelector('.table-container'));
+        // Show table and hide loading
+        this.loadingElement.style.display = 'none';
+        this.table.style.display = 'block';
     }
 }
 
 export function registerInfraFailuresComponent() {
+    registerSortableTableComponent();
     customElements.define('x-infra-failures', InfraFailuresComponent);
 }

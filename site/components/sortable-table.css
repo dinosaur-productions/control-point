@@ -1,4 +1,8 @@
-/* Sortable Table Component Styles */
+/* sortable-table.css */
+.sortable-table-container {
+    width: 100%;
+}
+
 .sortable-table {
     width: 100%;
     border-collapse: collapse;

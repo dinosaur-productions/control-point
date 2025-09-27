@@ -2,7 +2,6 @@ import { registerRouteComponent } from "../components/route.js";
 import { registerSystemRouteComponent } from "./system-route.js";
 import { registerSystemSearchComponent } from "./system-search.js";
 import { registerInfraFailuresRouteComponent } from "./infra-failures-route.js";
-import { registerInfraFailuresComponent } from "./infra-failures.js";
 
 class App extends HTMLElement {
     constructor() {

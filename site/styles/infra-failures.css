@@ -1,3 +1,5 @@
+@import "../components/sortable-table.css";
+
 /* Nested table styling for commodities */
 .nested-table {
     width: 100%;
