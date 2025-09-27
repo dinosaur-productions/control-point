@@ -1,4 +1,3 @@
-import { registerSortableTableComponent } from "../components/sortable-table.js";
 import { getInfraFailures, getSystemByAddress } from "../utils/data-access.js";
 
 class InfraFailuresComponent extends HTMLElement {
@@ -131,6 +130,5 @@ class InfraFailuresComponent extends HTMLElement {
 }
 
 export function registerInfraFailuresComponent() {
-    registerSortableTableComponent();
     customElements.define('x-infra-failures', InfraFailuresComponent);
 }

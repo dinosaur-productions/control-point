@@ -6,6 +6,7 @@ import { registerLastUpdatedComponent } from "../components/last-updated.js";
 import { registerCheckManifestComponent } from "../components/check-manifest.js";
 import { registerActivityItemComponent } from "../components/activity-item.js";
 import { registerExternalLinksComponent } from "../components/external-links.js";
+import { registerSortableTableComponent } from "../components/sortable-table.js";
 
 class App extends HTMLElement {
     constructor() {
@@ -63,5 +64,6 @@ export const registerApp = () => {
     registerCheckManifestComponent();
     registerActivityItemComponent();
     registerExternalLinksComponent();
+    registerSortableTableComponent();
     customElements.define('x-app', App);
 };

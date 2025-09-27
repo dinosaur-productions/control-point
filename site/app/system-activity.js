@@ -86,6 +86,12 @@ class SystemActivityComponent extends HTMLElement {
 
             // Add event listeners for category navigation
             this.setupCategoryNavigation();
+            
+            // Populate supporting systems table if it exists
+            await this.populateSupportingSystemsTable(row);
+            
+            // Populate supported systems table if it exists
+            await this.populateSupportedSystemsTable(row);
         } catch (err) {
             this.container.textContent = "Unexpected error.";
             console.error(err);
@@ -308,16 +314,6 @@ class SystemActivityComponent extends HTMLElement {
                 return '';
             }
 
-            const systemsList = supportingSystems.map(system => {
-                const systemLinks = `<x-external-links system-name="${system.SupportingSystemName}" system-address="${system.SupportingSystemAddress}"></x-external-links>`;
-                
-                return `<li class="supporting-system-item">
-                    <span class="system-name">${system.SupportingSystemName}${systemLinks}</span>
-                    <span class="system-distance">${Math.round(system.Distance)} LY</span>
-                    <span class="system-state">${system.PowerplayState}</span>
-                </li>`;
-            }).join('');
-
             return `
                 <div class="supporting-systems-section">
                     <details class="supporting-systems-details" id="supporting-systems-details">
@@ -325,9 +321,7 @@ class SystemActivityComponent extends HTMLElement {
                             <span>Supporting Systems (${supportingSystems.length})</span>
                         </summary>
                         <div class="supporting-systems-content">
-                            <ul class="supporting-systems-list">
-                                ${systemsList}
-                            </ul>
+                            <x-sortable-table id="supporting-systems-table"></x-sortable-table>
                         </div>
                     </details>
                 </div>
@@ -335,6 +329,56 @@ class SystemActivityComponent extends HTMLElement {
         } catch (error) {
             console.error('Error loading supporting systems:', error);
             return '';
+        }
+    }
+
+    async populateSupportingSystemsTable(row) {
+        // Check if we should show supporting systems (same logic as renderSupportingSystems)
+        const shouldShowSupport = (
+            row.PowerplayState === 'Unoccupied' && 
+            row.Powers && typeof row.Powers.toArray === 'function' && 
+            row.Powers.toArray().includes('Li Yong-Rui')) ||
+            (row.PowerplayState === 'Exploited' && row.ControllingPower === 'Li Yong-Rui');
+
+        if (!shouldShowSupport) return;
+
+        // Wait a bit for the custom element to be fully initialized
+        await new Promise(resolve => setTimeout(resolve, 10));
+        
+        const table = this.querySelector('#supporting-systems-table');
+        if (!table) {
+            console.warn('Supporting systems table not found');
+            return;
+        }
+
+        try {
+            const supportingSystems = await getSupportingSystems(row.SystemAddress);
+            
+            if (supportingSystems.length === 0) return;
+
+            // Set up table headers
+            table.setHeaders([
+                { key: 'System', label: 'System', sortable: true },
+                { key: 'PowerplayState', label: 'Powerplay Status', sortable: true },
+                { key: 'Distance', label: 'Distance', sortable: true }
+            ]);
+
+            // Process and add rows to the table
+            const processedRows = supportingSystems.map(system => {
+                const systemCell = `${system.SupportingSystemName} <x-external-links system-name="${system.SupportingSystemName}" system-address="${system.SupportingSystemAddress}"></x-external-links>`;
+                const statusCell = system.PowerplayState;
+                const distanceCell = `${Math.round(system.Distance)} LY`;
+                
+                return {
+                    System: systemCell,
+                    PowerplayState: statusCell,
+                    Distance: distanceCell
+                };
+            });
+            
+            table.setRows(processedRows);
+        } catch (error) {
+            console.error('Error populating supporting systems table:', error);
         }
     }
 
@@ -354,26 +398,14 @@ class SystemActivityComponent extends HTMLElement {
                 return '';
             }
 
-            const systemsList = supportedSystems.map(system => {
-                const systemLinks = `<x-external-links system-name="${system.SupportedSystemName}" system-address="${system.SupportedSystemAddress}"></x-external-links>`;
-                
-                return `<li class="supported-system-item">
-                    <span class="system-name">${system.SupportedSystemName}${systemLinks}</span>
-                    <span class="system-distance">${Math.round(system.Distance)} LY</span>
-                    <span class="system-state">${system.PowerplayState}</span>
-                </li>`;
-            }).join('');
-
             return `
                 <div class="supported-systems-section">
-                    <details class="supported-systems-details">
+                    <details class="supported-systems-details" id="supported-systems-details">
                         <summary class="supported-systems-header">
                             <span>Supported Systems (${supportedSystems.length})</span>
                         </summary>
                         <div class="supported-systems-content">
-                            <ul class="supported-systems-list">
-                                ${systemsList}
-                            </ul>
+                            <x-sortable-table id="supported-systems-table"></x-sortable-table>
                         </div>
                     </details>
                 </div>
@@ -381,6 +413,53 @@ class SystemActivityComponent extends HTMLElement {
         } catch (error) {
             console.error('Error loading supported systems:', error);
             return '';
+        }
+    }
+
+    async populateSupportedSystemsTable(row) {
+        // Check if we should show supported systems (same logic as renderSupportedSystems)
+        const shouldShowSupported = row.ControllingPower === 'Li Yong-Rui' && 
+                                    (row.PowerplayState === 'Fortified' || row.PowerplayState === 'Stronghold');
+
+        if (!shouldShowSupported) return;
+
+        // Wait a bit for the custom element to be fully initialized
+        await new Promise(resolve => setTimeout(resolve, 10));
+        
+        const table = this.querySelector('#supported-systems-table');
+        if (!table) {
+            console.warn('Supported systems table not found');
+            return;
+        }
+
+        try {
+            const supportedSystems = await getSupportedSystems(row.SystemAddress);
+            
+            if (supportedSystems.length === 0) return;
+
+            // Set up table headers
+            table.setHeaders([
+                { key: 'System', label: 'System', sortable: true },
+                { key: 'PowerplayState', label: 'Powerplay Status', sortable: true },
+                { key: 'Distance', label: 'Distance', sortable: true }
+            ]);
+
+            // Process and add rows to the table
+            const processedRows = supportedSystems.map(system => {
+                const systemCell = `${system.SupportedSystemName} <x-external-links system-name="${system.SupportedSystemName}" system-address="${system.SupportedSystemAddress}"></x-external-links>`;
+                const statusCell = system.PowerplayState;
+                const distanceCell = `${Math.round(system.Distance)} LY`;
+                
+                return {
+                    System: systemCell,
+                    PowerplayState: statusCell,
+                    Distance: distanceCell
+                };
+            });
+            
+            table.setRows(processedRows);
+        } catch (error) {
+            console.error('Error populating supported systems table:', error);
         }
     }
 
