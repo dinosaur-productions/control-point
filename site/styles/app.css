@@ -1,6 +1,7 @@
 @import "../components/autocomplete.css";
 @import "../components/last-updated.css";
 @import "../components/external-links.css";
+@import "../components/activity-item.css";
 @import './infra-failures.css';
 @import './system-activity.css';
 

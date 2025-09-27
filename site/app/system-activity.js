@@ -1,5 +1,5 @@
 import { getSystemByAddress, getSupportingSystems, getSupportedSystems } from "../utils/data-access.js";
-import { linkifySupportingSystems } from "../utils/links.js";
+
 import { getAvailableActivities, SystemInfo } from "../utils/activities.js";
 
 class SystemActivityComponent extends HTMLElement {
@@ -271,7 +271,7 @@ class SystemActivityComponent extends HTMLElement {
         });
 
         // Get available categories in the specified order
-        const categoryOrder = ['Hauling', 'Mining', 'Space Combat', 'On Foot', 'Misc'];
+        const categoryOrder = ['Hauling', 'Mining', 'Combat', 'On Foot', 'Misc'];
         const availableCategories = categoryOrder.filter(category => groupedActivities[category]);
 
         return `
@@ -341,7 +341,7 @@ class SystemActivityComponent extends HTMLElement {
     async renderSupportedSystems(row) {
         // Only show supported systems for Li Yong-Rui Fortified or Stronghold systems
         const shouldShowSupported = row.ControllingPower === 'Li Yong-Rui' && 
-                                   (row.PowerplayState === 'Fortified' || row.PowerplayState === 'Stronghold');
+                                    (row.PowerplayState === 'Fortified' || row.PowerplayState === 'Stronghold');
 
         if (!shouldShowSupported) {
             return '';
@@ -423,7 +423,7 @@ class SystemActivityComponent extends HTMLElement {
         });
 
         // Get available categories in the specified order
-        const categoryOrder = ['Hauling', 'Mining', 'Space Combat', 'On Foot', 'Misc'];
+        const categoryOrder = ['Hauling', 'Mining', 'Combat', 'On Foot', 'Misc'];
         const availableCategories = categoryOrder.filter(category => groupedActivities[category]);
 
         let activitiesHTML = `
@@ -440,30 +440,16 @@ class SystemActivityComponent extends HTMLElement {
             `;
 
             groupedActivities[category].forEach(activity => {
-                const legalBadge = activity.legal ? 
-                    '<span class="legal-badge legal">Legal</span>' : 
-                    '<span class="legal-badge illegal">Illegal</span>';
-
                 activitiesHTML += `
-                    <div class="activity-item">
-                        <div class="activity-header">
-                            <span class="activity-name">${activity.activity}</span>
-                            ${legalBadge}
-                        </div>
-                        <div class="activity-details">
-                            <div class="activity-detail">
-                                ${activity.details}
-                            </div>
-                            <div class="activity-detail pickup-handin">
-                                Pick up ${linkifySupportingSystems(activity.pickup)}${activity.handIn ? `, Hand in ${linkifySupportingSystems(activity.handIn)}` : ''}
-                            </div>
-                            ${activity.notes ? `
-                                <div class="activity-detail">
-                                    <strong>Notes:</strong> ${activity.notes}
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
+                    <x-activity-item 
+                        activity-name="${activity.activity}"
+                        legal="${activity.legal}"
+                        details="${activity.details || ''}"
+                        pickup="${activity.pickup || ''}"
+                        ${activity.handIn ? `hand-in="${activity.handIn}"` : ''}
+                        ${activity.notes ? `notes="${activity.notes}"` : ''}
+                        scroll-target="supporting-systems-details">
+                    </x-activity-item>
                 `;
             });
 

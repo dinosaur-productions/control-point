@@ -1,0 +1,63 @@
+/* activity-item.css */
+.activity-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.activity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+}
+
+.activity-name {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #f8f8f2;
+}
+
+.legal-badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.legal-badge.legal {
+    background: #27ae60;
+    color: white;
+}
+
+.legal-badge.illegal {
+    background: #e74c3c;
+    color: white;
+}
+
+.activity-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.activity-detail {
+    font-size: 0.9rem;
+    color: #ddd;
+    line-height: 1.4;
+}
+
+.activity-detail strong {
+    color: #f8f8f2;
+    margin-right: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .activity-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}

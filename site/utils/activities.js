@@ -16,7 +16,7 @@ export class SystemInfo {
 const ACTIVITIES = [
     {
         activity: "Bounty Hunting",
-        category: "Space Combat",
+        category: "Combat",
         acquisition: true,
         reinforcement: true,
         undermining: true, //"Only versus Delaine", see requirements
@@ -32,7 +32,7 @@ const ACTIVITIES = [
     },
     {
         activity: "Commit Crimes",
-        category: "Space Combat",
+        category: "Combat",
         acquisition: false,
         reinforcement: false,
         undermining: true,
@@ -185,7 +185,7 @@ const ACTIVITIES = [
     },
     {
         activity: "Power Kills",
-        category: "Space Combat",
+        category: "Combat",
         acquisition: true,
         reinforcement: true,
         undermining: true,

@@ -4,6 +4,7 @@ import { registerSystemSearchComponent } from "./system-search.js";
 import { registerInfraFailuresRouteComponent } from "./infra-failures-route.js";
 import { registerLastUpdatedComponent } from "../components/last-updated.js";
 import { registerCheckManifestComponent } from "../components/check-manifest.js";
+import { registerActivityItemComponent } from "../components/activity-item.js";
 import { registerExternalLinksComponent } from "../components/external-links.js";
 
 class App extends HTMLElement {
@@ -60,6 +61,7 @@ export const registerApp = () => {
     registerInfraFailuresRouteComponent();
     registerLastUpdatedComponent();
     registerCheckManifestComponent();
+    registerActivityItemComponent();
     registerExternalLinksComponent();
     customElements.define('x-app', App);
 };
