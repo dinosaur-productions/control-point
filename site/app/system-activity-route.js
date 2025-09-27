@@ -12,5 +12,5 @@ class SystemRoute extends RouteComponent {
 
 export const registerSystemRouteComponent = () => {
     registerSystemActivityComponent();
-    customElements.define('x-system-route', SystemRoute);
+    customElements.define('x-system-activity-route', SystemRoute);
 }

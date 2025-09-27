@@ -1,5 +1,5 @@
 import { registerRouteComponent } from "../components/route.js";
-import { registerSystemRouteComponent } from "./system-route.js";
+import { registerSystemRouteComponent } from "./system-activity-route.js";
 import { registerSystemSearchComponent } from "./system-search.js";
 import { registerInfraFailuresRouteComponent } from "./infra-failures-route.js";
 import { registerLastUpdatedComponent } from "../components/last-updated.js";
@@ -41,7 +41,7 @@ class App extends HTMLElement {
                 <x-route path="/mine" exact>
                     <x-mine></x-mine>
                 </x-route>
-                <x-system-route path="/system/([0-9]+)"></x-system-route>
+                <x-system-activity-route path="/system/([0-9]+)"></x-system-activity-route>
             </div>
         </main>
         `;
