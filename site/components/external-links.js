@@ -49,7 +49,7 @@ class ExternalLinksComponent extends HTMLElement {
         const spanshLink = systemAddress ? `https://spansh.co.uk/system/${systemAddress}` : null;
         
         return `
-            ${internalLink ? `<a href="${internalLink}" title="View system details" class="link-icon internal">c</a>` : ''}
+            ${internalLink ? `<a href="${internalLink}" title="View system details" class="link-icon internal">C</a>` : ''}
             <a href="${inaraLink}" target="_blank" title="View system on Inara" class="link-icon inara">I</a>
             ${spanshLink ? `<a href="${spanshLink}" target="_blank" title="View system on Spansh" class="link-icon spansh">S</a>` : ''}
         `;
