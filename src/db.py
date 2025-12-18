@@ -70,6 +70,7 @@ GOVERNMENT = [
     "Prison",
     "Engineer",
     "Carrier",
+    "Megaconstruction",
 ]
 
 SECURITY = [
@@ -106,6 +107,7 @@ STATION_TYPE = [
     "MegaShip",
     "Bernal",
     "Empty",
+    "Dodec",
 ]
 
 CARRIER_DOCKING_ACCESS = [
@@ -295,6 +297,7 @@ FSS_SIGNAL_TYPE = [
     "Empty",
     "SquadronCarrier",
     "Port",
+    "StationDodec",
 ]
 
 def create_schema(conn):

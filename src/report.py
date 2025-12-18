@@ -1,4 +1,5 @@
 import duckdb
+import datetime as dt
 import os
 
 from constants import SITE_DIR, DB_SITE_NAME
@@ -6,7 +7,7 @@ import glob
 
 
 
-def make_report_db(generated_at):
+def make_report_db(generated_at = dt.datetime.now()):
     pattern = os.path.join(SITE_DIR, f"{DB_SITE_NAME}*.duckdb")
     for path in glob.glob(pattern):
         try:
