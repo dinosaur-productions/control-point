@@ -779,9 +779,167 @@ cells:
       -- StarSystem, SystemAddress, DistanceToArrival, AsteroidSiteName,
       AsteroidSiteType, ReserveLevel, \r\n"
     metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "--SELECT * from systems_populated where system_distance(Name, 'HIP
+      87621') < 30;\r
+
+      \r
+
+      --select * from system_latest where \"StarSystem\" = 'HIP 87621';\r
+
+      \r
+
+      --select * from systems_populated where Id64 = 147882789259;\r
+
+      \r
+
+      \r
+
+      \r
+
+      with enc as ( select Name from 'enclave.csv')\r
+
+      \r
+
+      select timestamp, COLUMNS('Powerplay*'),
+      (\"PowerplayStateControlProgress\" - 12271) * 120000,
+      (\"PowerplayStateReinforcement\" - \"PowerplayStateUndermining\") \r
+
+      from jumps_location\r
+
+      where StarSystem in ('Col 359 Sector QX-R c5-13')--(select Name from
+      enc)\r
+
+      order by timestamp desc;\r
+
+      \r
+
+      --select * from 'enclave.csv'\r\n"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "with hourly as (\r
+
+      \    select \r
+
+      \        date_trunc('hour',timestamp) as hour, \r
+
+      \        arg_min(\"PowerplayStateReinforcement\", timestamp) as r, \r
+
+      \        arg_min(\"PowerplayStateUndermining\", timestamp) as um\r
+
+      \    from jumps_location\r
+
+      \    where StarSystem in ('Col 359 Sector QX-R c5-13')\r
+
+      \    group by hour\r
+
+      \    --order by hour desc\r
+
+      )\r
+
+      \r
+
+      SELECT \r
+
+      \    hour,\r
+
+      \    strftime(hour, '%d %H:%M') as h,\r
+
+      \    r,\r
+
+      \    um,\r
+
+      \    r - LAG(r) OVER (ORDER BY hour) AS r_change,\r
+
+      \    um - LAG(um) OVER (ORDER BY hour) AS um_change\r
+
+      FROM hourly\r
+
+      ORDER BY hour DESC;"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "WITH enc as ( select Name from 'enclave.csv')\r
+
+      SELECT \r
+
+      \    --DISTINCT ON (reinforcement, undermining)\r
+
+      \    timestamp,\r
+
+      \    StarSystem,\r
+
+      \    PowerplayState,\r
+
+      \    PowerplayStateControlProgress,\r
+
+      \    strftime(\"timestamp\", '%d %H:%M') AS event_time,\r
+
+      \    \"PowerplayStateReinforcement\" AS reinforcement,\r
+
+      \    \"PowerplayStateUndermining\" AS undermining,\r
+
+      \    reinforcement - undermining AS diff,\r
+
+      \    reinf_change,\r
+
+      \    underm_change, \r
+
+      \    reinf_change - underm_change AS change_diff\r
+
+      FROM (\r
+
+      \    SELECT \r
+
+      \        *,\r
+
+      \        -- Calculate difference from the literal previous record\r
+
+      \        \"PowerplayStateReinforcement\" -
+      LAG(\"PowerplayStateReinforcement\") OVER (PARTITION BY StarSystem ORDER
+      BY \"timestamp\") AS reinf_change,\r
+
+      \        \"PowerplayStateUndermining\" -
+      LAG(\"PowerplayStateUndermining\") OVER (PARTITION BY StarSystem ORDER BY
+      \"timestamp\") AS underm_change,\r
+
+      \        LAG(timestamp) OVER (PARTITION BY StarSystem ORDER BY
+      \"timestamp\") AS prev_timestamp\r
+
+      \    FROM jumps_location\r
+
+      \    WHERE StarSystem IN (select Name from enc) \r
+
+      \    --WHERE StarSystem = 'Col 359 Sector QX-R c5-13'\r
+
+      \    --WHERE StarSystem = 'Col 359 Sector FK-L b10-3' --FW\r
+
+      \    --WHERE StarSystem = 'Col 359 Sector KW-V d2-16' -- Archon\r
+
+      \    --WHERE StarSystem = 'Peneng Wa'\r
+
+      ) subquery\r
+
+      -- Only keep rows where at least one value changed (and ignore the very
+      first null row)\r
+
+      WHERE\r
+
+      \ ((reinf_change > 0 AND underm_change > 0) OR (dayname(timestamp) =
+      'Thursday' AND hour(prev_timestamp) < 7 AND hour(timestamp) >= 7 ))\r
+
+      \ --and timestamp >= '2025-12-11 07:00:00' and timestamp <= '2025-12-18
+      07:00:00'\r
+
+      \ AND timestamp >= '2025-12-18 07:00:00'\r
+
+      ORDER BY StarSystem, timestamp asc;"
+    metadata: {}
 metadata:
   conn:
-    id: c8e8a3ca7ffa39a9
-    name: data.duckdb
+    id: sNSgV7_EO4yH_3Yd5aRJk
+    name: cp
   database: data
   schema: main

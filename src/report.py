@@ -210,6 +210,32 @@ def make_report_db(generated_at = dt.datetime.now()):
         JOIN systems s ON s.SystemAddress = wl.SystemAddress
         ORDER BY InfraFailTimestamp DESC, MarketTimestamp DESC;
     """)
+    conn.execute("""
+    CREATE OR REPLACE TABLE enclave_activity AS
+        WITH enc as ( select Name from 'enclave.csv')
+        SELECT 
+            timestamp,
+            StarSystem,
+            PowerplayState,
+            PowerplayStateControlProgress,
+            PowerplayStateReinforcement AS reinforcement,
+            PowerplayStateUndermining AS undermining,
+            reinf_change,
+            underm_change
+        FROM (
+            SELECT 
+                *,
+                "PowerplayStateReinforcement" - LAG("PowerplayStateReinforcement") OVER (PARTITION BY StarSystem ORDER BY "timestamp") AS reinf_change,
+                "PowerplayStateUndermining" - LAG("PowerplayStateUndermining") OVER (PARTITION BY StarSystem ORDER BY "timestamp") AS underm_change,
+                LAG(timestamp) OVER (PARTITION BY StarSystem ORDER BY "timestamp") AS prev_timestamp
+            FROM db.jumps_location
+            WHERE StarSystem IN (select Name from enc) 
+        ) subquery
+        -- Only keep rows where at least one value changed (and ignore the very first null row)
+        WHERE
+        ((reinf_change > 0 AND underm_change > 0) OR (dayname(timestamp) = 'Thursday' AND hour(prev_timestamp) < 7 AND hour(timestamp) >= 7 ))
+        ORDER BY StarSystem, timestamp;
+    """)
     conn.close()
     print("Done.")
     return db_site_path
