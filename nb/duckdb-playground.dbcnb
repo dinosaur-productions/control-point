@@ -861,37 +861,11 @@ cells:
     metadata: {}
   - kind: 2
     languageId: sql
-    value: "WITH enc as ( select Name from 'enclave.csv')\r
+    value: "WITH \r
 
-      SELECT \r
+      enc as ( select Name from 'enclave.csv'),\r
 
-      \    --DISTINCT ON (reinforcement, undermining)\r
-
-      \    timestamp,\r
-
-      \    StarSystem,\r
-
-      \    PowerplayState,\r
-
-      \    PowerplayStateControlProgress,\r
-
-      \    strftime(\"timestamp\", '%d %H:%M') AS event_time,\r
-
-      \    \"PowerplayStateReinforcement\" AS reinforcement,\r
-
-      \    \"PowerplayStateUndermining\" AS undermining,\r
-
-      \    reinforcement - undermining AS diff,\r
-
-      \    reinf_change,\r
-
-      \    underm_change, \r
-
-      \    reinf_change - underm_change AS change_diff\r
-
-      FROM (\r
-
-      \    SELECT \r
+      diff as (SELECT \r
 
       \        *,\r
 
@@ -910,32 +884,105 @@ cells:
 
       \    FROM jumps_location\r
 
-      \    WHERE StarSystem IN (select Name from enc) \r
+      \    --WHERE StarSystem IN (select Name from enc) \r
 
       \    --WHERE StarSystem = 'Col 359 Sector QX-R c5-13'\r
 
       \    --WHERE StarSystem = 'Col 359 Sector FK-L b10-3' --FW\r
 
-      \    --WHERE StarSystem = 'Col 359 Sector KW-V d2-16' -- Archon\r
+      \    WHERE StarSystem = 'Col 359 Sector KW-V d2-16' -- Archon\r
 
       \    --WHERE StarSystem = 'Peneng Wa'\r
 
-      ) subquery\r
+      \    --WHERE StarSystem = 'Col 359 Sector QX-R c5-9'\r
 
-      -- Only keep rows where at least one value changed (and ignore the very
-      first null row)\r
+      \   --WHERE PowerplayState = 'Stronghold' AND
+      \"PowerplayStateControlProgress\" > 2\r
 
-      WHERE\r
+      ),\r
 
-      \ ((reinf_change > 0 AND underm_change > 0) OR (dayname(timestamp) =
-      'Thursday' AND hour(prev_timestamp) < 7 AND hour(timestamp) >= 7 ))\r
+      monotonic as (\r
 
-      \ --and timestamp >= '2025-12-11 07:00:00' and timestamp <= '2025-12-18
+      \    SELECT *\r
+
+      \    FROM diff\r
+
+      \    -- first remove rows where R or U goes down over time - these are
+      late EDDN deliveries of out of date data.\r
+
+      \    WHERE ((reinf_change >= 0 AND underm_change >= 0) OR
+      (dayname(timestamp) = 'Thursday' AND hour(prev_timestamp) < 7 AND
+      hour(timestamp) >= 7 ))\r
+
+      ),\r
+
+      dedup as (\r
+
+      \    SELECT *\r
+
+      \    FROM monotonic\r
+
+      \    -- then remove any duplicate rows where neither R nor U changed.\r
+
+      \    WHERE ((reinf_change > 0 AND underm_change > 0) OR
+      (dayname(timestamp) = 'Thursday' AND hour(prev_timestamp) < 7 AND
+      hour(timestamp) >= 7 ))\r
+
+      )\r
+
+      \r
+
+      SELECT \r
+
+      \    timestamp,\r
+
+      \    StarSystem,\r
+
+      \    PowerplayState,\r
+
+      \    PowerplayStateControlProgress,\r
+
+      \    strftime(\"timestamp\", '%d %H:%M') AS event_time,\r
+
+      \    PowerplayStateReinforcement AS reinforcement,\r
+
+      \    PowerplayStateUndermining AS undermining,\r
+
+      \    reinforcement - undermining AS diff,\r
+
+      \    reinf_change,\r
+
+      \    underm_change, \r
+
+      \    reinf_change - underm_change AS change_diff,\r
+
+      \    prev_timestamp\r
+
+      FROM dedup\r
+
+      WHERE timestamp >= '2025-12-18 07:00:00'\r
+
+      --   WHERE timestamp >= '2025-12-11 07:00:00' and timestamp <= '2025-12-18
       07:00:00'\r
 
-      \ AND timestamp >= '2025-12-18 07:00:00'\r
+      \ --AND timestamp >= '2025-12-18 07:00:00'\r
 
       ORDER BY StarSystem, timestamp asc;"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "with sigs as (select * exclude signals, unnest(signals, RECURSIVE:=TRUE)
+      from fsssignaldiscovered_latest)\r
+
+      \r
+
+      select StarSystem, max(timestamp), count(*) from sigs\r
+
+      where StarSystem in (Select Name from 'enclave.csv') \r
+
+      and SignalType = 'Combat' \r
+
+      group by StarSystem;"
     metadata: {}
 metadata:
   conn:

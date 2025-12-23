@@ -212,28 +212,41 @@ def make_report_db(generated_at = dt.datetime.now()):
     """)
     conn.execute("""
     CREATE OR REPLACE TABLE enclave_activity AS
-        WITH enc as ( select Name from 'enclave.csv')
+        WITH 
+        enc as (SELECT Name FROM 'enclave.csv'),
+        diff as (
+            SELECT 
+                *,
+                -- Calculate difference from the literal previous record
+                PowerplayStateReinforcement - LAG(PowerplayStateReinforcement) OVER (PARTITION BY StarSystem ORDER BY timestamp) AS reinf_change,
+                PowerplayStateUndermining - LAG(PowerplayStateUndermining) OVER (PARTITION BY StarSystem ORDER BY timestamp) AS underm_change,
+                LAG(timestamp) OVER (PARTITION BY StarSystem ORDER BY timestamp) AS prev_timestamp
+            FROM db.jumps_location
+        ),
+        monotonic as (
+            SELECT *
+            FROM diff
+            -- first remove rows where R or U goes down over time - these are late EDDN deliveries of out of date data.
+            WHERE ((reinf_change >= 0 AND underm_change >= 0) OR (dayname(timestamp) = 'Thursday' AND hour(prev_timestamp) < 7 AND hour(timestamp) >= 7 ))
+        ),
+        dedup as (
+            SELECT *
+            FROM monotonic
+            -- then remove any duplicate rows where neither R nor U changed.
+            WHERE ((reinf_change > 0 AND underm_change > 0) OR (dayname(timestamp) = 'Thursday' AND hour(prev_timestamp) < 7 AND hour(timestamp) >= 7 ))
+        )
         SELECT 
             timestamp,
             StarSystem,
+            ControllingPower,
+            COALESCE(Powers, []) as Powers,
             PowerplayState,
             PowerplayStateControlProgress,
             PowerplayStateReinforcement AS reinforcement,
             PowerplayStateUndermining AS undermining,
             reinf_change,
             underm_change
-        FROM (
-            SELECT 
-                *,
-                "PowerplayStateReinforcement" - LAG("PowerplayStateReinforcement") OVER (PARTITION BY StarSystem ORDER BY "timestamp") AS reinf_change,
-                "PowerplayStateUndermining" - LAG("PowerplayStateUndermining") OVER (PARTITION BY StarSystem ORDER BY "timestamp") AS underm_change,
-                LAG(timestamp) OVER (PARTITION BY StarSystem ORDER BY "timestamp") AS prev_timestamp
-            FROM db.jumps_location
-            WHERE StarSystem IN (select Name from enc) 
-        ) subquery
-        -- Only keep rows where at least one value changed (and ignore the very first null row)
-        WHERE
-        ((reinf_change > 0 AND underm_change > 0) OR (dayname(timestamp) = 'Thursday' AND hour(prev_timestamp) < 7 AND hour(timestamp) >= 7 ))
+        FROM dedup
         ORDER BY StarSystem, timestamp;
     """)
     conn.close()
