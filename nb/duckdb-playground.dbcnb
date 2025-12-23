@@ -890,9 +890,9 @@ cells:
 
       \    --WHERE StarSystem = 'Col 359 Sector FK-L b10-3' --FW\r
 
-      \    WHERE StarSystem = 'Col 359 Sector KW-V d2-16' -- Archon\r
+      \    --WHERE StarSystem = 'Col 359 Sector KW-V d2-16' -- Archon\r
 
-      \    --WHERE StarSystem = 'Peneng Wa'\r
+      \    WHERE StarSystem = 'Col 359 Sector AE-N b9-0'\r
 
       \    --WHERE StarSystem = 'Col 359 Sector QX-R c5-9'\r
 
@@ -983,6 +983,10 @@ cells:
       and SignalType = 'Combat' \r
 
       group by StarSystem;"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "select distinct \"PowerplayState\" from jumps_location\r\n"
     metadata: {}
 metadata:
   conn:

@@ -62,9 +62,13 @@ def make_report_db(generated_at = dt.datetime.now()):
                         LIMIT 1
                     ) AS PowerplayHasStrongholdCarrier,
                     CASE 
-                        WHEN PowerplayStateControlProgress > 12000 
-                            -- control lost, journal has weird number like 12271.nnn
-                            THEN (PowerplayStateReinforcement - PowerplayStateUndermining) / 120000.0
+                        WHEN PowerplayStateControlProgress > 1000 THEN
+                            -- undermined, journal has weird number like 12271.nnn - overflow problem? - correct it here to a negative number.
+                            CASE 
+                                WHEN PowerplayState = 'Exploited' THEN PowerplayStateControlProgress - 4294967296 / 349999
+                                WHEN PowerplayState = 'Fortified' THEN PowerplayStateControlProgress - 4294967296 / 650000
+                                WHEN PowerplayState = 'Stronghold' THEN PowerplayStateControlProgress - 4294967296 / 1000000
+                            END
                         ELSE
                             PowerplayStateControlProgress
                     END AS PowerplayStateControlProgress,
@@ -222,6 +226,8 @@ def make_report_db(generated_at = dt.datetime.now()):
                 PowerplayStateUndermining - LAG(PowerplayStateUndermining) OVER (PARTITION BY StarSystem ORDER BY timestamp) AS underm_change,
                 LAG(timestamp) OVER (PARTITION BY StarSystem ORDER BY timestamp) AS prev_timestamp
             FROM db.jumps_location
+            WHERE StarSystem IN (SELECT Name FROM enc)
+            AND (PowerplayState NOT IN ('Fortified', 'Exploited', 'Stronghold') OR PowerplayStateControlProgress IS NOT NULL)
         ),
         monotonic as (
             SELECT *
