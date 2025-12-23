@@ -9,7 +9,7 @@ Col 359 Sector BE-N b9-1
 Col 359 Sector CE-N b9-2
 Col 359 Sector AE-N b9-3
 Col 359 Sector FK-L b10-3
-Col 359 Sector ZI-N b9-3v
+Col 359 Sector ZI-N b9-3
 Col 359 Sector AE-N b9-4
 Col 359 Sector QX-R c5-10
 Col 359 Sector BE-N b9-4
@@ -48,3 +48,5 @@ Col 359 Sector CE-N b9-1
 Col 359 Sector QX-R c5-13
 Col 359 Sector EK-L b10-4
 Col 359 Sector AE-N b9-5
+Col 359 Sector QX-R c5-9
+Col 359 Sector HF-L b10-1
