@@ -886,7 +886,9 @@ cells:
 
       \    --WHERE StarSystem IN (select Name from enc) \r
 
-      \    WHERE StarSystem = 'Col 359 Sector QX-R c5-13'\r
+      \    WHERE StarSystem = 'Col 359 Sector AE-N b9-1'\r
+
+      \    --WHERE StarSystem = 'Col 359 Sector QX-R c5-13'\r
 
       \    --WHERE StarSystem = 'Col 359 Sector FK-L b10-3' --FW\r
 
@@ -910,9 +912,10 @@ cells:
       \    -- first remove rows where R or U goes down over time - these are
       late EDDN deliveries of out of date data.\r
 
-      \    WHERE ((reinf_change >= 0 AND underm_change >= 0) OR
-      (dayname(timestamp) = 'Thursday' AND hour(prev_timestamp) < 7 AND
-      hour(timestamp) >= 7 ))\r
+      \    WHERE PowerplayState = 'Unoccupied' \r
+
+      \    OR ((reinf_change >= 0 AND underm_change >= 0) OR (dayname(timestamp)
+      = 'Thursday' AND hour(prev_timestamp) < 7 AND hour(timestamp) >= 7 ))\r
 
       ),\r
 
@@ -924,9 +927,10 @@ cells:
 
       \    -- then remove any duplicate rows where neither R nor U changed.\r
 
-      \    WHERE ((reinf_change > 0 AND underm_change > 0) OR
-      (dayname(timestamp) = 'Thursday' AND hour(prev_timestamp) < 7 AND
-      hour(timestamp) >= 7 ))\r
+      \    WHERE PowerplayState = 'Unoccupied' \r
+
+      \    OR((reinf_change > 0 AND underm_change > 0) OR (dayname(timestamp) =
+      'Thursday' AND hour(prev_timestamp) < 7 AND hour(timestamp) >= 7 ))\r
 
       )\r
 
@@ -939,6 +943,8 @@ cells:
       \    StarSystem,\r
 
       \    PowerplayState,\r
+
+      \    PowerplayConflictProgress,\r
 
       \    PowerplayStateControlProgress,\r
 
@@ -958,7 +964,9 @@ cells:
 
       \    reinf_change - underm_change AS change_diff,\r
 
-      \    prev_timestamp\r
+      \    prev_timestamp,\r
+
+      \r
 
       FROM dedup\r
 

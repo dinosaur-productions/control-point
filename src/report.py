@@ -231,15 +231,17 @@ def make_report_db(generated_at = dt.datetime.now()):
         ),
         monotonic as (
             SELECT *
-            FROM diff
+            FROM diff     
             -- first remove rows where R or U goes down over time - these are late EDDN deliveries of out of date data. Except when the tick happened.
-            WHERE ((reinf_change >= 0 AND underm_change >= 0) OR (dayname(timestamp) = 'Thursday' AND hour(prev_timestamp) < 7 AND hour(timestamp) >= 7 ))
+            WHERE PowerplayState = 'Unoccupied' 
+            OR ((reinf_change >= 0 AND underm_change >= 0) OR (dayname(timestamp) = 'Thursday' AND hour(prev_timestamp) < 7 AND hour(timestamp) >= 7 ))
         ),
         dedup as (
             SELECT *
             FROM monotonic
             -- then remove any remaining duplicate rows where neither R nor U changed.
-            WHERE ((reinf_change > 0 AND underm_change > 0) OR (dayname(timestamp) = 'Thursday' AND hour(prev_timestamp) < 7 AND hour(timestamp) >= 7 ))
+            WHERE PowerplayState = 'Unoccupied' 
+            OR ((reinf_change > 0 AND underm_change > 0) OR (dayname(timestamp) = 'Thursday' AND hour(prev_timestamp) < 7 AND hour(timestamp) >= 7 ))
         )
         SELECT 
             timestamp,
@@ -247,6 +249,7 @@ def make_report_db(generated_at = dt.datetime.now()):
             ControllingPower,
             COALESCE(Powers, []) as Powers,
             PowerplayState,
+            PowerplayConflictProgress,
             CASE 
                 WHEN PowerplayStateControlProgress > 1000 THEN
                     -- undermined, journal has weird number like 12271.nnn - overflow problem? - correct it here to a negative number.

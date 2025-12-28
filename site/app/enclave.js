@@ -192,25 +192,16 @@ class EnclaveComponent extends HTMLElement {
 
             // Get current system states (latest record for each system)
             const systemsQuery = await conn.query(`
-                WITH latest AS (
-                    SELECT 
-                        StarSystem,
-                        MAX(timestamp) as max_timestamp
-                    FROM enclave_activity
-                    GROUP BY StarSystem
-                )
                 SELECT 
-                    e.StarSystem,
-                    e.ControllingPower,
-                    e.PowerplayState,
-                    e.reinforcement as PowerplayStateReinforcement,
-                    e.undermining as PowerplayStateUndermining,
-                    COALESCE(e.Powers, []) as Powers
-                FROM enclave_activity e
-                INNER JOIN latest l 
-                    ON e.StarSystem = l.StarSystem 
-                    AND e.timestamp = l.max_timestamp
-                ORDER BY e.ControllingPower, e.StarSystem
+                    StarSystem,
+                    ControllingPower,
+                    PowerplayState,
+                    reinforcement as PowerplayStateReinforcement,
+                    undermining as PowerplayStateUndermining,
+                    COALESCE(Powers, []) as Powers
+                FROM enclave_activity
+                QUALIFY ROW_NUMBER() OVER (PARTITION BY StarSystem ORDER BY timestamp DESC) = 1
+                ORDER BY ControllingPower, StarSystem
             `);
 
             const systems = systemsQuery.toArray().map(row => row.toJSON());
@@ -221,7 +212,8 @@ class EnclaveComponent extends HTMLElement {
                     StarSystem,
                     timestamp,
                     reinforcement,
-                    undermining
+                    undermining,
+                    PowerplayConflictProgress
                 FROM enclave_activity
                 WHERE timestamp >= '${cycleStartStr}'
                   AND timestamp < '${cycleEndStr}'
@@ -337,6 +329,12 @@ class EnclaveComponent extends HTMLElement {
     renderChart(containerId, system) {
         const chartContainer = document.getElementById(containerId);
         if (!chartContainer) return;
+
+        // Check if this is an unoccupied system - render different chart
+        if (system.PowerplayState === 'Unoccupied' || !system.PowerplayState) {
+            this.renderUnoccupiedChart(containerId, system);
+            return;
+        }
 
         // Prepare data for uPlot
         const timestamps = system.history.map(h => new Date(h.timestamp).getTime() / 1000);
@@ -527,6 +525,219 @@ class EnclaveComponent extends HTMLElement {
             chart.setCursor({ left: chart.valToPos(timestamps[lastIdx], 'x') });
         } catch (err) {
             console.error(`Error rendering chart for ${system.StarSystem}:`, err);
+            chartContainer.innerHTML = '<em>Error rendering chart</em>';
+        }
+    }
+
+    renderUnoccupiedChart(containerId, system) {
+        const chartContainer = document.getElementById(containerId);
+        if (!chartContainer) return;
+
+        // Extract power progress data from history
+        const timestamps = system.history.map(h => new Date(h.timestamp).getTime() / 1000);
+        
+        // Get all unique powers that appear in the history
+        const powersSet = new Set();
+        system.history.forEach(h => {
+            if (h.PowerplayConflictProgress && typeof h.PowerplayConflictProgress.toArray === 'function') {
+                const conflicts = h.PowerplayConflictProgress.toArray();
+                conflicts.forEach(c => powersSet.add(c.Power));
+            }
+        });
+        const powers = Array.from(powersSet).sort();
+        
+        if (powers.length === 0) {
+            chartContainer.innerHTML = '<em>No power activity in this system</em>';
+            return;
+        }
+
+        // Build series data - one series per power
+        const powerData = {};
+        powers.forEach(power => {
+            powerData[power] = timestamps.map((t, idx) => {
+                const h = system.history[idx];
+                if (h.PowerplayConflictProgress && typeof h.PowerplayConflictProgress.toArray === 'function') {
+                    const conflicts = h.PowerplayConflictProgress.toArray();
+                    const powerConflict = conflicts.find(c => c.Power === power);
+                    if (powerConflict) {
+                        return Math.floor(powerConflict.ConflictProgress * 120000);
+                    }
+                }
+                return 0;
+            });
+        });
+
+        // Color palette for different powers
+        const powerColors = [
+            '#e74c3c', // red
+            '#3498db', // blue
+            '#2ecc71', // green
+            '#f39c12', // orange
+            '#9b59b6', // purple
+            '#1abc9c', // turquoise
+            '#e67e22', // carrot
+            '#34495e', // wet asphalt
+            '#16a085', // green sea
+            '#c0392b', // pomegranate
+            '#27ae60', // nephritis
+            '#8e44ad', // wisteria
+        ];
+
+        // Build uPlot data array
+        const data = [timestamps];
+        const series = [{}];
+        
+        powers.forEach((power, idx) => {
+            data.push(powerData[power]);
+            series.push({
+                label: power,
+                stroke: powerColors[idx % powerColors.length],
+                width: 2,
+                points: { show: true, size: 4, fill: powerColors[idx % powerColors.length] },
+            });
+        });
+
+        const opts = {
+            width: chartContainer.offsetWidth || 450,
+            height: 250,
+            series: series,
+            axes: [
+                {
+                    space: 60,
+                    incrs: [
+                        3600,
+                        7200,
+                        14400,
+                        28800,
+                        43200,
+                        86400,
+                    ],
+                    values: (u, vals) => vals.map(v => {
+                        const d = new Date(v * 1000);
+                        const day = d.getDate().toString().padStart(2, '0');
+                        const hour = d.getHours().toString().padStart(2, '0');
+                        const min = d.getMinutes().toString().padStart(2, '0');
+                        return `${day} ${hour}:${min}`;
+                    }),
+                    stroke: "#fff",
+                    grid: { stroke: "#333" },
+                },
+                {
+                    stroke: "#fff",
+                    grid: { stroke: "#333" },
+                    side: 3,
+                    values: (u, vals) => vals.map(v => {
+                        if (v >= 1000) {
+                            return (v / 1000).toFixed(0) + 'K';
+                        }
+                        return v.toString();
+                    }),
+                }
+            ],
+            scales: {
+                x: {
+                    time: true,
+                },
+            },
+            legend: {
+                show: true
+            },
+            padding: [0, 0, 0, 15],
+            plugins: [
+                {
+                    hooks: {
+                        drawAxes: (u) => {
+                            const ctx = u.ctx;
+                            const { left, top, width, height } = u.bbox;
+                            
+                            ctx.save();
+                            
+                            // Draw alternating day bands
+                            const dayStart = new Date(timestamps[0] * 1000);
+                            dayStart.setHours(0, 0, 0, 0);
+                            
+                            const dayEnd = new Date(timestamps[timestamps.length - 1] * 1000);
+                            dayEnd.setHours(23, 59, 59, 999);
+                            
+                            let currentDay = new Date(dayStart);
+                            let dayIndex = 0;
+                            
+                            // Get plot area bounds
+                            const plotLeft = u.valToPos(u.scales.x.min, 'x', true);
+                            const plotRight = u.valToPos(u.scales.x.max, 'x', true);
+                            
+                            while (currentDay <= dayEnd) {
+                                const nextDay = new Date(currentDay);
+                                nextDay.setDate(nextDay.getDate() + 1);
+                                
+                                let x1 = u.valToPos(currentDay.getTime() / 1000, 'x', true);
+                                let x2 = u.valToPos(nextDay.getTime() / 1000, 'x', true);
+                                
+                                // Clamp to plot bounds
+                                x1 = Math.max(x1, plotLeft);
+                                x2 = Math.min(x2, plotRight);
+                                
+                                if (dayIndex % 2 === 0 && x2 > x1) {
+                                    ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+                                    ctx.fillRect(x1, top, x2 - x1, height);
+                                }
+                                
+                                dayIndex++;
+                                currentDay = nextDay;
+                            }
+                            
+                            // Draw horizontal marker lines at 36K and 120K
+                            const conflictThreshold = 36000;
+                            const controlThreshold = 120000;
+                            
+                            const yConflict = u.valToPos(conflictThreshold, 'y', true);
+                            const yControl = u.valToPos(controlThreshold, 'y', true);
+                            
+                            // Draw 36K conflict line (yellow/orange)
+                            ctx.strokeStyle = 'rgba(255, 165, 0, 0.6)';
+                            ctx.lineWidth = 2;
+                            ctx.setLineDash([5, 5]);
+                            ctx.beginPath();
+                            ctx.moveTo(plotLeft, yConflict);
+                            ctx.lineTo(plotRight, yConflict);
+                            ctx.stroke();
+                            
+                            // Draw 120K control line (green)
+                            ctx.strokeStyle = 'rgba(46, 204, 113, 0.6)';
+                            ctx.lineWidth = 2;
+                            ctx.setLineDash([5, 5]);
+                            ctx.beginPath();
+                            ctx.moveTo(plotLeft, yControl);
+                            ctx.lineTo(plotRight, yControl);
+                            ctx.stroke();
+                            
+                            // Add labels for threshold lines
+                            ctx.setLineDash([]);
+                            ctx.font = '11px sans-serif';
+                            ctx.textAlign = 'right';
+                            
+                            ctx.fillStyle = 'rgba(255, 165, 0, 0.9)';
+                            ctx.fillText('Conflict (36K)', plotRight - 5, yConflict - 5);
+                            
+                            ctx.fillStyle = 'rgba(46, 204, 113, 0.9)';
+                            ctx.fillText('Control (120K)', plotRight - 5, yControl - 5);
+                            
+                            ctx.restore();
+                        }
+                    }
+                }
+            ]
+        };
+
+        try {
+            const chart = new uPlot(opts, data, chartContainer);
+            this.charts.push(chart);
+            
+            // Set cursor to last point to show values in legend by default
+            const lastIdx = timestamps.length - 1;
+            chart.setCursor({ left: chart.valToPos(timestamps[lastIdx], 'x') });
+        } catch (err) {
+            console.error(`Error rendering unoccupied chart for ${system.StarSystem}:`, err);
             chartContainer.innerHTML = '<em>Error rendering chart</em>';
         }
     }
