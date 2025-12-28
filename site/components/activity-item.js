@@ -1,6 +1,6 @@
 class ActivityItemComponent extends HTMLElement {
     static get observedAttributes() {
-        return ['activity-name', 'legal', 'details', 'pickup', 'hand-in', 'notes', 'scroll-target'];
+        return ['activity-name', 'legal', 'details', 'pickup', 'hand-in', 'notes', 'scroll-target', 'lyr-bonus', 'vulnerable'];
     }
 
     constructor() {
@@ -9,7 +9,11 @@ class ActivityItemComponent extends HTMLElement {
             <div class="activity-item">
                 <div class="activity-header">
                     <span class="activity-name"></span>
-                    <span class="legal-badge"></span>
+                    <span class="badges">
+                        <span class="legal-badge"></span>
+                        <span class="lyr-bonus-badge" style="display: none;"></span>
+                        <span class="vulnerable-badge" style="display: none;"></span>
+                    </span>
                 </div>
                 <div class="activity-details">
                     <div class="activity-detail details"></div>
@@ -21,6 +25,8 @@ class ActivityItemComponent extends HTMLElement {
         
         this.activityNameElement = this.querySelector('.activity-name');
         this.legalBadgeElement = this.querySelector('.legal-badge');
+        this.lyrBonusBadgeElement = this.querySelector('.lyr-bonus-badge');
+        this.vulnerableBadgeElement = this.querySelector('.vulnerable-badge');
         this.detailsElement = this.querySelector('.details');
         this.pickupHandinElement = this.querySelector('.pickup-handin');
         this.notesElement = this.querySelector('.notes');
@@ -55,6 +61,8 @@ class ActivityItemComponent extends HTMLElement {
         const pickup = this.getAttribute('pickup') || '';
         const handIn = this.getAttribute('hand-in') || '';
         const notes = this.getAttribute('notes') || '';
+        const hasLYRBonus = this.getAttribute('lyr-bonus') === 'true';
+        const isVulnerable = this.getAttribute('vulnerable') === 'true';
 
         // Update activity name
         this.activityNameElement.textContent = activityName;
@@ -66,6 +74,24 @@ class ActivityItemComponent extends HTMLElement {
         } else {
             this.legalBadgeElement.className = 'legal-badge illegal';
             this.legalBadgeElement.textContent = 'Illegal';
+        }
+
+        // Update LYR bonus badge
+        if (hasLYRBonus) {
+            this.lyrBonusBadgeElement.className = 'lyr-bonus-badge';
+            this.lyrBonusBadgeElement.textContent = '★ LYR Bonus';
+            this.lyrBonusBadgeElement.style.display = 'inline';
+        } else {
+            this.lyrBonusBadgeElement.style.display = 'none';
+        }
+
+        // Update vulnerable badge
+        if (isVulnerable) {
+            this.vulnerableBadgeElement.className = 'vulnerable-badge';
+            this.vulnerableBadgeElement.textContent = '⚠ Vulnerable';
+            this.vulnerableBadgeElement.style.display = 'inline';
+        } else {
+            this.vulnerableBadgeElement.style.display = 'none';
         }
 
         // Update details

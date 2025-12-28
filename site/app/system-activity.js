@@ -1,6 +1,6 @@
 import { getSystemByAddress, getSupportingSystems, getSupportedSystems } from "../utils/data-access.js";
 
-import { getAvailableActivities, SystemInfo } from "../utils/activities.js";
+import { getAvailableActivities, SystemInfo, ACTIVITIES } from "../utils/activities.js";
 
 class SystemActivityComponent extends HTMLElement {
     static get observedAttributes() {
@@ -476,14 +476,26 @@ class SystemActivityComponent extends HTMLElement {
         const action = row.Activity;
         
         // Get activities for this specific action
-        let activities = getAvailableActivities(row.StarSystem, action, systemInfo);
+        let availableActivities = getAvailableActivities(row.StarSystem, action, systemInfo);
+        
+        // Determine which activities should be marked
+        const controllingPower = row.ControllingPower || null;
+        const isUnoccupied = !controllingPower;
+        const isLYR = controllingPower === 'Li Yong-Rui';
+        const isOtherPower = controllingPower && !isLYR;
+        
+        // Create a map to look up full activity definitions
+        const activityMap = new Map();
+        ACTIVITIES.forEach(act => {
+            activityMap.set(act.activity, act);
+        });
         
         // Filter activities for stronghold carrier undermining
         if (action === 'Undermine' && row.PowerplayHasStrongholdCarrier) {
-            activities = activities.filter(activity => activity.strongholdCarrierUndermining === true);
+            availableActivities = availableActivities.filter(activity => activity.strongholdCarrierUndermining === true);
         }
         
-        if (activities.length === 0) {
+        if (availableActivities.length === 0) {
             return `
                 <div class="activities-section">
                     <p class="no-activities">No activities available for ${action} in this system.</p>
@@ -493,7 +505,7 @@ class SystemActivityComponent extends HTMLElement {
 
         // Group activities by category
         const groupedActivities = {};
-        activities.forEach(activity => {
+        availableActivities.forEach(activity => {
             const category = activity.category || 'Misc';
             if (!groupedActivities[category]) {
                 groupedActivities[category] = [];
@@ -519,6 +531,27 @@ class SystemActivityComponent extends HTMLElement {
             `;
 
             groupedActivities[category].forEach(activity => {
+                // Get full activity definition
+                const fullActivity = activityMap.get(activity.activity);
+                let hasLYRBonus = false;
+                let isVulnerable = false;
+                
+                if (fullActivity) {
+                    // Check for LYR bonuses based on system state
+                    if (isUnoccupied && action === 'Acquire') {
+                        hasLYRBonus = fullActivity.bonusPowers?.acquisition?.includes('Li Yong-Rui') || false;
+                    } else if (isLYR && action === 'Reinforce') {
+                        hasLYRBonus = fullActivity.bonusPowers?.reinforcement?.includes('Li Yong-Rui') || false;
+                    } else if (isOtherPower && action === 'Undermine') {
+                        hasLYRBonus = fullActivity.bonusPowers?.undermining?.includes('Li Yong-Rui') || false;
+                    }
+                    
+                    // Check if occupying power is vulnerable (separate from bonus check)
+                    if (isOtherPower && action === 'Undermine') {
+                        isVulnerable = fullActivity.vulnerablePowers?.includes(controllingPower) || false;
+                    }
+                }
+                
                 activitiesHTML += `
                     <x-activity-item 
                         activity-name="${activity.activity}"
@@ -527,6 +560,8 @@ class SystemActivityComponent extends HTMLElement {
                         pickup="${activity.pickup || ''}"
                         ${activity.handIn ? `hand-in="${activity.handIn}"` : ''}
                         ${activity.notes ? `notes="${activity.notes}"` : ''}
+                        ${hasLYRBonus ? 'lyr-bonus="true"' : ''}
+                        ${isVulnerable ? 'vulnerable="true"' : ''}
                         scroll-target="supporting-systems-details">
                     </x-activity-item>
                 `;

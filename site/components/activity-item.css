@@ -19,12 +19,22 @@
     color: #f8f8f2;
 }
 
-.legal-badge {
+.badges {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.legal-badge,
+.lyr-bonus-badge,
+.vulnerable-badge {
     padding: 0.2rem 0.6rem;
     border-radius: 12px;
     font-size: 0.7rem;
     font-weight: bold;
     text-transform: uppercase;
+    white-space: nowrap;
 }
 
 .legal-badge.legal {
@@ -34,6 +44,16 @@
 
 .legal-badge.illegal {
     background: #e74c3c;
+    color: white;
+}
+
+.lyr-bonus-badge {
+    background: #3498db;
+    color: white;
+}
+
+.vulnerable-badge {
+    background: #f39c12;
     color: white;
 }
 

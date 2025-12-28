@@ -13,7 +13,7 @@ export class SystemInfo {
     }
 }
 
-const ACTIVITIES = [
+export const ACTIVITIES = [
     {
         activity: "Bounty Hunting",
         category: "Combat",
@@ -27,6 +27,12 @@ const ACTIVITIES = [
         handIn: null,
         notes: "Cashing in the bounties at a friendly system Power Contact afterwards gives a bonus",
         bgsEffect: "Positive, generally for system controller",
+        bonusPowers: {
+            acquisition: ["A. Lavigny-Duval", "Denton Patreus", "Jerome Archer", "Yuri Grom"],
+            reinforcement: ["A. Lavigny-Duval", "Denton Patreus", "Jerome Archer", "Yuri Grom"],
+            undermining: []
+        },
+        vulnerablePowers: ["Archon Delaine"],
         requirements: (systemInfo, action) => 
             action != 'Undermine' || systemInfo.controllingPower() === 'Archon Delaine'
     },
@@ -43,6 +49,12 @@ const ACTIVITIES = [
         handIn: null,
         notes: "System authority appear not to count",
         bgsEffect: "Negative for ship owner (irrelevant for Power ships)",
+        bonusPowers: {
+            acquisition: [],
+            reinforcement: [],
+            undermining: ["Archon Delaine"]
+        },
+        vulnerablePowers: ["A. Lavigny-Duval", "Denton Patreus", "Jerome Archer", "Yuri Grom"],
         requirements: (systemInfo, action) => true // Always available
     },
     {
@@ -58,6 +70,12 @@ const ACTIVITIES = [
         handIn: "via Odyssey base in target system",
         notes: "Static merit value regardless of reward choice.",
         bgsEffect: "Positive for mission faction",
+        bonusPowers: {
+            acquisition: ["Felicia Winters", "Nakato Kaine"],
+            reinforcement: ["Aisling Duval", "Edmund Mahon", "Felicia Winters", "Nakato Kaine", "Pranav Antal"],
+            undermining: ["Edmund Mahon", "Nakato Kaine"]
+        },
+        vulnerablePowers: [],
         requirements: (systemInfo, action) => true
     },
     {
@@ -73,6 +91,12 @@ const ACTIVITIES = [
         handIn: null,
         notes: "Merit gain proportional to donation size for those missions, with cargo donations much more effective.",
         bgsEffect: "Positive for mission faction",
+        bonusPowers: {
+            acquisition: [],
+            reinforcement: [],
+            undermining: []
+        },
+        vulnerablePowers: [],
         requirements: (systemInfo, action) => {
             return action !== 'Acquire' || systemInfo.isInConflict();
 
@@ -91,6 +115,12 @@ const ACTIVITIES = [
         handIn: "at Power Contact in target system",
         notes: "Unavailable at Anarchy stations.",
         bgsEffect: "Positive for station owner",
+        bonusPowers: {
+            acquisition: [],
+            reinforcement: ["Archon Delaine", "Denton Patreus", "Felicia Winters", "Jerome Archer", "Pranav Antal", "Yuri Grom", "Zemina Torval"],
+            undermining: []
+        },
+        vulnerablePowers: [],
         requirements: (systemInfo, action) => true
     },
     {
@@ -106,6 +136,12 @@ const ACTIVITIES = [
         handIn: "at friendly system Power Contact",
         notes: "Unavailable at Anarchy stations.",
         bgsEffect: "Positive for station owner",
+        bonusPowers: {
+            acquisition: [],
+            reinforcement: [],
+            undermining: ["Felicia Winters", "Pranav Antal"]
+        },
+        vulnerablePowers: [],
         requirements: (systemInfo, action) => true
     },
     {
@@ -121,6 +157,12 @@ const ACTIVITIES = [
         handIn: "at stations in target system",
         notes: "Data collected after 7 Nov 3310 only",
         bgsEffect: "None",
+        bonusPowers: {
+            acquisition: [],
+            reinforcement: ["Edmund Mahon", "Li Yong-Rui", "Nakato Kaine", "Pranav Antal"],
+            undermining: []
+        },
+        vulnerablePowers: [],
         requirements: (systemInfo, action) => true
     },
     {
@@ -136,6 +178,12 @@ const ACTIVITIES = [
         handIn: "at stations in target system",
         notes: "Data collected after 7 Nov 3310 only",
         bgsEffect: "Positive for station owner",
+        bonusPowers: {
+            acquisition: [],
+            reinforcement: ["Aisling Duval", "Edmund Mahon", "Li Yong-Rui", "Nakato Kaine", "Pranav Antal", "Zemina Torval"],
+            undermining: []
+        },
+        vulnerablePowers: [],
         requirements: (systemInfo, action) => true
     },
     {
@@ -151,6 +199,12 @@ const ACTIVITIES = [
         handIn: "at stations in target system",
         notes: "The cheaper the better. Hydrogen Fuel is usually a safe bet, Limpets also work well.",
         bgsEffect: "Variable but small for station owner",
+        bonusPowers: {
+            acquisition: [],
+            reinforcement: [],
+            undermining: []
+        },
+        vulnerablePowers: [],
         requirements: (systemInfo, action) => action !== 'Acquire' || systemInfo.isInConflict()
     },
     {
@@ -166,6 +220,12 @@ const ACTIVITIES = [
         handIn: "at stations in target system",
         notes: "The cheaper the better. Hydrogen Fuel is usually a safe bet, Limpets also work well.",
         bgsEffect: "Variable but small for station owner",
+        bonusPowers: {
+            acquisition: [],
+            reinforcement: [],
+            undermining: ["Li Yong-Rui", "Zemina Torval"]
+        },
+        vulnerablePowers: ["Edmund Mahon", "Felicia Winters", "Li Yong-Rui", "Nakato Kaine", "Pranav Antal"],
         requirements: (systemInfo, action) => true
     },
     {
@@ -181,6 +241,12 @@ const ACTIVITIES = [
         handIn: null,
         notes: "In Acquisition and Undermining, rapidly damages reputation with station owner. In Reinforcement may not be available away from front lines.",
         bgsEffect: "None",
+        bonusPowers: {
+            acquisition: ["Aisling Duval", "A. Lavigny-Duval", "Denton Patreus", "Felicia Winters", "Jerome Archer", "Li Yong-Rui", "Nakato Kaine"],
+            reinforcement: ["Aisling Duval", "Denton Patreus", "Jerome Archer"],
+            undermining: ["Aisling Duval", "A. Lavigny-Duval", "Jerome Archer", "Li Yong-Rui"]
+        },
+        vulnerablePowers: ["Aisling Duval", "Edmund Mahon", "Nakato Kaine"],
         requirements: (systemInfo, action) => true
     },
     {
@@ -196,6 +262,12 @@ const ACTIVITIES = [
         handIn: null,
         notes: "Legal in Power Conflict Zones (ship combat only). In Acquisition and Undermining, kills are illegal but do not increase notoriety.",
         bgsEffect: "None",
+        bonusPowers: {
+            acquisition: [],
+            reinforcement: ["Archon Delaine", "A. Lavigny-Duval", "Denton Patreus", "Jerome Archer", "Yuri Grom"],
+            undermining: ["Archon Delaine", "A. Lavigny-Duval", "Denton Patreus", "Jerome Archer", "Yuri Grom"]
+        },
+        vulnerablePowers: ["Archon Delaine"],
         requirements: (systemInfo, action) => true // Always available
     },
     {
@@ -211,6 +283,12 @@ const ACTIVITIES = [
         handIn: "to supporting system Power Contact",
         notes: "",
         bgsEffect: "None",
+        bonusPowers: {
+            acquisition: [],
+            reinforcement: [],
+            undermining: []
+        },
+        vulnerablePowers: [],
         requirements: (systemInfo, action) => true
     },
     {
@@ -226,6 +304,12 @@ const ACTIVITIES = [
         handIn: "at friendly system Power Contact",
         notes: "",
         bgsEffect: "None",
+        bonusPowers: {
+            acquisition: [],
+            reinforcement: [],
+            undermining: []
+        },
+        vulnerablePowers: [],
         requirements: (systemInfo, action) => true
     },
     {
@@ -241,6 +325,12 @@ const ACTIVITIES = [
         handIn: null,
         notes: "Only once per megaship per fortnight",
         bgsEffect: "None (unless combined with a mission to scan the same ship)",
+        bonusPowers: {
+            acquisition: ["Archon Delaine", "Jerome Archer", "Pranav Antal", "Yuri Grom", "Zemina Torval"],
+            reinforcement: ["Archon Delaine", "A. Lavigny-Duval"],
+            undermining: ["Denton Patreus", "Felicia Winters", "Jerome Archer", "Yuri Grom"]
+        },
+        vulnerablePowers: ["A. Lavigny-Duval", "Denton Patreus"],
         requirements: (systemInfo, action) => true
     },
     {
@@ -256,6 +346,12 @@ const ACTIVITIES = [
         handIn: null,
         notes: "Autoscans count (including your own SLF, though the merit count is far too small to be exploitable)",
         bgsEffect: "None",
+        bonusPowers: {
+            acquisition: [],
+            reinforcement: ["Archon Delaine", "A. Lavigny-Duval", "Denton Patreus", "Felicia Winters", "Jerome Archer", "Nakato Kaine", "Pranav Antal", "Yuri Grom"],
+            undermining: []
+        },
+        vulnerablePowers: [],
         requirements: (systemInfo, action) => action !== 'Acquire' || systemInfo.isInConflict(),
     },
     {
@@ -271,6 +367,12 @@ const ACTIVITIES = [
         handIn: "at stations in target system",
         notes: "Once profit threshold met, more expensive goods are better. Undocumented location requirement.",
         bgsEffect: "Positive for station owner",
+        bonusPowers: {
+            acquisition: ["Denton Patreus", "Edmund Mahon", "Li Yong-Rui", "Zemina Torval"],
+            reinforcement: [],
+            undermining: []
+        },
+        vulnerablePowers: [],
         requirements: (systemInfo, action) => true
     },
     {
@@ -286,6 +388,12 @@ const ACTIVITIES = [
         handIn: "at stations in target system",
         notes: "Once profit threshold met, more expensive goods are better",
         bgsEffect: "Positive for station owner",
+        bonusPowers: {
+            acquisition: [],
+            reinforcement: ["Aisling Duval", "Edmund Mahon", "Li Yong-Rui", "Zemina Torval"],
+            undermining: []
+        },
+        vulnerablePowers: [],
         requirements: (systemInfo, action) => true
     },
     {
@@ -301,6 +409,12 @@ const ACTIVITIES = [
         handIn: "at stations in target system",
         notes: "Location requirement is unusually harsh, and not documented",
         bgsEffect: "Positive for station owner",
+        bonusPowers: {
+            acquisition: ["Edmund Mahon", "Nakato Kaine", "Zemina Torval"],
+            reinforcement: [],
+            undermining: []
+        },
+        vulnerablePowers: [],
         requirements: (systemInfo, action) => true
     },
     {
@@ -316,6 +430,12 @@ const ACTIVITIES = [
         handIn: "at stations in target system",
         notes: "Merits proportional to sale price. For undermining, goods must be in demand.",
         bgsEffect: "Positive for station owner",
+        bonusPowers: {
+            acquisition: [],
+            reinforcement: ["Edmund Mahon", "Felicia Winters", "Zemina Torval"],
+            undermining: []
+        },
+        vulnerablePowers: ["Zemina Torval"],
         requirements: (systemInfo, action) => true
     },
     {
@@ -331,6 +451,12 @@ const ACTIVITIES = [
         handIn: "at stations in target system",
         notes: "Rares must be legal in target system",
         bgsEffect: "Positive for station owner",
+        bonusPowers: {
+            acquisition: ["Aisling Duval", "Denton Patreus", "Edmund Mahon", "Li Yong-Rui"],
+            reinforcement: ["Archon Delaine", "Li Yong-Rui"],
+            undermining: []
+        },
+        vulnerablePowers: [],
         requirements: (systemInfo, action) => true
     },
     {
@@ -346,6 +472,12 @@ const ACTIVITIES = [
         handIn: "to Power Contact in target system",
         notes: "Limited allocation per half hour, 15-250 dependent on rank. Cargo disappears at end of cycle if not delivered.",
         bgsEffect: "None",
+        bonusPowers: {
+            acquisition: ["Aisling Duval", "Archon Delaine", "A. Lavigny-Duval", "Denton Patreus", "Edmund Mahon", "Felicia Winters", "Jerome Archer", "Li Yong-Rui", "Nakato Kaine", "Pranav Antal", "Yuri Grom", "Zemina Torval"],
+            reinforcement: [],
+            undermining: []
+        },
+        vulnerablePowers: [],
         requirements: (systemInfo, action) => true
     },
     {
@@ -361,6 +493,12 @@ const ACTIVITIES = [
         handIn: "to Power Contact in target system",
         notes: "Limited allocation per half hour, 15-250 dependent on rank. Can't reinforce a system with its own supplies. Cargo disappears at end of cycle if not delivered.",
         bgsEffect: "None",
+        bonusPowers: {
+            acquisition: [],
+            reinforcement: ["Aisling Duval", "Archon Delaine", "A. Lavigny-Duval", "Denton Patreus", "Edmund Mahon", "Felicia Winters", "Jerome Archer", "Li Yong-Rui", "Nakato Kaine", "Pranav Antal", "Yuri Grom", "Zemina Torval"],
+            undermining: []
+        },
+        vulnerablePowers: [],
         requirements: (systemInfo, action) => true
     },
     {
@@ -376,6 +514,12 @@ const ACTIVITIES = [
         handIn: "to Power Contact in target system",
         notes: "Limited allocation per half hour, 15-250 dependent on rank. Cargo disappears at end of cycle if not delivered.",
         bgsEffect: "None",
+        bonusPowers: {
+            acquisition: [],
+            reinforcement: [],
+            undermining: ["Aisling Duval", "Archon Delaine", "A. Lavigny-Duval", "Denton Patreus", "Edmund Mahon", "Felicia Winters", "Jerome Archer", "Li Yong-Rui", "Nakato Kaine", "Pranav Antal", "Zemina Torval"]
+        },
+        vulnerablePowers: [],
         requirements: (systemInfo, action) => true
     },
     {
@@ -391,6 +535,12 @@ const ACTIVITIES = [
         handIn: "to supporting system Power Contact",
         notes: "Each Power has preferred types of data which give better merits. Data type chances related to data port type.",
         bgsEffect: "None",
+        bonusPowers: {
+            acquisition: ["Aisling Duval", "Archon Delaine", "A. Lavigny-Duval", "Denton Patreus", "Edmund Mahon", "Felicia Winters", "Jerome Archer", "Li Yong-Rui", "Nakato Kaine", "Pranav Antal", "Yuri Grom", "Zemina Torval"],
+            reinforcement: [],
+            undermining: []
+        },
+        vulnerablePowers: [],
         requirements: (systemInfo, action) => true
     },
     {
@@ -406,6 +556,12 @@ const ACTIVITIES = [
         handIn: "to same system Power Contact",
         notes: "Research and Industrial data do not work in Reinforcement. NPCs do not become hostile when downloading power data.",
         bgsEffect: "None",
+        bonusPowers: {
+            acquisition: [],
+            reinforcement: ["Aisling Duval", "Archon Delaine", "A. Lavigny-Duval", "Denton Patreus", "Edmund Mahon", "Felicia Winters", "Jerome Archer", "Li Yong-Rui", "Nakato Kaine", "Pranav Antal", "Yuri Grom", "Zemina Torval"],
+            undermining: []
+        },
+        vulnerablePowers: [],
         requirements: (systemInfo, action) => true
     },
     {
@@ -421,6 +577,12 @@ const ACTIVITIES = [
         handIn: "to friendly system Power Contact",
         notes: "Each Power has preferred types of data which give better merits. Data type chances related to data port type.",
         bgsEffect: "None",
+        bonusPowers: {
+            acquisition: [],
+            reinforcement: [],
+            undermining: ["Aisling Duval", "Archon Delaine", "A. Lavigny-Duval", "Denton Patreus", "Edmund Mahon", "Felicia Winters", "Jerome Archer", "Li Yong-Rui", "Nakato Kaine", "Zemina Torval"]
+        },
+        vulnerablePowers: [],
         requirements: (systemInfo, action) => true
     },
     {
@@ -436,6 +598,12 @@ const ACTIVITIES = [
         handIn: "to Odyssey settlements in target system",
         notes: "Only one item can be uploaded per port. Long upload time.",
         bgsEffect: "None",
+        bonusPowers: {
+            acquisition: ["Archon Delaine"],
+            reinforcement: [],
+            undermining: []
+        },
+        vulnerablePowers: ["Li Yong-Rui", "Yuri Grom"],
         requirements: (systemInfo, action) => true
     },
     {
@@ -451,6 +619,12 @@ const ACTIVITIES = [
         handIn: "Odyssey settlements in target system",
         notes: "Only one item can be uploaded per port. Long upload time.",
         bgsEffect: "None",
+        bonusPowers: {
+            acquisition: [],
+            reinforcement: [],
+            undermining: []
+        },
+        vulnerablePowers: ["Li Yong-Rui", "Yuri Grom"],
         requirements: (systemInfo, action) => true
     }
 ];
