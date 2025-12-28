@@ -188,8 +188,6 @@ class EnclaveComponent extends HTMLElement {
             // Update cycle date display
             this.cycleDate.textContent = `Cycle: ${this.formatCycleDate(cycleThursday)}`;
             
-            const lastThursdayStr = cycleStartStr;
-
             // Get current system states (latest record for each system)
             const systemsQuery = await conn.query(`
                 SELECT 

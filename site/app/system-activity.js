@@ -250,6 +250,8 @@ class SystemActivityComponent extends HTMLElement {
     }
 
     renderActivitySection(row) {
+        const action = this.calculateAction(row);
+        
         // Create SystemInfo for the system to get available categories
         const systemInfo = new SystemInfo({
             controllingPower: row.ControllingPower || '',
@@ -258,7 +260,6 @@ class SystemActivityComponent extends HTMLElement {
                         row.PowerplayConflictProgress.toArray().length > 0
         });
 
-        const action = row.Activity;
         let activities = getAvailableActivities(row.StarSystem, action, systemInfo);
         
         // Filter activities for stronghold carrier undermining
@@ -462,8 +463,26 @@ class SystemActivityComponent extends HTMLElement {
             console.error('Error populating supported systems table:', error);
         }
     }
-
+    calculateAction(row) {
+        const controllingPower = row.ControllingPower || null;
+        const powerplayState = row.PowerplayState || 'Unoccupied';
+        const powers = row.Powers && typeof row.Powers.toArray === 'function' ? row.Powers.toArray() : [];
+        const isLYRInRange = powers.includes('Li Yong-Rui');
+        
+        if (controllingPower === 'Li Yong-Rui') {
+            return 'Reinforce';
+        } else if (powerplayState === 'Unoccupied' && isLYRInRange) {
+            return 'Acquire';
+        } else if (powerplayState === 'Unoccupied') {
+            return 'Out of Range';
+        } else {
+            return 'Undermine';
+        }
+    }
     renderActivitiesSection(row) {
+        const action = this.calculateAction(row);
+        const controllingPower = row.ControllingPower || null;
+        
         // Create SystemInfo for the system
         const systemInfo = new SystemInfo({
             controllingPower: row.ControllingPower || '',
@@ -471,15 +490,11 @@ class SystemActivityComponent extends HTMLElement {
                         typeof row.PowerplayConflictProgress.toArray === 'function' && 
                         row.PowerplayConflictProgress.toArray().length > 0
         });
-
-        // Use the system's specific activity
-        const action = row.Activity;
         
         // Get activities for this specific action
         let availableActivities = getAvailableActivities(row.StarSystem, action, systemInfo);
         
         // Determine which activities should be marked
-        const controllingPower = row.ControllingPower || null;
         const isUnoccupied = !controllingPower;
         const isLYR = controllingPower === 'Li Yong-Rui';
         const isOtherPower = controllingPower && !isLYR;

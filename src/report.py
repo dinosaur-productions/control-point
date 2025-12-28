@@ -31,7 +31,6 @@ def make_report_db(generated_at = dt.datetime.now()):
     conn = duckdb.connect(db_site_path)
     conn.execute("ATTACH 'data.duckdb' as db (READ_ONLY);")
     conn.execute("""
-        CREATE OR REPLACE TYPE activity_enum AS ENUM ('Acquire', 'Reinforce', 'Undermine', 'Out of Range', 'Wait Until Next Cycle');
         CREATE OR REPLACE TABLE systems AS
             WITH 
             populated AS (
@@ -76,21 +75,11 @@ def make_report_db(generated_at = dt.datetime.now()):
                     PowerplayStateReinforcement, 
                     PowerplayStateUndermining, 
                     PowerplayConflictProgress,
-                    CASE 
-                        WHEN ControllingPower = 'Li Yong-Rui' THEN 'Reinforce'
-                        ELSE
-                            CASE
-                                WHEN PowerplayState = 'Unoccupied' AND 'Li Yong-Rui' IN Powers THEN 'Acquire'
-                                WHEN PowerplayState = 'Unoccupied' THEN 'Out of Range'
-                                ELSE 'Undermine'
-                            END
-                    END::activity_enum AS Activity,
                     timestamp as LastUpdate,
                 FROM populated
                 WHERE HasPowerplayData
             )
-            SELECT * FROM activities
-            WHERE Activity NOT IN ('No Powerplay Data');
+            SELECT * FROM activities;
     """)
     conn.execute("""
         CREATE OR REPLACE TABLE powerplay_support AS
