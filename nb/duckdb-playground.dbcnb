@@ -886,13 +886,13 @@ cells:
 
       \    --WHERE StarSystem IN (select Name from enc) \r
 
-      \    --WHERE StarSystem = 'Col 359 Sector QX-R c5-13'\r
+      \    WHERE StarSystem = 'Col 359 Sector QX-R c5-13'\r
 
       \    --WHERE StarSystem = 'Col 359 Sector FK-L b10-3' --FW\r
 
       \    --WHERE StarSystem = 'Col 359 Sector KW-V d2-16' -- Archon\r
 
-      \    WHERE StarSystem = 'Col 359 Sector AE-N b9-0'\r
+      \    --WHERE StarSystem = 'Col 359 Sector AE-N b9-0'\r
 
       \    --WHERE StarSystem = 'Col 359 Sector QX-R c5-9'\r
 
@@ -942,6 +942,8 @@ cells:
 
       \    PowerplayStateControlProgress,\r
 
+      \    PowerplayStateControlProgress * 350000 as CurrentCP,\r
+
       \    strftime(\"timestamp\", '%d %H:%M') AS event_time,\r
 
       \    PowerplayStateReinforcement AS reinforcement,\r
@@ -960,7 +962,7 @@ cells:
 
       FROM dedup\r
 
-      WHERE timestamp >= '2025-12-18 07:00:00'\r
+      --WHERE timestamp >= '2025-12-18 07:00:00'\r
 
       --   WHERE timestamp >= '2025-12-11 07:00:00' and timestamp <= '2025-12-18
       07:00:00'\r

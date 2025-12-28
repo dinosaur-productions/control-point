@@ -221,7 +221,7 @@ def make_report_db(generated_at = dt.datetime.now()):
         diff as (
             SELECT 
                 *,
-                -- Calculate difference from the literal previous record
+                -- Calculate difference from the previous record
                 PowerplayStateReinforcement - LAG(PowerplayStateReinforcement) OVER (PARTITION BY StarSystem ORDER BY timestamp) AS reinf_change,
                 PowerplayStateUndermining - LAG(PowerplayStateUndermining) OVER (PARTITION BY StarSystem ORDER BY timestamp) AS underm_change,
                 LAG(timestamp) OVER (PARTITION BY StarSystem ORDER BY timestamp) AS prev_timestamp
@@ -232,13 +232,13 @@ def make_report_db(generated_at = dt.datetime.now()):
         monotonic as (
             SELECT *
             FROM diff
-            -- first remove rows where R or U goes down over time - these are late EDDN deliveries of out of date data.
+            -- first remove rows where R or U goes down over time - these are late EDDN deliveries of out of date data. Except when the tick happened.
             WHERE ((reinf_change >= 0 AND underm_change >= 0) OR (dayname(timestamp) = 'Thursday' AND hour(prev_timestamp) < 7 AND hour(timestamp) >= 7 ))
         ),
         dedup as (
             SELECT *
             FROM monotonic
-            -- then remove any duplicate rows where neither R nor U changed.
+            -- then remove any remaining duplicate rows where neither R nor U changed.
             WHERE ((reinf_change > 0 AND underm_change > 0) OR (dayname(timestamp) = 'Thursday' AND hour(prev_timestamp) < 7 AND hour(timestamp) >= 7 ))
         )
         SELECT 
@@ -247,7 +247,17 @@ def make_report_db(generated_at = dt.datetime.now()):
             ControllingPower,
             COALESCE(Powers, []) as Powers,
             PowerplayState,
-            PowerplayStateControlProgress,
+            CASE 
+                WHEN PowerplayStateControlProgress > 1000 THEN
+                    -- undermined, journal has weird number like 12271.nnn - overflow problem? - correct it here to a negative number.
+                    CASE 
+                        WHEN PowerplayState = 'Exploited' THEN PowerplayStateControlProgress - 4294967296 / 349999
+                        WHEN PowerplayState = 'Fortified' THEN PowerplayStateControlProgress - 4294967296 / 650000
+                        WHEN PowerplayState = 'Stronghold' THEN PowerplayStateControlProgress - 4294967296 / 1000000
+                    END
+                ELSE
+                    PowerplayStateControlProgress
+            END AS PowerplayStateControlProgress,
             PowerplayStateReinforcement AS reinforcement,
             PowerplayStateUndermining AS undermining,
             reinf_change,

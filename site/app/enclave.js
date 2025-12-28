@@ -4,9 +4,42 @@ import uPlot from 'https://cdn.jsdelivr.net/npm/uplot@1.6.30/+esm';
 class EnclaveComponent extends HTMLElement {
     constructor() {
         super();
+        this.currentCycleOffset = 0; // 0 = current cycle, -1 = last cycle, etc.
         this.innerHTML = `
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uplot@1.6.30/dist/uPlot.min.css">
             <style>
+                .cycle-navigation {
+                    display: flex;
+                    align-items: center;
+                    gap: 20px;
+                    margin-bottom: 20px;
+                    padding: 15px;
+                    background: #1a1a1a;
+                    border: 1px solid #333;
+                    border-radius: 8px;
+                }
+                .cycle-navigation button {
+                    padding: 8px 16px;
+                    background: #333;
+                    border: 1px solid #555;
+                    color: #fff;
+                    cursor: pointer;
+                    border-radius: 4px;
+                    font-size: 1em;
+                }
+                .cycle-navigation button:hover {
+                    background: #444;
+                }
+                .cycle-navigation button:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                }
+                .cycle-date {
+                    font-size: 1.1em;
+                    font-weight: bold;
+                    flex: 1;
+                    text-align: center;
+                }
                 .enclave-power-section {
                     margin-bottom: 40px;
                     border: 1px solid #333;
@@ -80,6 +113,11 @@ class EnclaveComponent extends HTMLElement {
             </style>
             <div class="enclave">
                 <h1>Enclave Systems (49 Systems)</h1>
+                <div class="cycle-navigation">
+                    <button id="cycle-prev">← Previous Cycle</button>
+                    <div class="cycle-date" id="cycle-date">Loading...</div>
+                    <button id="cycle-next" disabled>Next Cycle →</button>
+                </div>
                 <div class="loading">Loading enclave data...</div>
                 <div class="content" style="display: none;"></div>
             </div>
@@ -87,7 +125,14 @@ class EnclaveComponent extends HTMLElement {
         this.container = this.querySelector('.enclave');
         this.loadingElement = this.querySelector('.loading');
         this.contentElement = this.querySelector('.content');
+        this.prevButton = this.querySelector('#cycle-prev');
+        this.nextButton = this.querySelector('#cycle-next');
+        this.cycleDate = this.querySelector('#cycle-date');
         this.charts = [];
+        
+        // Bind event handlers
+        this.prevButton.addEventListener('click', () => this.changeCycle(-1));
+        this.nextButton.addEventListener('click', () => this.changeCycle(1));
     }
 
     async connectedCallback() {
@@ -105,17 +150,45 @@ class EnclaveComponent extends HTMLElement {
         this.charts = [];
     }
 
+    changeCycle(direction) {
+        this.currentCycleOffset += direction;
+        this.nextButton.disabled = this.currentCycleOffset >= 0;
+        this.loadData();
+    }
+
+    getThursdayForCycle(offset) {
+        const now = new Date();
+        const daysToSubtract = (now.getDay() + 3) % 7;
+        const thursday = new Date(now);
+        thursday.setDate(now.getDate() - daysToSubtract);
+        thursday.setHours(7, 0, 0, 0);
+        
+        // Apply offset (in weeks)
+        thursday.setDate(thursday.getDate() + (offset * 7));
+        
+        return thursday;
+    }
+
+    formatCycleDate(date) {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return date.toLocaleDateString('en-US', options);
+    }
+
     async loadData() {
         try {
             const conn = await getDbConn();
             
-            // Calculate last Thursday 7 AM
-            const now = new Date();
-            const lastThursday = new Date(now);
-            const daysToSubtract = (now.getDay() + 3) % 7;
-            lastThursday.setDate(now.getDate() - daysToSubtract);
-            lastThursday.setHours(7, 0, 0, 0);
-            const lastThursdayStr = lastThursday.toISOString().replace('T', ' ').substring(0, 19);
+            // Calculate Thursday 7 AM for current cycle
+            const cycleThursday = this.getThursdayForCycle(this.currentCycleOffset);
+            const nextThursday = this.getThursdayForCycle(this.currentCycleOffset + 1);
+            
+            const cycleStartStr = cycleThursday.toISOString().replace('T', ' ').substring(0, 19);
+            const cycleEndStr = nextThursday.toISOString().replace('T', ' ').substring(0, 19);
+            
+            // Update cycle date display
+            this.cycleDate.textContent = `Cycle: ${this.formatCycleDate(cycleThursday)}`;
+            
+            const lastThursdayStr = cycleStartStr;
 
             // Get current system states (latest record for each system)
             const systemsQuery = await conn.query(`
@@ -142,7 +215,7 @@ class EnclaveComponent extends HTMLElement {
 
             const systems = systemsQuery.toArray().map(row => row.toJSON());
 
-            // Get historical data for all systems
+            // Get historical data for all systems (within cycle range)
             const historyQuery = await conn.query(`
                 SELECT 
                     StarSystem,
@@ -150,7 +223,8 @@ class EnclaveComponent extends HTMLElement {
                     reinforcement,
                     undermining
                 FROM enclave_activity
-                WHERE timestamp >= '${lastThursdayStr}'
+                WHERE timestamp >= '${cycleStartStr}'
+                  AND timestamp < '${cycleEndStr}'
                 ORDER BY StarSystem, timestamp
             `);
 
