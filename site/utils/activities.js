@@ -381,7 +381,7 @@ const ACTIVITIES = [
     {
         activity: "Transfer Power Data (A)",
         category: "On Foot",
-        acquisition: false, //true, disabled by fdev
+        acquisition: true,
         reinforcement: false,
         undermining: false,
         legal: false,
@@ -397,14 +397,14 @@ const ACTIVITIES = [
         activity: "Transfer Power Data (R)",
         category: "On Foot",
         acquisition: false,
-        reinforcement: false, //true, //"Some Types",  disabled by fdev
+        reinforcement: true,
         undermining: false,
         legal: false,
         strongholdCarrierUndermining: false,
         details: "Downloadable from data ports",
         pickup: "at Odyssey settlements",
         handIn: "to same system Power Contact",
-        notes: "Research and Industrial data do not work in Reinforcement",
+        notes: "Research and Industrial data do not work in Reinforcement. NPCs do not become hostile when downloading power data.",
         bgsEffect: "None",
         requirements: (systemInfo, action) => true
     },
@@ -413,7 +413,7 @@ const ACTIVITIES = [
         category: "On Foot",
         acquisition: false,
         reinforcement: false,
-        undermining: false, //true, disabled by fdev
+        undermining: true,
         legal: false,
         strongholdCarrierUndermining: false,
         details: "Downloadable from data ports",
