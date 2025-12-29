@@ -198,6 +198,8 @@ class EnclaveComponent extends HTMLElement {
                     undermining as PowerplayStateUndermining,
                     COALESCE(Powers, []) as Powers
                 FROM enclave_activity
+                WHERE timestamp >= '${cycleStartStr}'
+                  AND timestamp < '${cycleEndStr}'
                 QUALIFY ROW_NUMBER() OVER (PARTITION BY StarSystem ORDER BY timestamp DESC) = 1
                 ORDER BY ControllingPower, StarSystem
             `);

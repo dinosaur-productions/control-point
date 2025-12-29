@@ -209,7 +209,9 @@ def make_report_db(generated_at = dt.datetime.now()):
         enc as (SELECT Name FROM 'enclave.csv'),
         diff as (
             SELECT 
-                *,
+                * EXCLUDE (PowerplayState, Powers),
+                COALESCE(PowerplayState, 'Unoccupied') AS PowerplayState,
+                COALESCE(Powers, []) AS Powers,
                 -- Calculate difference from the previous record
                 PowerplayStateReinforcement - LAG(PowerplayStateReinforcement) OVER (PARTITION BY StarSystem ORDER BY timestamp) AS reinf_change,
                 PowerplayStateUndermining - LAG(PowerplayStateUndermining) OVER (PARTITION BY StarSystem ORDER BY timestamp) AS underm_change,
@@ -223,20 +225,25 @@ def make_report_db(generated_at = dt.datetime.now()):
             FROM diff     
             -- first remove rows where R or U goes down over time - these are late EDDN deliveries of out of date data. Except when the tick happened.
             WHERE PowerplayState = 'Unoccupied' 
-            OR ((reinf_change >= 0 AND underm_change >= 0) OR (dayname(timestamp) = 'Thursday' AND hour(prev_timestamp) < 7 AND hour(timestamp) >= 7 ))
+            OR ((reinf_change >= 0 AND underm_change >= 0) 
+                OR (timestamp >= date_trunc('week', prev_timestamp + INTERVAL '3 days' - INTERVAL '7 hours') + INTERVAL '3 days 7 hours'
+                    AND prev_timestamp < date_trunc('week', prev_timestamp + INTERVAL '3 days' - INTERVAL '7 hours') + INTERVAL '3 days 7 hours'))
         ),
         dedup as (
             SELECT *
             FROM monotonic
             -- then remove any remaining duplicate rows where neither R nor U changed.
             WHERE PowerplayState = 'Unoccupied' 
-            OR ((reinf_change > 0 AND underm_change > 0) OR (dayname(timestamp) = 'Thursday' AND hour(prev_timestamp) < 7 AND hour(timestamp) >= 7 ))
+            OR ((reinf_change > 0 AND underm_change > 0) 
+                OR (timestamp >= date_trunc('week', prev_timestamp + INTERVAL '3 days' - INTERVAL '7 hours') + INTERVAL '3 days 7 hours'
+                    AND prev_timestamp < date_trunc('week', prev_timestamp + INTERVAL '3 days' - INTERVAL '7 hours') + INTERVAL '3 days 7 hours')
+                OR (timestamp - prev_timestamp > interval '1 hours'))
         )
         SELECT 
             timestamp,
             StarSystem,
             ControllingPower,
-            COALESCE(Powers, []) as Powers,
+            Powers,
             PowerplayState,
             PowerplayConflictProgress,
             CASE 
