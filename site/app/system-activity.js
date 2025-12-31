@@ -572,8 +572,7 @@ class SystemActivityComponent extends HTMLElement {
                         activity-name="${activity.activity}"
                         legal="${activity.legal}"
                         details="${activity.details || ''}"
-                        pickup="${activity.pickup || ''}"
-                        ${activity.handIn ? `hand-in="${activity.handIn}"` : ''}
+                        location="${activity.location || ''}"
                         ${activity.notes ? `notes="${activity.notes}"` : ''}
                         ${hasLYRBonus ? 'lyr-bonus="true"' : ''}
                         ${isVulnerable ? 'vulnerable="true"' : ''}

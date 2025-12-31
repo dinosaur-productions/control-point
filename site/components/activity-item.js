@@ -1,6 +1,6 @@
 class ActivityItemComponent extends HTMLElement {
     static get observedAttributes() {
-        return ['activity-name', 'legal', 'details', 'pickup', 'hand-in', 'notes', 'scroll-target', 'lyr-bonus', 'vulnerable'];
+        return ['activity-name', 'legal', 'details', 'location', 'notes', 'scroll-target', 'lyr-bonus', 'vulnerable'];
     }
 
     constructor() {
@@ -17,7 +17,7 @@ class ActivityItemComponent extends HTMLElement {
                 </div>
                 <div class="activity-details">
                     <div class="activity-detail details"></div>
-                    <div class="activity-detail pickup-handin"></div>
+                    <div class="activity-detail location"></div>
                     <div class="activity-detail notes" style="display: none;"></div>
                 </div>
             </div>
@@ -28,7 +28,7 @@ class ActivityItemComponent extends HTMLElement {
         this.lyrBonusBadgeElement = this.querySelector('.lyr-bonus-badge');
         this.vulnerableBadgeElement = this.querySelector('.vulnerable-badge');
         this.detailsElement = this.querySelector('.details');
-        this.pickupHandinElement = this.querySelector('.pickup-handin');
+        this.locationElement = this.querySelector('.location');
         this.notesElement = this.querySelector('.notes');
     }
 
@@ -58,8 +58,7 @@ class ActivityItemComponent extends HTMLElement {
         const activityName = this.getAttribute('activity-name') || '';
         const isLegal = this.getAttribute('legal') === 'true';
         const details = this.getAttribute('details') || '';
-        const pickup = this.getAttribute('pickup') || '';
-        const handIn = this.getAttribute('hand-in') || '';
+        const location = this.getAttribute('location') || '';
         const notes = this.getAttribute('notes') || '';
         const hasLYRBonus = this.getAttribute('lyr-bonus') === 'true';
         const isVulnerable = this.getAttribute('vulnerable') === 'true';
@@ -97,15 +96,8 @@ class ActivityItemComponent extends HTMLElement {
         // Update details
         this.detailsElement.innerHTML = this.linkifySupportingSystems(details);
 
-        // Update pickup/hand-in
-        let pickupHandinText = '';
-        if (pickup) {
-            pickupHandinText = `Pick up ${this.linkifySupportingSystems(pickup)}`;
-            if (handIn) {
-                pickupHandinText += `, Hand in ${this.linkifySupportingSystems(handIn)}`;
-            }
-        }
-        this.pickupHandinElement.innerHTML = pickupHandinText;
+        // Update location
+        this.locationElement.innerHTML = this.linkifySupportingSystems(location);
 
         // Update notes
         if (notes) {

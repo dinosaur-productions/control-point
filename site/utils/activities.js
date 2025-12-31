@@ -23,8 +23,7 @@ export const ACTIVITIES = [
         legal: true,
         strongholdCarrierUndermining: false,
         details: "Merit proportional to bounty claim, awarded on kill",
-        pickup: "in target system",
-        handIn: null,
+        location: "Destroy ships in target system",
         notes: "Cashing in the bounties at a friendly system Power Contact afterwards gives a bonus",
         bgsEffect: "Positive, generally for system controller",
         bonusPowers: {
@@ -44,9 +43,8 @@ export const ACTIVITIES = [
         undermining: true,
         legal: false,
         strongholdCarrierUndermining: false,
-        details: "Murder of Power or minor faction ships or personnel",
-        pickup: "in target system",
-        handIn: null,
+        details: "Murder of clean minor faction ships or personnel",
+        location: "Commit murders in target system",
         notes: "System authority appear not to count",
         bgsEffect: "Negative for ship owner (irrelevant for Power ships)",
         bonusPowers: {
@@ -66,8 +64,7 @@ export const ACTIVITIES = [
         legal: true,
         strongholdCarrierUndermining: false,
         details: "Any Odyssey mission in the Support category",
-        pickup: "at stations in target system",
-        handIn: "via Odyssey base in target system",
+        location: "Accept and complete missions at stations in target system",
         notes: "Static merit value regardless of reward choice.",
         bgsEffect: "Positive for mission faction",
         bonusPowers: {
@@ -87,8 +84,7 @@ export const ACTIVITIES = [
         legal: true,
         strongholdCarrierUndermining: false,
         details: "Any ship mission in the Support category",
-        pickup: "at stations in target system",
-        handIn: null,
+        location: "Accept and complete missions at stations in target system",
         notes: "Merit gain proportional to donation size for those missions, with cargo donations much more effective.",
         bgsEffect: "Positive for mission faction",
         bonusPowers: {
@@ -103,7 +99,7 @@ export const ACTIVITIES = [
         }
     },
     {
-        activity: "Collect Salvage (R)",
+        activity: "Collect Salvage", // R
         category: "Misc",
         acquisition: false,
         reinforcement: true,
@@ -111,8 +107,7 @@ export const ACTIVITIES = [
         legal: true,
         strongholdCarrierUndermining: false,
         details: "Black boxes, Personal Effects, Wreckage Components",
-        pickup: "in target system",
-        handIn: "at Power Contact in target system",
+        location: "Collect in target system and deliver to Power Contact in target system",
         notes: "Unavailable at Anarchy stations.",
         bgsEffect: "Positive for station owner",
         bonusPowers: {
@@ -124,7 +119,7 @@ export const ACTIVITIES = [
         requirements: (systemInfo, action) => true
     },
     {
-        activity: "Collect Salvage (U)",
+        activity: "Collect Salvage", // U
         category: "Misc",
         acquisition: false,
         reinforcement: false,
@@ -132,8 +127,7 @@ export const ACTIVITIES = [
         legal: true,
         strongholdCarrierUndermining: false,
         details: "Black boxes, Personal Effects, Wreckage Components",
-        pickup: "in target system",
-        handIn: "at friendly system Power Contact",
+        location: "Collect in target system and deliver to friendly system Power Contact",
         notes: "Unavailable at Anarchy stations.",
         bgsEffect: "Positive for station owner",
         bonusPowers: {
@@ -153,8 +147,7 @@ export const ACTIVITIES = [
         legal: true,
         strongholdCarrierUndermining: false,
         details: "",
-        pickup: "anywhere",
-        handIn: "at stations in target system",
+        location: "Scan biological samples anywhere and sell data at stations in target system",
         notes: "Data collected after 7 Nov 3310 only",
         bgsEffect: "None",
         bonusPowers: {
@@ -174,8 +167,7 @@ export const ACTIVITIES = [
         legal: true,
         strongholdCarrierUndermining: false,
         details: "Merits per system, not per page - cheap systems get nothing",
-        pickup: "anywhere >20LY from target",
-        handIn: "at stations in target system",
+        location: "Scan systems anywhere >20LY from target and sell data at stations in target system",
         notes: "Data collected after 7 Nov 3310 only",
         bgsEffect: "Positive for station owner",
         bonusPowers: {
@@ -187,7 +179,7 @@ export const ACTIVITIES = [
         requirements: (systemInfo, action) => true
     },
     {
-        activity: "Flood markets with low value goods (A)",
+        activity: "Flood markets with low value goods", // A
         category: "Hauling",
         acquisition: true, // "Conflict only",
         reinforcement: false,
@@ -195,8 +187,7 @@ export const ACTIVITIES = [
         legal: true,
         strongholdCarrierUndermining: false,
         details: "Goods must sell for 500 cr or less, and be on the station market as supply or demand",
-        pickup: "at stations in supporting system",
-        handIn: "at stations in target system",
+        location: "Buy at stations in supporting system and sell at stations in target system",
         notes: "The cheaper the better. Hydrogen Fuel is usually a safe bet, Limpets also work well.",
         bgsEffect: "Variable but small for station owner",
         bonusPowers: {
@@ -208,7 +199,7 @@ export const ACTIVITIES = [
         requirements: (systemInfo, action) => action !== 'Acquire' || systemInfo.isInConflict()
     },
     {
-        activity: "Flood markets with low value goods (U)",
+        activity: "Flood markets with low value goods", // U
         category: "Hauling",
         acquisition: false,
         reinforcement: false,
@@ -216,8 +207,7 @@ export const ACTIVITIES = [
         legal: true,
         strongholdCarrierUndermining: false,
         details: "Goods must sell for 500 cr or less, and be on the station market as supply or demand",
-        pickup: "at stations in any system",
-        handIn: "at stations in target system",
+        location: "Buy at stations in any system and sell at stations in target system",
         notes: "The cheaper the better. Hydrogen Fuel is usually a safe bet, Limpets also work well.",
         bgsEffect: "Variable but small for station owner",
         bonusPowers: {
@@ -237,8 +227,7 @@ export const ACTIVITIES = [
         legal: false,
         strongholdCarrierUndermining: true,
         details: "Requires Recon Limpet",
-        pickup: "at orbital starports",
-        handIn: null,
+        location: "Hack holoscreens at orbital starports",
         notes: "In Acquisition and Undermining, rapidly damages reputation with station owner. In Reinforcement may not be available away from front lines.",
         bgsEffect: "None",
         bonusPowers: {
@@ -258,8 +247,7 @@ export const ACTIVITIES = [
         legal: false,
         strongholdCarrierUndermining: true,
         details: "In Undermining systems, killing ships or soldiers belonging to another Undermining Power does nothing",
-        pickup: "in target system",
-        handIn: null,
+        location: "Destroy Power ships or kill Power soldiers in target system",
         notes: "Legal in Power Conflict Zones (ship combat only). In Acquisition and Undermining, kills are illegal but do not increase notoriety.",
         bgsEffect: "None",
         bonusPowers: {
@@ -271,7 +259,7 @@ export const ACTIVITIES = [
         requirements: (systemInfo, action) => true // Always available
     },
     {
-        activity: "Retrieve Power Goods (A)",
+        activity: "Retrieve Power Goods", // A
         category: "On Foot",
         acquisition: true,
         reinforcement: false,
@@ -279,8 +267,7 @@ export const ACTIVITIES = [
         legal: false,
         strongholdCarrierUndermining: false,
         details: "Goods are in locked containers, ebreach or combination to open",
-        pickup: "in surface settlements in target system",
-        handIn: "to supporting system Power Contact",
+        location: "Retrieve from surface settlements in target system and deliver to supporting system Power Contact",
         notes: "",
         bgsEffect: "None",
         bonusPowers: {
@@ -292,7 +279,7 @@ export const ACTIVITIES = [
         requirements: (systemInfo, action) => true
     },
     {
-        activity: "Retrieve Power Goods (U)",
+        activity: "Retrieve Power Goods", // U
         category: "On Foot",
         acquisition: false,
         reinforcement: false,
@@ -300,8 +287,7 @@ export const ACTIVITIES = [
         legal: false,
         strongholdCarrierUndermining: false,
         details: "Goods are in locked containers, ebreach or combination to open",
-        pickup: "in surface settlements in target system",
-        handIn: "at friendly system Power Contact",
+        location: "Retrieve from surface settlements in target system and deliver to friendly system Power Contact",
         notes: "",
         bgsEffect: "None",
         bonusPowers: {
@@ -321,8 +307,7 @@ export const ACTIVITIES = [
         legal: true,
         strongholdCarrierUndermining: false,
         details: "Scan Ship Log Uplink with Data Link Scanner",
-        pickup: "at non-dockable megaships",
-        handIn: null,
+        location: "Scan datalinks at non-dockable megaships",
         notes: "Only once per megaship per fortnight",
         bgsEffect: "None (unless combined with a mission to scan the same ship)",
         bonusPowers: {
@@ -342,8 +327,7 @@ export const ACTIVITIES = [
         legal: true,
         strongholdCarrierUndermining: false,
         details: "Normal scan of ships.",
-        pickup: "in target system",
-        handIn: null,
+        location: "Scan ships and wakes in target system",
         notes: "Autoscans count (including your own SLF, though the merit count is far too small to be exploitable)",
         bgsEffect: "None",
         bonusPowers: {
@@ -355,7 +339,7 @@ export const ACTIVITIES = [
         requirements: (systemInfo, action) => action !== 'Acquire' || systemInfo.isInConflict(),
     },
     {
-        activity: "Sell for large profits (A)",
+        activity: "Sell for large profits", //A
         category: "Hauling",
         acquisition: true,
         reinforcement: false,
@@ -363,8 +347,7 @@ export const ACTIVITIES = [
         legal: true,
         strongholdCarrierUndermining: false,
         details: "Any cargo worth 40% or more profit",
-        pickup: "at stations in supporting system",
-        handIn: "at stations in target system",
+        location: "Buy at stations in supporting system and sell at stations in target system",
         notes: "Once profit threshold met, more expensive goods are better. Undocumented location requirement.",
         bgsEffect: "Positive for station owner",
         bonusPowers: {
@@ -376,7 +359,7 @@ export const ACTIVITIES = [
         requirements: (systemInfo, action) => true
     },
     {
-        activity: "Sell for large profits (R)",
+        activity: "Sell for large profits", //R
         category: "Hauling",
         acquisition: false,
         reinforcement: true,
@@ -384,8 +367,7 @@ export const ACTIVITIES = [
         legal: true,
         strongholdCarrierUndermining: false,
         details: "Any cargo worth 40% or more profit",
-        pickup: "at stations in any system",
-        handIn: "at stations in target system",
+        location: "Buy at stations in any system and sell at stations in target system",
         notes: "Once profit threshold met, more expensive goods are better",
         bgsEffect: "Positive for station owner",
         bonusPowers: {
@@ -397,7 +379,7 @@ export const ACTIVITIES = [
         requirements: (systemInfo, action) => true
     },
     {
-        activity: "Sell mined resources (A)",
+        activity: "Sell mined resources", // A
         category: "Mining",
         acquisition: true,
         reinforcement: false,
@@ -405,8 +387,7 @@ export const ACTIVITIES = [
         legal: true,
         strongholdCarrierUndermining: false,
         details: "Sell any actually mined goods, note location requirements",
-        pickup: "at mining sites in supporting system",
-        handIn: "at stations in target system",
+        location: "Mine at mining sites in supporting system and sell at stations in target system",
         notes: "Location requirement is unusually harsh, and not documented",
         bgsEffect: "Positive for station owner",
         bonusPowers: {
@@ -418,7 +399,7 @@ export const ACTIVITIES = [
         requirements: (systemInfo, action) => true
     },
     {
-        activity: "Sell mined resources (R,U)",
+        activity: "Sell mined resources", // R,U
         category: "Mining",
         acquisition: false,
         reinforcement: true,
@@ -426,8 +407,7 @@ export const ACTIVITIES = [
         legal: true,
         strongholdCarrierUndermining: false,
         details: "Sell any actually mined goods, note location requirements",
-        pickup: "at mining sites in target system",
-        handIn: "at stations in target system",
+        location: "Mine at mining sites in target system and sell at stations in target system",
         notes: "Merits proportional to sale price. For undermining, goods must be in demand.",
         bgsEffect: "Positive for station owner",
         bonusPowers: {
@@ -447,8 +427,7 @@ export const ACTIVITIES = [
         legal: false,
         strongholdCarrierUndermining: false,
         details: "Sell rare goods",
-        pickup: "at any rare goods producer outside target system",
-        handIn: "at stations in target system",
+        location: "Buy at any rare goods producer outside target system and sell at stations in target system",
         notes: "Rares must be legal in target system",
         bgsEffect: "Positive for station owner",
         bonusPowers: {
@@ -460,7 +439,7 @@ export const ACTIVITIES = [
         requirements: (systemInfo, action) => true
     },
     {
-        activity: "Transport Power Commodity (A)",
+        activity: "Transport Power Commodity: Sirius Franchise Package", // A
         category: "Hauling",
         acquisition: true,
         reinforcement: false,
@@ -468,8 +447,7 @@ export const ACTIVITIES = [
         legal: true,
         strongholdCarrierUndermining: false,
         details: "Location is crucial",
-        pickup: "at Power Contact in supporting system",
-        handIn: "to Power Contact in target system",
+        location: "Collect Sirius Franchise Packages from Power Contact in supporting system and deliver to Power Contact in target system",
         notes: "Limited allocation per half hour, 15-250 dependent on rank. Cargo disappears at end of cycle if not delivered.",
         bgsEffect: "None",
         bonusPowers: {
@@ -481,7 +459,7 @@ export const ACTIVITIES = [
         requirements: (systemInfo, action) => true
     },
     {
-        activity: "Transport Power Commodity (R)",
+        activity: "Transport Power Commodity: Sirius Industrial Equipment", // R
         category: "Hauling",
         acquisition: false,
         reinforcement: true,
@@ -489,8 +467,7 @@ export const ACTIVITIES = [
         legal: true,
         strongholdCarrierUndermining: false,
         details: "",
-        pickup: "at Power Contact in stronghold system",
-        handIn: "to Power Contact in target system",
+        location: "Collect Sirius Industrial Equipmentfrom Power Contact in stronghold system and deliver to Power Contact in target system",
         notes: "Limited allocation per half hour, 15-250 dependent on rank. Can't reinforce a system with its own supplies. Cargo disappears at end of cycle if not delivered.",
         bgsEffect: "None",
         bonusPowers: {
@@ -502,7 +479,7 @@ export const ACTIVITIES = [
         requirements: (systemInfo, action) => true
     },
     {
-        activity: "Transport Power Commodity (U)",
+        activity: "Transport Power Commodity: Sirius Corporate Contracts", // U
         category: "Hauling",
         acquisition: false,
         reinforcement: false,
@@ -510,8 +487,7 @@ export const ACTIVITIES = [
         legal: true,
         strongholdCarrierUndermining: false,
         details: "",
-        pickup: "at Power Contact in stronghold system",
-        handIn: "to Power Contact in target system",
+        location: "Collect Sirius Corporate Contracts from Power Contact in stronghold system and deliver to Power Contact in target system",
         notes: "Limited allocation per half hour, 15-250 dependent on rank. Cargo disappears at end of cycle if not delivered.",
         bgsEffect: "None",
         bonusPowers: {
@@ -523,7 +499,7 @@ export const ACTIVITIES = [
         requirements: (systemInfo, action) => true
     },
     {
-        activity: "Transfer Power Data (A)",
+        activity: "Transfer Power Data", // A
         category: "On Foot",
         acquisition: true,
         reinforcement: false,
@@ -531,8 +507,7 @@ export const ACTIVITIES = [
         legal: false,
         strongholdCarrierUndermining: false,
         details: "Downloadable from data ports",
-        pickup: "at Odyssey settlements",
-        handIn: "to supporting system Power Contact",
+        location: "Download at Odyssey settlements and deliver to supporting system Power Contact",
         notes: "Each Power has preferred types of data which give better merits. Data type chances related to data port type.",
         bgsEffect: "None",
         bonusPowers: {
@@ -544,7 +519,7 @@ export const ACTIVITIES = [
         requirements: (systemInfo, action) => true
     },
     {
-        activity: "Transfer Power Data (R)",
+        activity: "Transfer Power Data", // R
         category: "On Foot",
         acquisition: false,
         reinforcement: true,
@@ -552,8 +527,7 @@ export const ACTIVITIES = [
         legal: false,
         strongholdCarrierUndermining: false,
         details: "Downloadable from data ports",
-        pickup: "at Odyssey settlements",
-        handIn: "to same system Power Contact",
+        location: "Download at Odyssey settlements and deliver to same system Power Contact",
         notes: "Research and Industrial data do not work in Reinforcement. NPCs do not become hostile when downloading power data.",
         bgsEffect: "None",
         bonusPowers: {
@@ -565,7 +539,7 @@ export const ACTIVITIES = [
         requirements: (systemInfo, action) => true
     },
     {
-        activity: "Transfer Power Data (U)",
+        activity: "Transfer Power Data", // U
         category: "On Foot",
         acquisition: false,
         reinforcement: false,
@@ -573,8 +547,7 @@ export const ACTIVITIES = [
         legal: false,
         strongholdCarrierUndermining: false,
         details: "Downloadable from data ports",
-        pickup: "at Odyssey settlements",
-        handIn: "to friendly system Power Contact",
+        location: "Download at Odyssey settlements and deliver to friendly system Power Contact",
         notes: "Each Power has preferred types of data which give better merits. Data type chances related to data port type.",
         bgsEffect: "None",
         bonusPowers: {
@@ -586,7 +559,7 @@ export const ACTIVITIES = [
         requirements: (systemInfo, action) => true
     },
     {
-        activity: "Upload Power Malware (A)",
+        activity: "Upload Power Malware", // A
         category: "On Foot",
         acquisition: true,
         reinforcement: false,
@@ -594,8 +567,7 @@ export const ACTIVITIES = [
         legal: false,
         strongholdCarrierUndermining: false,
         details: "Upload Power Injection Malware to data ports",
-        pickup: "at any Power Contact",
-        handIn: "to Odyssey settlements in target system",
+        location: "Collect from any Power Contact and upload at Odyssey settlements in target system",
         notes: "Only one item can be uploaded per port. Long upload time.",
         bgsEffect: "None",
         bonusPowers: {
@@ -607,7 +579,7 @@ export const ACTIVITIES = [
         requirements: (systemInfo, action) => true
     },
     {
-        activity: "Upload Power Malware (U)",
+        activity: "Upload Power Malware", // U
         category: "On Foot",
         acquisition: false,
         reinforcement: false,
@@ -615,8 +587,7 @@ export const ACTIVITIES = [
         legal: false,
         strongholdCarrierUndermining: false,
         details: "Upload Power Tracker Malware to data ports",
-        pickup: "Any Power Contact",
-        handIn: "Odyssey settlements in target system",
+        location: "Collect from any Power Contact and upload at Odyssey settlements in target system",
         notes: "Only one item can be uploaded per port. Long upload time.",
         bgsEffect: "None",
         bonusPowers: {
@@ -659,14 +630,9 @@ export function getAvailableActivities(systemName, action, systemInfo) {
         return filtered.map(activity => {
             const activityCopy = { ...activity };
             
-            // Replace 'target system' in pickup field
-            if (activityCopy.pickup && typeof activityCopy.pickup === 'string') {
-                activityCopy.pickup = activityCopy.pickup.replace(/target system/g, systemName);
-            }
-            
-            // Replace 'target system' in handIn field
-            if (activityCopy.handIn && typeof activityCopy.handIn === 'string') {
-                activityCopy.handIn = activityCopy.handIn.replace(/target system/g, systemName);
+            // Replace 'target system' in location field
+            if (activityCopy.location && typeof activityCopy.location === 'string') {
+                activityCopy.location = activityCopy.location.replace(/target system/g, systemName);
             }
             
             // Replace 'target system' in details field
