@@ -1,6 +1,7 @@
 import { getSystemByAddress, getSupportingSystems, getSupportedSystems } from "../utils/data-access.js";
 
 import { getAvailableActivities, SystemInfo, ACTIVITIES } from "../utils/activities.js";
+import { CONFLICT_THRESHOLD, ACQUISITION_THRESHOLD, EXPLOITED_THRESHOLD, FORTIFIED_THRESHOLD, STRONGHOLD_THRESHOLD } from "../utils/constants.js";
 
 class SystemActivityComponent extends HTMLElement {
     static get observedAttributes() {
@@ -139,12 +140,29 @@ class SystemActivityComponent extends HTMLElement {
     renderTugOfWar(row) {
         const undermining = row.PowerplayStateUndermining || 0;
         const reinforcement = row.PowerplayStateReinforcement || 0;
+        const difference = reinforcement - undermining;
+        
+        // Calculate current control points based on state
+        const progressValue = row.PowerplayStateControlProgress || 0;
+        let stateThreshold = EXPLOITED_THRESHOLD; // Default
+        if (row.PowerplayState === 'Fortified') {
+            stateThreshold = FORTIFIED_THRESHOLD;
+        } else if (row.PowerplayState === 'Stronghold') {
+            stateThreshold = STRONGHOLD_THRESHOLD;
+        }
+        const currentControlPoints = Math.floor(progressValue * stateThreshold);
         
         return `
             <div class="tug-of-war">
                 <div class="undermining-side">
                     <span class="tug-label">Undermining</span>
                     <span class="tug-value undermining-value">${undermining.toLocaleString()}</span>
+                </div>
+                <div class="tug-of-war-center">
+                    <div class="tug-stat">
+                        <span class="tug-label">${difference >= 0 ? 'Net Reinforcing' : 'Net Undermining'}</span>
+                        <span class="tug-value ${difference >= 0 ? 'positive' : 'negative'}">${difference >= 0 ? '+' : ''}${difference.toLocaleString()}</span>
+                    </div>
                 </div>
                 <div class="reinforcement-side">
                     <span class="tug-label">Reinforcement</span>
@@ -176,6 +194,15 @@ class SystemActivityComponent extends HTMLElement {
         // Format progress value for display
         const progressPercent = (progressValue * 100).toFixed(1);
         
+        // Calculate current control points based on state
+        let stateThreshold = EXPLOITED_THRESHOLD; // Default
+        if (row.PowerplayState === 'Fortified') {
+            stateThreshold = FORTIFIED_THRESHOLD;
+        } else if (row.PowerplayState === 'Stronghold') {
+            stateThreshold = STRONGHOLD_THRESHOLD;
+        }
+        const currentControlPoints = Math.floor(progressValue * stateThreshold);
+        
         return `
             <div class="four-state-progress">
                 <div class="state-bar">
@@ -185,7 +212,7 @@ class SystemActivityComponent extends HTMLElement {
                         </div>
                     `).join('')}
                     <div class="state-indicator" style="left: ${positionPercent}%">
-                        <div class="progress-label">${progressPercent}%</div>
+                        <div class="progress-label">${progressPercent}% ~ ${currentControlPoints.toLocaleString()} CP</div>
                     </div>
                 </div>
             </div>
@@ -197,8 +224,7 @@ class SystemActivityComponent extends HTMLElement {
         const sortedConflicts = conflicts.sort((a, b) => b.ConflictProgress - a.ConflictProgress);
         
         // Calculate dynamic maxDisplay based on highest score
-        const maxPoints = Math.max(...sortedConflicts.map(conflict => Math.floor(conflict.ConflictProgress * 120000)));
-        const controlThreshold = 120000;
+        const maxPoints = Math.max(...sortedConflicts.map(conflict => Math.floor(conflict.ConflictProgress * ACQUISITION_THRESHOLD)));
         const maxDisplay = Math.max(150000, maxPoints + 20000); // At least 150K or highest score + 20K
         
         let bannerContent = `
@@ -211,12 +237,11 @@ class SystemActivityComponent extends HTMLElement {
         `;
 
         sortedConflicts.forEach(conflict => {
-            const points = Math.floor(conflict.ConflictProgress * 120000);
-            const conflictThreshold = 36000;
+            const points = Math.floor(conflict.ConflictProgress * ACQUISITION_THRESHOLD);
             
             // Calculate percentages for display (0-100% of maxDisplay)
-            const conflictPercent = (conflictThreshold / maxDisplay) * 100;
-            const controlPercent = (controlThreshold / maxDisplay) * 100;
+            const conflictPercent = (CONFLICT_THRESHOLD / maxDisplay) * 100;
+            const controlPercent = (ACQUISITION_THRESHOLD / maxDisplay) * 100;
             const currentPercent = Math.min((points / maxDisplay) * 100, 100);
 
             bannerContent += `

@@ -560,7 +560,7 @@ class EnclaveComponent extends HTMLElement {
                     const conflicts = h.PowerplayConflictProgress.toArray();
                     const powerConflict = conflicts.find(c => c.Power === power);
                     if (powerConflict) {
-                        return Math.floor(powerConflict.ConflictProgress * 120000);
+                        return Math.floor(powerConflict.ConflictProgress * ACQUISITION_THRESHOLD);
                     }
                 }
                 return 0;
@@ -686,23 +686,16 @@ class EnclaveComponent extends HTMLElement {
                                 currentDay = nextDay;
                             }
                             
-                            // Draw horizontal marker lines at 36K and 120K
-                            const conflictThreshold = 36000;
-                            const controlThreshold = 120000;
-                            
-                            const yConflict = u.valToPos(conflictThreshold, 'y', true);
-                            const yControl = u.valToPos(controlThreshold, 'y', true);
-                            
-                            // Draw 36K conflict line (yellow/orange)
-                            ctx.strokeStyle = 'rgba(255, 165, 0, 0.6)';
-                            ctx.lineWidth = 2;
+                        // Draw horizontal marker lines at conflict and acquisition thresholds
+                        const yConflict = u.valToPos(CONFLICT_THRESHOLD, 'y', true);
+                        const yControl = u.valToPos(ACQUISITION_THRESHOLD, 'y', true);
                             ctx.setLineDash([5, 5]);
                             ctx.beginPath();
                             ctx.moveTo(plotLeft, yConflict);
                             ctx.lineTo(plotRight, yConflict);
                             ctx.stroke();
                             
-                            // Draw 120K control line (green)
+                            // Draw acquisition threshold control line (green)
                             ctx.strokeStyle = 'rgba(46, 204, 113, 0.6)';
                             ctx.lineWidth = 2;
                             ctx.setLineDash([5, 5]);
@@ -717,10 +710,10 @@ class EnclaveComponent extends HTMLElement {
                             ctx.textAlign = 'right';
                             
                             ctx.fillStyle = 'rgba(255, 165, 0, 0.9)';
-                            ctx.fillText('Conflict (36K)', plotRight - 5, yConflict - 5);
+                            ctx.fillText(`Conflict (${(CONFLICT_THRESHOLD / 1000).toFixed(0)}K)`, plotRight - 5, yConflict - 5);
                             
                             ctx.fillStyle = 'rgba(46, 204, 113, 0.9)';
-                            ctx.fillText('Control (120K)', plotRight - 5, yControl - 5);
+                            ctx.fillText(`Control (${(ACQUISITION_THRESHOLD / 1000).toFixed(0)}K)`, plotRight - 5, yControl - 5);
                             
                             ctx.restore();
                         }
