@@ -75,6 +75,9 @@ def to_security_enum(expr):
         END
     """
 
+def to_faction_state(expr):
+    return f"{{'Name': {expr}->>'Name', 'FactionState': COALESCE({expr}->>'FactionState', 'None')::faction_state_enum}}"
+
 def to_station_type_enum(expr):
     return f"CASE WHEN {expr} = '' THEN 'Empty' WHEN {expr} = 'Megaship' THEN 'MegaShip' ELSE {expr} END"
 
@@ -331,7 +334,7 @@ def import_docked_jsonl_files(conn, imported):
                     message->>'StationAllegiance' AS StationAllegiance,
                     {to_economy_enum_proportion("message->'StationEconomies'")} AS StationEconomies,
                     {to_economy_enum("message->>'StationEconomy'")} AS StationEconomy,
-                    message->'StationFaction' AS StationFaction,
+                    {to_faction_state("message->'StationFaction'")} AS StationFaction,
                     {to_government_enum("message->>'StationGovernment'")} AS StationGovernment,
                     CAST(message->'StationServices' AS VARCHAR[]) AS StationServices,
                     CAST(message->'LandingPads' AS STRUCT(Large INTEGER, Medium INTEGER, Small INTEGER)) AS LandingPads,
@@ -421,14 +424,14 @@ def import_location_jsonl_files(conn, imported):
                     CAST(message->>'StarPos' AS DOUBLE[]) AS StarPos,
                     {to_economy_enum_proportion("message->'StationEconomies'")} AS StationEconomies,
                     {to_economy_enum("message->>'StationEconomy'")} AS StationEconomy,
-                    message->'StationFaction' AS StationFaction,
+                    {to_faction_state("message->'StationFaction'")} AS StationFaction,
                     {to_government_enum("message->>'StationGovernment'")} AS StationGovernment,
                     message->>'StationName' AS StationName,
                     CAST(message->'StationServices' AS VARCHAR[]) AS StationServices,
                     message->>'StationType' AS StationType,
                     {to_allegiance_enum("message->>'SystemAllegiance'")} AS SystemAllegiance,
                     {to_economy_enum("message->>'SystemEconomy'")} AS SystemEconomy,
-                    message->'SystemFaction' AS SystemFaction,
+                    {to_faction_state("message->'SystemFaction'")} AS SystemFaction,
                     {to_government_enum("message->>'SystemGovernment'")} AS SystemGovernment,
                     {to_economy_enum("message->>'SystemSecondEconomy'")} AS SystemSecondEconomy,
                     {to_security_enum("message->>'SystemSecurity'")} AS SystemSecurity,
