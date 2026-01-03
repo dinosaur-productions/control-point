@@ -871,24 +871,33 @@ cells:
 
       \        COALESCE(PowerplayState, 'Unoccupied') AS PowerplayState,\r
 
-      \        -- Calculate difference from the literal previous record\r
+      \        -- Calculate difference from the previous record\r
 
-      \        \"PowerplayStateReinforcement\" -
-      LAG(\"PowerplayStateReinforcement\") OVER (PARTITION BY StarSystem ORDER
-      BY \"timestamp\") AS reinf_change,\r
+      \        PowerplayStateReinforcement - LAG(PowerplayStateReinforcement)
+      OVER (PARTITION BY StarSystem ORDER BY \"timestamp\") AS reinf_change,\r
 
-      \        \"PowerplayStateUndermining\" -
-      LAG(\"PowerplayStateUndermining\") OVER (PARTITION BY StarSystem ORDER BY
-      \"timestamp\") AS underm_change,\r
+      \        PowerplayStateUndermining - LAG(PowerplayStateUndermining) OVER
+      (PARTITION BY StarSystem ORDER BY \"timestamp\") AS underm_change,\r
 
       \        LAG(timestamp) OVER (PARTITION BY StarSystem ORDER BY
-      \"timestamp\") AS prev_timestamp\r
+      \"timestamp\") AS prev_timestamp,\r
+
+      \        LAG(PowerplayStateControlProgress) OVER (PARTITION BY StarSystem
+      ORDER BY \"timestamp\") AS prev_control_progress,\r
+
+      \        LAG(PowerplayState) OVER (PARTITION BY StarSystem ORDER BY
+      \"timestamp\") AS prev_state,\r
+
+      \        map_from_entries(\"PowerplayConflictProgress\") AS progress,\r
+
+      \        map_from_entries(LAG(\"PowerplayConflictProgress\") OVER
+      (PARTITION BY StarSystem ORDER BY \"timestamp\")) AS prev_progress\r
 
       \    FROM jumps_location\r
 
       \    --WHERE StarSystem IN (select Name from enc) \r
 
-      \    WHERE StarSystem = 'Col 359 Sector QX-R c5-11'\r
+      \    WHERE StarSystem = 'Col 359 Sector FK-L b10-1'\r
 
       \    --WHERE StarSystem = 'Col 359 Sector QX-R c5-13'\r
 
@@ -900,41 +909,80 @@ cells:
 
       \    --WHERE StarSystem = 'Col 359 Sector QX-R c5-9'\r
 
-      \   --WHERE PowerplayState = 'Stronghold' AND
+      \    --WHERE PowerplayState = 'Stronghold' AND
       \"PowerplayStateControlProgress\" > 2\r
 
       ),\r
 
       monotonic as (\r
 
-      \    SELECT *\r
+      \    SELECT \r
+
+      \        * EXCLUDE (reinf_change, underm_change, prev_timestamp,
+      prev_control_progress),\r
+
+      \        PowerplayStateReinforcement - LAG(PowerplayStateReinforcement)
+      OVER (PARTITION BY StarSystem ORDER BY \"timestamp\") AS reinf_change,\r
+
+      \        PowerplayStateUndermining - LAG(PowerplayStateUndermining) OVER
+      (PARTITION BY StarSystem ORDER BY \"timestamp\") AS underm_change,\r
+
+      \        LAG(timestamp) OVER (PARTITION BY StarSystem ORDER BY
+      \"timestamp\") AS prev_timestamp,\r
+
+      \        LAG(PowerplayStateControlProgress) OVER (PARTITION BY StarSystem
+      ORDER BY \"timestamp\") AS prev_control_progress\r
 
       \    FROM diff\r
 
       \    -- first remove rows where R or U goes down over time - these are
       late EDDN deliveries of out of date data.\r
 
-      \    WHERE PowerplayState = 'Unoccupied' \r
+      \    WHERE \r
 
-      \    OR ((reinf_change >= 0 AND underm_change >= 0) \r
+      \        --(PowerplayState = 'Unoccupied')\r
 
-      \        OR (timestamp >= date_trunc('week', prev_timestamp + INTERVAL '3
-      days' - INTERVAL '7 hours') + INTERVAL '3 days 7 hours'\r
+      \        (NOT (PowerplayState = 'Unoccupied' AND prev_state =
+      'Unoccupied') \r
 
-      \            AND prev_timestamp < date_trunc('week', prev_timestamp +
+      \            OR array_has([progress[k] > prev_progress[k]  FOR k IN
+      map_keys(progress) IF element_at(prev_progress, k) IS NOT NULL], true))\r
+
+      \        OR ((reinf_change >= 0 AND underm_change >= 0) \r
+
+      \            OR (timestamp >= date_trunc('week', prev_timestamp + INTERVAL
+      '3 days' - INTERVAL '7 hours') + INTERVAL '3 days 7 hours'\r
+
+      \                AND prev_timestamp < date_trunc('week', prev_timestamp +
       INTERVAL '3 days' - INTERVAL '7 hours') + INTERVAL '3 days 7 hours'))\r
 
       ),\r
 
       dedup as (\r
 
-      \    SELECT *\r
+      \    SELECT \r
+
+      \        * EXCLUDE (reinf_change, underm_change, prev_timestamp,
+      prev_control_progress),\r
+
+      \        PowerplayStateReinforcement - LAG(PowerplayStateReinforcement)
+      OVER (PARTITION BY StarSystem ORDER BY \"timestamp\") AS reinf_change,\r
+
+      \        PowerplayStateUndermining - LAG(PowerplayStateUndermining) OVER
+      (PARTITION BY StarSystem ORDER BY \"timestamp\") AS underm_change,\r
+
+      \        LAG(timestamp) OVER (PARTITION BY StarSystem ORDER BY
+      \"timestamp\") AS prev_timestamp,\r
+
+      \        LAG(PowerplayStateControlProgress) OVER (PARTITION BY StarSystem
+      ORDER BY \"timestamp\") AS prev_control_progress\r
 
       \    FROM monotonic\r
 
       \    -- then remove any duplicate rows where neither R nor U changed.\r
 
-      \    WHERE PowerplayState = 'Unoccupied' \r
+      \    WHERE (PowerplayState = 'Unoccupied') -- AND
+      PowerplayStateControlProgress <> prev_control_progress)\r
 
       \    OR((reinf_change > 0 AND underm_change > 0) \r
 
@@ -1010,7 +1058,9 @@ cells:
     metadata: {}
   - kind: 2
     languageId: sql
-    value: "select distinct \"PowerplayState\" from jumps_location\r\n"
+    value: "select map_from_entries(\"PowerplayConflictProgress\") from
+      jumps_location where \"PowerplayConflictProgress\" is not null limit
+      10;\r\n"
     metadata: {}
 metadata:
   conn:

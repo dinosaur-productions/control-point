@@ -16,15 +16,6 @@ def make_report_db(generated_at = dt.datetime.now()):
         except OSError:
             print(f"Could not remove {path}, skipping.")
 
-    # old file name - this part can be removed after first run on GitHub.
-    pattern = os.path.join(SITE_DIR, f"site-data_*.duckdb")
-    for path in glob.glob(pattern):
-        try:
-            os.remove(path)
-            print(f"Removed existing report database: {path}")
-        except OSError:
-            print(f"Could not remove {path}, skipping.")
-
     db_site_path = os.path.join(SITE_DIR, f"{DB_SITE_NAME}_{generated_at.strftime('%Y%m%d_%H%M%S')}.duckdb")
 
     print(f"Creating report database at {db_site_path} ...", end="")
@@ -215,22 +206,38 @@ def make_report_db(generated_at = dt.datetime.now()):
                 -- Calculate difference from the previous record
                 PowerplayStateReinforcement - LAG(PowerplayStateReinforcement) OVER (PARTITION BY StarSystem ORDER BY timestamp) AS reinf_change,
                 PowerplayStateUndermining - LAG(PowerplayStateUndermining) OVER (PARTITION BY StarSystem ORDER BY timestamp) AS underm_change,
-                LAG(timestamp) OVER (PARTITION BY StarSystem ORDER BY timestamp) AS prev_timestamp
+                LAG(timestamp) OVER (PARTITION BY StarSystem ORDER BY timestamp) AS prev_timestamp,
+                LAG(PowerplayStateControlProgress) OVER (PARTITION BY StarSystem ORDER BY "timestamp") AS prev_control_progress,
+                LAG(PowerplayState) OVER (PARTITION BY StarSystem ORDER BY "timestamp") AS prev_state,
+                map_from_entries("PowerplayConflictProgress") AS progress,
+                map_from_entries(LAG("PowerplayConflictProgress") OVER (PARTITION BY StarSystem ORDER BY "timestamp")) AS prev_progress
             FROM db.jumps_location
             WHERE StarSystem IN (SELECT Name FROM enc)
             AND (PowerplayState NOT IN ('Fortified', 'Exploited', 'Stronghold') OR PowerplayStateControlProgress IS NOT NULL)
         ),
         monotonic as (
-            SELECT *
+            SELECT 
+                 * EXCLUDE (reinf_change, underm_change, prev_timestamp, prev_control_progress),
+                PowerplayStateReinforcement - LAG(PowerplayStateReinforcement) OVER (PARTITION BY StarSystem ORDER BY "timestamp") AS reinf_change,
+                PowerplayStateUndermining - LAG(PowerplayStateUndermining) OVER (PARTITION BY StarSystem ORDER BY "timestamp") AS underm_change,
+                LAG(timestamp) OVER (PARTITION BY StarSystem ORDER BY "timestamp") AS prev_timestamp,
+                LAG(PowerplayStateControlProgress) OVER (PARTITION BY StarSystem ORDER BY "timestamp") AS prev_control_progress
             FROM diff     
             -- first remove rows where R or U goes down over time - these are late EDDN deliveries of out of date data. Except when the tick happened.
-            WHERE PowerplayState = 'Unoccupied' 
-            OR ((reinf_change >= 0 AND underm_change >= 0) 
-                OR (timestamp >= date_trunc('week', prev_timestamp + INTERVAL '3 days' - INTERVAL '7 hours') + INTERVAL '3 days 7 hours'
-                    AND prev_timestamp < date_trunc('week', prev_timestamp + INTERVAL '3 days' - INTERVAL '7 hours') + INTERVAL '3 days 7 hours'))
+            WHERE 
+                (NOT (PowerplayState = 'Unoccupied' AND prev_state = 'Unoccupied')
+                    OR array_has([progress[k] > prev_progress[k]  FOR k IN map_keys(progress) IF element_at(prev_progress, k) IS NOT NULL], true))
+                OR ((reinf_change >= 0 AND underm_change >= 0) 
+                    OR (timestamp >= date_trunc('week', prev_timestamp + INTERVAL '3 days' - INTERVAL '7 hours') + INTERVAL '3 days 7 hours'
+                        AND prev_timestamp < date_trunc('week', prev_timestamp + INTERVAL '3 days' - INTERVAL '7 hours') + INTERVAL '3 days 7 hours'))
         ),
         dedup as (
-            SELECT *
+            SELECT 
+                 * EXCLUDE (reinf_change, underm_change, prev_timestamp, prev_control_progress),
+                PowerplayStateReinforcement - LAG(PowerplayStateReinforcement) OVER (PARTITION BY StarSystem ORDER BY "timestamp") AS reinf_change,
+                PowerplayStateUndermining - LAG(PowerplayStateUndermining) OVER (PARTITION BY StarSystem ORDER BY "timestamp") AS underm_change,
+                LAG(timestamp) OVER (PARTITION BY StarSystem ORDER BY "timestamp") AS prev_timestamp,
+                LAG(PowerplayStateControlProgress) OVER (PARTITION BY StarSystem ORDER BY "timestamp") AS prev_control_progress
             FROM monotonic
             -- then remove any remaining duplicate rows where neither R nor U changed.
             WHERE PowerplayState = 'Unoccupied' 
@@ -258,9 +265,7 @@ def make_report_db(generated_at = dt.datetime.now()):
                     PowerplayStateControlProgress
             END AS PowerplayStateControlProgress,
             PowerplayStateReinforcement AS reinforcement,
-            PowerplayStateUndermining AS undermining,
-            reinf_change,
-            underm_change
+            PowerplayStateUndermining AS undermining
         FROM dedup
         ORDER BY StarSystem, timestamp;
     """)
