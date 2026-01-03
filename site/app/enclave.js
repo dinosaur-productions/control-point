@@ -1,5 +1,6 @@
 import { getDbConn } from "../index.js";
 import uPlot from 'https://cdn.jsdelivr.net/npm/uplot@1.6.30/+esm';
+import { CONFLICT_THRESHOLD, ACQUISITION_THRESHOLD } from "../utils/constants.js";
 
 class EnclaveComponent extends HTMLElement {
     constructor() {
@@ -567,21 +568,21 @@ class EnclaveComponent extends HTMLElement {
             });
         });
 
-        // Color palette for different powers
-        const powerColors = [
-            '#e74c3c', // red
-            '#3498db', // blue
-            '#2ecc71', // green
-            '#f39c12', // orange
-            '#9b59b6', // purple
-            '#1abc9c', // turquoise
-            '#e67e22', // carrot
-            '#34495e', // wet asphalt
-            '#16a085', // green sea
-            '#c0392b', // pomegranate
-            '#27ae60', // nephritis
-            '#8e44ad', // wisteria
-        ];
+        // Power color mapping from Elite Dangerous Powerplay 2.0
+        const powerColorMap = {
+            'Aisling Duval': '#00C8FF',           // Sky Blue
+            'Archon Delaine': '#00FF00',          // Neon Green
+            'A. Lavigny-Duval': '#9600FF',        // Purple
+            'Denton Patreus': '#00E6E6',          // Teal/Cyan
+            'Edmund Mahon': '#00C800',            // Forest Green
+            'Felicia Winters': '#FFB400',         // Gold/Yellow
+            'Jerome Archer': '#E000D0',           // Pink/Magenta
+            'Li Yong-Rui': '#40FF40',             // Bright Green
+            'Nakato Kaine': '#82E600',            // Lime Green
+            'Pranav Antal': '#E6E600',            // Yellow
+            'Yuri Grom': '#FF7800',               // Orange
+            'Zemina Torval': '#00A0FF',           // Azure/Light Blue
+        };
 
         // Build uPlot data array
         const data = [timestamps];
@@ -589,11 +590,12 @@ class EnclaveComponent extends HTMLElement {
         
         powers.forEach((power, idx) => {
             data.push(powerData[power]);
+            const powerColor = powerColorMap[power] || '#888888'; // fallback to gray
             series.push({
                 label: power,
-                stroke: powerColors[idx % powerColors.length],
+                stroke: powerColor,
                 width: 2,
-                points: { show: true, size: 4, fill: powerColors[idx % powerColors.length] },
+                points: { show: true, size: 4, fill: powerColor },
             });
         });
 
@@ -707,13 +709,13 @@ class EnclaveComponent extends HTMLElement {
                             // Add labels for threshold lines
                             ctx.setLineDash([]);
                             ctx.font = '11px sans-serif';
-                            ctx.textAlign = 'right';
+                            ctx.textAlign = 'left';
                             
                             ctx.fillStyle = 'rgba(255, 165, 0, 0.9)';
-                            ctx.fillText(`Conflict (${(CONFLICT_THRESHOLD / 1000).toFixed(0)}K)`, plotRight - 5, yConflict - 5);
+                            ctx.fillText('Conflict', plotLeft + 5, yConflict - 5);
                             
                             ctx.fillStyle = 'rgba(46, 204, 113, 0.9)';
-                            ctx.fillText(`Control (${(ACQUISITION_THRESHOLD / 1000).toFixed(0)}K)`, plotRight - 5, yControl - 5);
+                            ctx.fillText('Control', plotLeft + 5, yControl - 5);
                             
                             ctx.restore();
                         }

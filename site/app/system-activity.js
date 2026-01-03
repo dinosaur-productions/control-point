@@ -253,10 +253,10 @@ class SystemActivityComponent extends HTMLElement {
                     <div class="multi-threshold-bar">
                         <div class="threshold-bar-bg">
                             <div class="threshold-marker conflict-marker" style="left: ${conflictPercent}%">
-                                <div class="threshold-label">Conflict<br>${conflictThreshold.toLocaleString()}</div>
+                                <div class="threshold-label">Conflict<br>${CONFLICT_THRESHOLD.toLocaleString()}</div>
                             </div>
                             <div class="threshold-marker control-marker" style="left: ${controlPercent}%">
-                                <div class="threshold-label">Control<br>${controlThreshold.toLocaleString()}</div>
+                                <div class="threshold-label">Control<br>${ACQUISITION_THRESHOLD.toLocaleString()}</div>
                             </div>
                             <div class="progress-fill-multi" style="width: ${currentPercent}%"></div>
                         </div>
