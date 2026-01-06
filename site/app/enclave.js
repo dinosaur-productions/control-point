@@ -1,6 +1,6 @@
 import { getDbConn } from "../index.js";
 import uPlot from 'https://cdn.jsdelivr.net/npm/uplot@1.6.30/+esm';
-import { CONFLICT_THRESHOLD, ACQUISITION_THRESHOLD } from "../utils/constants.js";
+import { CONFLICT_THRESHOLD, ACQUISITION_THRESHOLD, EXPLOITED_THRESHOLD, FORTIFIED_THRESHOLD, STRONGHOLD_THRESHOLD } from "../utils/constants.js";
 
 class EnclaveComponent extends HTMLElement {
     constructor() {
@@ -195,8 +195,7 @@ class EnclaveComponent extends HTMLElement {
                     StarSystem,
                     ControllingPower,
                     PowerplayState,
-                    reinforcement as PowerplayStateReinforcement,
-                    undermining as PowerplayStateUndermining,
+                    PowerplayStateControlProgress,
                     COALESCE(Powers, []) as Powers
                 FROM enclave_activity
                 WHERE timestamp >= '${cycleStartStr}'
@@ -214,7 +213,8 @@ class EnclaveComponent extends HTMLElement {
                     timestamp,
                     reinforcement,
                     undermining,
-                    PowerplayConflictProgress
+                    PowerplayConflictProgress,
+                    PowerplayStateControlProgress
                 FROM enclave_activity
                 WHERE timestamp >= '${cycleStartStr}'
                   AND timestamp < '${cycleEndStr}'
@@ -337,10 +337,24 @@ class EnclaveComponent extends HTMLElement {
             return;
         }
 
+        // Determine state threshold for control score calculation
+        let stateThreshold = EXPLOITED_THRESHOLD;
+        if (system.PowerplayState === 'Fortified') {
+            stateThreshold = FORTIFIED_THRESHOLD;
+        } else if (system.PowerplayState === 'Stronghold') {
+            stateThreshold = STRONGHOLD_THRESHOLD;
+        }
+
         // Prepare data for uPlot
         const timestamps = system.history.map(h => new Date(h.timestamp).getTime() / 1000);
         const reinforcement = system.history.map(h => h.reinforcement || 0);
         const undermining = system.history.map(h => h.undermining || 0);
+        
+        // Calculate control score from PowerplayStateControlProgress
+        const controlScore = system.history.map(h => {
+            const progress = h.PowerplayStateControlProgress || 0;
+            return Math.floor(progress * stateThreshold);
+        });
 
         // Calculate 8-hour rolling average rates (CP/hour)
         const windowSeconds = 8 * 3600; // 8 hours in seconds
@@ -379,7 +393,8 @@ class EnclaveComponent extends HTMLElement {
             reinforcement,
             undermining,
             reinfRate,
-            undermRate
+            undermRate,
+            controlScore
         ];
 
         const opts = {
@@ -414,6 +429,13 @@ class EnclaveComponent extends HTMLElement {
                     width: 1,
                     dash: [5, 5],
                     scale: "rate"
+                },
+                {
+                    label: "Control Score",
+                    stroke: "#2196F3",
+                    width: 2,
+                    points: { show: true, size: 5, fill: "#2196F3" },
+                    scale: "cp"
                 }
             ],
             axes: [

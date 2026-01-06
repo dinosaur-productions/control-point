@@ -897,7 +897,7 @@ cells:
 
       \    --WHERE StarSystem IN (select Name from enc) \r
 
-      \    WHERE StarSystem = 'Col 359 Sector FK-L b10-1'\r
+      \    WHERE StarSystem = 'Col 359 Sector AE-N b9-5'\r
 
       \    --WHERE StarSystem = 'Col 359 Sector QX-R c5-13'\r
 
@@ -1028,7 +1028,7 @@ cells:
 
       \    prev_timestamp,\r
 
-      \r
+      \    *\r
 
       FROM dedup\r
 
