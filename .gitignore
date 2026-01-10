@@ -6,4 +6,4 @@ justa.json
 *.duckdb.wal
 .env
 site/sitedata_manifest.json
-.vscode
+.vscode/
