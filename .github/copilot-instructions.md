@@ -27,6 +27,11 @@ Download → Import → Compress → Report → Deploy
 
 ## Development Patterns
 
+### Environment Setup (Poetry 2.2+)
+- Python version: target 3.10–3.12; avoid 3.13+ until DuckDB wheels exist.
+- On Windows, point Poetry at a specific interpreter: `poetry env use C:\\Users\\kurts\\AppData\\Local\\Python\\pythoncore-3.12-64\\python.exe` (adjust if path changes).
+- The modules install directly when you run `poetry install`; typically no `PYTHONPATH` tweak is needed. If a `python -m go` import error appears in a fresh shell, set `PYTHONPATH=$PWD/src` or add `poetry config virtualenvs.options.env.PYTHONPATH "$PWD/src"` as a fallback.
+
 ### Database Schema (`src/db.py`)
 - Enums for game constants (POWER, ALLEGIANCE, ECONOMY, etc.)
 - Foreign key relationships between systems, stations, commodities
@@ -57,6 +62,9 @@ customElements.define('x-component-name', XComponentName);
 ## Critical Commands & Workflows
 
 ### Local Development
+
+Activate the python environment first using poetry.
+
 ```bash
 # Full pipeline run
 python -m go
