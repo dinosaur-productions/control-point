@@ -108,6 +108,7 @@ STATION_TYPE = [
     "Bernal",
     "Empty",
     "Dodec",
+    "GameplayPOI"
 ]
 
 CARRIER_DOCKING_ACCESS = [

@@ -57,15 +57,15 @@ cells:
 
       -- 1. back up the existing table.\r
 
-      --CREATE TABLE bak AS SELECT * FROM fsssignaldiscovered;\r
+      --CREATE TABLE bak AS SELECT * FROM location;\r
 
       \r
 
       -- 2. drop the type and the table.\r
 
-      --DROP TYPE fss_signal_type_enum;   \r
+      --DROP TYPE station_type_enum;\r
 
-      --DROP TABLE fsssignaldiscovered;\r
+      --DROP TABLE location;\r
 
       \r
 
@@ -82,13 +82,13 @@ cells:
 
       -- 4. restore the data from the backup table\r
 
-      -- INSERT INTO fsssignaldiscovered SELECT * FROM bak;\r
+      INSERT INTO location SELECT * FROM bak;\r
 
       \r
 
       -- 5. Drop the backup\r
 
-      --DROP TABLE bak;\r\n"
+      DROP TABLE bak;\r\n"
     metadata: {}
   - kind: 2
     languageId: sql
@@ -193,7 +193,7 @@ cells:
     metadata: {}
 metadata:
   conn:
-    id: c8e8a3ca7ffa39a9
-    name: data.duckdb
+    id: sNSgV7_EO4yH_3Yd5aRJk
+    name: cp
   database: data
   schema: main
