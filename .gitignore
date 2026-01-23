@@ -1,6 +1,6 @@
 data-dump/
 docs
-src/__pycache__/
+__pycache__/
 justa.json
 *.duckdb
 *.duckdb.wal

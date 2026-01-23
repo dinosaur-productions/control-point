@@ -1058,9 +1058,16 @@ cells:
     metadata: {}
   - kind: 2
     languageId: sql
-    value: "select map_from_entries(\"PowerplayConflictProgress\") from
-      jumps_location where \"PowerplayConflictProgress\" is not null limit
-      10;\r\n"
+    value: "select StationEconomy, LandingPads, count(*) --  ,
+      array_agg(\"StationName\"), ARRAY_AGG(\"StarSystem\")\r
+
+      from docked \r
+
+      where StationType = 'OnFootSettlement' \r
+
+      group by StationEconomy, LandingPads\r
+
+      having count(*) > 10;\r\n"
     metadata: {}
 metadata:
   conn:
