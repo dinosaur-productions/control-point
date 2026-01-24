@@ -1,0 +1,138 @@
+[
+  {
+    "name": "Ceres",
+    "landingPads": {
+      "small": 1,
+      "medium": 0,
+      "large": 1
+    },
+    "dataports": 8
+  },
+  {
+    "type": "power",
+    "x": 218.45001220703125,
+    "y": 485.70001220703125
+  },
+  {
+    "type": "alarm",
+    "x": 192.45001220703125,
+    "y": 504.70001220703125
+  },
+  {
+    "type": "HAB",
+    "x": 977.4500122070312,
+    "y": 307.70001220703125
+  },
+  {
+    "type": "HAB",
+    "x": 1071.4500122070312,
+    "y": 304.70001220703125
+  },
+  {
+    "type": "HAB",
+    "x": 1074.4500122070312,
+    "y": 443.70001220703125
+  },
+  {
+    "type": "PWR",
+    "x": 296.45001220703125,
+    "y": 469.70001220703125
+  },
+  {
+    "type": "AGRI",
+    "x": 319.45001220703125,
+    "y": 290.70001220703125
+  },
+  {
+    "type": "terminal",
+    "x": 1120,
+    "y": 507.85
+  },
+  {
+    "type": "terminal",
+    "x": 1001,
+    "y": 391.85
+  },
+  {
+    "type": "plus_terminal",
+    "x": 155.2,
+    "y": 415.8
+  },
+  {
+    "type": "door",
+    "x": 277.95,
+    "y": 314.29999999999995,
+    "door_type": "inner",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 286.7,
+    "y": 330.54999999999995,
+    "door_type": "inner",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 253.95,
+    "y": 446,
+    "door_type": "inner",
+    "access": 0
+  },
+  {
+    "type": "door",
+    "x": 233.75,
+    "y": 481,
+    "door_type": "inner",
+    "access": 3
+  },
+  {
+    "type": "door",
+    "x": 205.5,
+    "y": 503.25,
+    "door_type": "inner",
+    "access": 3
+  },
+  {
+    "type": "door",
+    "x": 38.8,
+    "y": 355.29999999999995,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 145.8,
+    "y": 532.15,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 315,
+    "y": 316.2,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 988,
+    "y": 365.15,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 1041.5,
+    "y": 365.15,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 1026.5,
+    "y": 403.04999999999995,
+    "door_type": "airlock",
+    "access": 1
+  }
+]

@@ -1,0 +1,126 @@
+[
+  {
+    "name": "Asteria",
+    "landingPads": {
+      "small": 1,
+      "medium": 0,
+      "large": 0
+    },
+    "dataports": 4
+  },
+  {
+    "type": "power",
+    "x": 170.86666870117188,
+    "y": 356.1999969482422
+  },
+  {
+    "type": "alarm",
+    "x": 538.1999969482422,
+    "y": 414.1999969482422
+  },
+  {
+    "type": "HAB",
+    "x": 750.1999969482422,
+    "y": 271.1999969482422
+  },
+  {
+    "type": "HAB",
+    "x": 723.1999969482422,
+    "y": 482.1999969482422
+  },
+  {
+    "type": "PWR",
+    "x": 183.1999969482422,
+    "y": 308.1999969482422
+  },
+  {
+    "type": "terminal",
+    "x": 821.25,
+    "y": 416.65
+  },
+  {
+    "type": "plus_terminal",
+    "x": 146,
+    "y": 317.55
+  },
+  {
+    "type": "plus_terminal",
+    "x": 608,
+    "y": 389.5
+  },
+  {
+    "type": "plus_terminal",
+    "x": 644.7,
+    "y": 389.5
+  },
+  {
+    "type": "door",
+    "x": 430.00000000000006,
+    "y": 349.7,
+    "door_type": "inner",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 522.55,
+    "y": 366.45,
+    "door_type": "inner",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 546.55,
+    "y": 383.55,
+    "door_type": "inner",
+    "access": 0
+  },
+  {
+    "type": "door",
+    "x": 704.9499999999999,
+    "y": 263.6,
+    "door_type": "inner",
+    "access": 0
+  },
+  {
+    "type": "door",
+    "x": 522.55,
+    "y": 349.7,
+    "door_type": "inner",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 704.9499999999999,
+    "y": 446.95,
+    "door_type": "inner",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 418.00000000000006,
+    "y": 363.6,
+    "door_type": "inner",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 219.95,
+    "y": 359.55,
+    "door_type": "inner",
+    "access": 3
+  },
+  {
+    "type": "door",
+    "x": 498.55,
+    "y": 309.05,
+    "door_type": "airlock",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 719.65,
+    "y": 359.55,
+    "door_type": "airlock",
+    "access": 0
+  }
+]

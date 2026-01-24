@@ -1,0 +1,186 @@
+[
+  {
+    "name": "Fornax",
+    "landingPads": {
+      "small": 2,
+      "medium": 0,
+      "large": 1
+    },
+    "dataports": 4
+  },
+  {
+    "type": "power",
+    "x": 457.45001220703125,
+    "y": 221.70001220703125
+  },
+  {
+    "type": "alarm",
+    "x": 778.4500122070312,
+    "y": 103.70001220703125
+  },
+  {
+    "type": "AGRI",
+    "x": 816.4500122070312,
+    "y": 108.70001220703125
+  },
+  {
+    "type": "AGRI",
+    "x": 600.4500122070312,
+    "y": 272.70001220703125
+  },
+  {
+    "type": "AGRI",
+    "x": 332.45001220703125,
+    "y": 351.70001220703125
+  },
+  {
+    "type": "STO",
+    "x": 741.4500122070312,
+    "y": 370.70001220703125
+  },
+  {
+    "type": "PWR",
+    "x": 450.45001220703125,
+    "y": 173.70001220703125
+  },
+  {
+    "type": "terminal",
+    "x": 653.5,
+    "y": 330.2
+  },
+  {
+    "type": "terminal",
+    "x": 745.3,
+    "y": 145.2
+  },
+  {
+    "type": "plus_terminal",
+    "x": 525.8,
+    "y": 206.45000000000002
+  },
+  {
+    "type": "plus_terminal",
+    "x": 650.85,
+    "y": 372.6
+  },
+  {
+    "type": "plus_terminal",
+    "x": 701.85,
+    "y": 417.85
+  },
+  {
+    "type": "plus_terminal",
+    "x": 677.85,
+    "y": 222.9
+  },
+  {
+    "type": "plus_terminal",
+    "x": 662.4,
+    "y": 278.9
+  },
+  {
+    "type": "door",
+    "x": 697.55,
+    "y": 444.4,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 626.55,
+    "y": 381.45,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 663.55,
+    "y": 196.5,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 778.55,
+    "y": 249.5,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 621.55,
+    "y": 118.44999999999999,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 716.55,
+    "y": 149.45,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 457.55,
+    "y": 304.45,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 543.55,
+    "y": 338.45,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 504.54999999999995,
+    "y": 273.5,
+    "door_type": "airlock",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 475.7,
+    "y": 249.5,
+    "door_type": "inner",
+    "access": 3
+  },
+  {
+    "type": "door",
+    "x": 663.55,
+    "y": 235.45,
+    "door_type": "inner",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 475.7,
+    "y": 196.5,
+    "door_type": "inner",
+    "access": 3
+  },
+  {
+    "type": "door",
+    "x": 639.5,
+    "y": 273.5,
+    "door_type": "airlock",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 550.55,
+    "y": 205,
+    "door_type": "airlock",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 408.55,
+    "y": 211.45,
+    "door_type": "airlock",
+    "access": 1
+  }
+]

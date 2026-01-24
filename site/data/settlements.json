@@ -1,0 +1,260 @@
+{
+  "settlements": [
+    {
+      "id": "agricultural1",
+      "category": "agricultural",
+      "images": {
+        "full": "assets/settlements/agricultural1-full.png",
+        "thumb": "assets/settlements/agricultural1-thumb.png"
+      }
+    },
+    {
+      "id": "extraction1",
+      "category": "extraction",
+      "images": {
+        "full": "assets/settlements/extraction1-full.png",
+        "thumb": "assets/settlements/extraction1-thumb.png"
+      }
+    },
+    {
+      "id": "extraction2",
+      "category": "extraction",
+      "images": {
+        "full": "assets/settlements/extraction2-full.png",
+        "thumb": "assets/settlements/extraction2-thumb.png"
+      }
+    },
+    {
+      "id": "extraction3",
+      "category": "extraction",
+      "images": {
+        "full": "assets/settlements/extraction3-full.png",
+        "thumb": "assets/settlements/extraction3-thumb.png"
+      }
+    },
+    {
+      "id": "agricultural2",
+      "category": "agricultural",
+      "images": {
+        "full": "assets/settlements/agricultural2-full.png",
+        "thumb": "assets/settlements/agricultural2-thumb.png"
+      }
+    },
+    {
+      "id": "industrial1",
+      "category": "industrial",
+      "images": {
+        "full": "assets/settlements/industrial1-full.png",
+        "thumb": "assets/settlements/industrial1-thumb.png"
+      }
+    },
+    {
+      "id": "industrial2",
+      "category": "industrial",
+      "images": {
+        "full": "assets/settlements/industrial2-full.png",
+        "thumb": "assets/settlements/industrial2-thumb.png"
+      }
+    },
+    {
+      "id": "military1",
+      "category": "military",
+      "images": {
+        "full": "assets/settlements/military1-full.png",
+        "thumb": "assets/settlements/military1-thumb.png"
+      }
+    },
+    {
+      "id": "military2",
+      "category": "military",
+      "images": {
+        "full": "assets/settlements/military2-full.png",
+        "thumb": "assets/settlements/military2-thumb.png"
+      }
+    },
+    {
+      "id": "military3",
+      "category": "military",
+      "images": {
+        "full": "assets/settlements/military3-full.png",
+        "thumb": "assets/settlements/military3-thumb.png"
+      }
+    },
+    {
+      "id": "hightech1",
+      "category": "hightech",
+      "images": {
+        "full": "assets/settlements/hightech1-full.png",
+        "thumb": "assets/settlements/hightech1-thumb.png"
+      }
+    },
+    {
+      "id": "military4",
+      "category": "military",
+      "images": {
+        "full": "assets/settlements/military4-full.png",
+        "thumb": "assets/settlements/military4-thumb.png"
+      }
+    },
+    {
+      "id": "industrial3",
+      "category": "industrial",
+      "images": {
+        "full": "assets/settlements/industrial3-full.png",
+        "thumb": "assets/settlements/industrial3-thumb.png"
+      }
+    },
+    {
+      "id": "tourist1",
+      "category": "tourist",
+      "images": {
+        "full": "assets/settlements/tourist1-full.png",
+        "thumb": "assets/settlements/tourist1-thumb.png"
+      }
+    },
+    {
+      "id": "tourist2",
+      "category": "tourist",
+      "images": {
+        "full": "assets/settlements/tourist2-full.png",
+        "thumb": "assets/settlements/tourist2-thumb.png"
+      }
+    },
+    {
+      "id": "agricultural3",
+      "category": "agricultural",
+      "images": {
+        "full": "assets/settlements/agricultural3-full.png",
+        "thumb": "assets/settlements/agricultural3-thumb.png"
+      }
+    },
+    {
+      "id": "agricultural4",
+      "category": "agricultural",
+      "images": {
+        "full": "assets/settlements/agricultural4-full.png",
+        "thumb": "assets/settlements/agricultural4-thumb.png"
+      }
+    },
+    {
+      "id": "tourist3",
+      "category": "tourist",
+      "images": {
+        "full": "assets/settlements/tourist3-full.png",
+        "thumb": "assets/settlements/tourist3-thumb.png"
+      }
+    },
+    {
+      "id": "hightech2",
+      "category": "hightech",
+      "images": {
+        "full": "assets/settlements/hightech2-full.png",
+        "thumb": "assets/settlements/hightech2-thumb.png"
+      }
+    },
+    {
+      "id": "agricultural5",
+      "category": "agricultural",
+      "images": {
+        "full": "assets/settlements/agricultural5-full.png",
+        "thumb": "assets/settlements/agricultural5-thumb.png"
+      }
+    },
+    {
+      "id": "industrial4",
+      "category": "industrial",
+      "images": {
+        "full": "assets/settlements/industrial4-full.png",
+        "thumb": "assets/settlements/industrial4-thumb.png"
+      }
+    },
+    {
+      "id": "hightech3",
+      "category": "hightech",
+      "images": {
+        "full": "assets/settlements/hightech3-full.png",
+        "thumb": "assets/settlements/hightech3-thumb.png"
+      }
+    },
+    {
+      "id": "hightech4",
+      "category": "hightech",
+      "images": {
+        "full": "assets/settlements/hightech4-full.png",
+        "thumb": "assets/settlements/hightech4-thumb.png"
+      }
+    },
+    {
+      "id": "industrial5",
+      "category": "industrial",
+      "images": {
+        "full": "assets/settlements/industrial5-full.png",
+        "thumb": "assets/settlements/industrial5-thumb.png"
+      }
+    },
+    {
+      "id": "extraction4",
+      "category": "extraction",
+      "images": {
+        "full": "assets/settlements/extraction4-full.png",
+        "thumb": "assets/settlements/extraction4-thumb.png"
+      }
+    },
+    {
+      "id": "military5",
+      "category": "military",
+      "images": {
+        "full": "assets/settlements/military5-full.png",
+        "thumb": "assets/settlements/military5-thumb.png"
+      }
+    },
+    {
+      "id": "extraction5",
+      "category": "extraction",
+      "images": {
+        "full": "assets/settlements/extraction5-full.png",
+        "thumb": "assets/settlements/extraction5-thumb.png"
+      }
+    },
+    {
+      "id": "tourist4",
+      "category": "tourist",
+      "images": {
+        "full": "assets/settlements/tourist4-full.png",
+        "thumb": "assets/settlements/tourist4-thumb.png"
+      }
+    }
+  ],
+  "categories": [
+    {
+      "id": "agricultural",
+      "name": "Agricultural",
+      "icon": "🌾"
+    },
+    {
+      "id": "extraction",
+      "name": "Extraction",
+      "icon": "⛏️"
+    },
+    {
+      "id": "industrial",
+      "name": "Industrial",
+      "icon": "🏭"
+    },
+    {
+      "id": "military",
+      "name": "Military",
+      "icon": "🛡️"
+    },
+    {
+      "id": "hightech",
+      "name": "High Tech",
+      "icon": "🔬"
+    },
+    {
+      "id": "tourist",
+      "name": "Tourist",
+      "icon": "🏛️"
+    }
+  ]
+}

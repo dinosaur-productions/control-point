@@ -1,0 +1,285 @@
+[
+  {
+    "name": "Chronos",
+    "landingPads": {
+      "small": 1,
+      "medium": 0,
+      "large": 1
+    },
+    "dataports": 10
+  },
+  {
+    "type": "power",
+    "x": 607.8666687011719,
+    "y": 622.1999969482422
+  },
+  {
+    "type": "alarm",
+    "x": 518.1999969482422,
+    "y": 540.1999969482422
+  },
+  {
+    "type": "RES",
+    "x": 778.1999969482422,
+    "y": 286.1999969482422
+  },
+  {
+    "type": "RES",
+    "x": 626.1999969482422,
+    "y": 380.1999969482422
+  },
+  {
+    "type": "CMD",
+    "x": 535.1999969482422,
+    "y": 452.1999969482422
+  },
+  {
+    "type": "HAB",
+    "x": 775.1999969482422,
+    "y": 510.1999969482422
+  },
+  {
+    "type": "PWR",
+    "x": 558.1999969482422,
+    "y": 618.1999969482422
+  },
+  {
+    "type": "terminal",
+    "x": 577.8499999999999,
+    "y": 317.1
+  },
+  {
+    "type": "terminal",
+    "x": 703,
+    "y": 497.95000000000005
+  },
+  {
+    "type": "terminal",
+    "x": 736,
+    "y": 512.95
+  },
+  {
+    "type": "terminal",
+    "x": 889.9499999999999,
+    "y": 92.00000000000006
+  },
+  {
+    "type": "plus_terminal",
+    "x": 783.6,
+    "y": 233.14999999999998
+  },
+  {
+    "type": "plus_terminal",
+    "x": 714.95,
+    "y": 260.6
+  },
+  {
+    "type": "plus_terminal",
+    "x": 649.3,
+    "y": 351.4
+  },
+  {
+    "type": "plus_terminal",
+    "x": 569.2,
+    "y": 351.4
+  },
+  {
+    "type": "plus_terminal",
+    "x": 578.35,
+    "y": 488
+  },
+  {
+    "type": "plus_terminal",
+    "x": 629.5,
+    "y": 633
+  },
+  {
+    "type": "door",
+    "x": 721.95,
+    "y": 220.95000000000005,
+    "door_type": "inner",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 765.5,
+    "y": 201.10000000000002,
+    "door_type": "inner",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 765.55,
+    "y": 220.95000000000005,
+    "door_type": "inner",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 722,
+    "y": 238.50000000000006,
+    "door_type": "inner",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 733.5,
+    "y": 605.95,
+    "door_type": "inner",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 736.75,
+    "y": 549.7,
+    "door_type": "inner",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 705.55,
+    "y": 592,
+    "door_type": "inner",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 765.55,
+    "y": 592,
+    "door_type": "inner",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 765.55,
+    "y": 558.7,
+    "door_type": "inner",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 705.55,
+    "y": 558.7,
+    "door_type": "inner",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 604.75,
+    "y": 506.5,
+    "door_type": "inner",
+    "access": 3
+  },
+  {
+    "type": "door",
+    "x": 604.75,
+    "y": 478.00000000000006,
+    "door_type": "inner",
+    "access": 3
+  },
+  {
+    "type": "door",
+    "x": 552.5,
+    "y": 478.00000000000006,
+    "door_type": "inner",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 552.55,
+    "y": 495.70000000000005,
+    "door_type": "inner",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 528.55,
+    "y": 495.70000000000005,
+    "door_type": "inner",
+    "access": 3
+  },
+  {
+    "type": "door",
+    "x": 528.55,
+    "y": 525.7,
+    "door_type": "inner",
+    "access": 3
+  },
+  {
+    "type": "door",
+    "x": 552.55,
+    "y": 534.7,
+    "door_type": "inner",
+    "access": 3
+  },
+  {
+    "type": "door",
+    "x": 614.4000000000001,
+    "y": 586.6,
+    "door_type": "inner",
+    "access": 3
+  },
+  {
+    "type": "door",
+    "x": 604.75,
+    "y": 350.85,
+    "door_type": "inner",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 590.3499999999999,
+    "y": 331.75000000000006,
+    "door_type": "inner",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 561.6500000000001,
+    "y": 334.80000000000007,
+    "door_type": "inner",
+    "access": 3
+  },
+  {
+    "type": "door",
+    "x": 770,
+    "y": 307.75000000000006,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 681.55,
+    "y": 256.85,
+    "door_type": "airlock",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 681.55,
+    "y": 350.85,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 537.6500000000001,
+    "y": 362.30000000000007,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 576.55,
+    "y": 460.70000000000005,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 733.55,
+    "y": 478.00000000000006,
+    "door_type": "airlock",
+    "access": 0
+  }
+]

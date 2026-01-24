@@ -1,0 +1,168 @@
+[
+  {
+    "name": "Mantus",
+    "landingPads": {
+      "small": 0,
+      "medium": 1,
+      "large": 0
+    },
+    "dataports": 4
+  },
+  {
+    "type": "power",
+    "x": 888.1666717529297,
+    "y": 158.1999969482422
+  },
+  {
+    "type": "alarm",
+    "x": 339.1666717529297,
+    "y": 544.1999969482422
+  },
+  {
+    "type": "EXT",
+    "x": 146.1666717529297,
+    "y": 372.1999969482422
+  },
+  {
+    "type": "EXT",
+    "x": 250.1666717529297,
+    "y": 551.1999969482422
+  },
+  {
+    "type": "PWR",
+    "x": 905.1666717529297,
+    "y": 130.1999969482422
+  },
+  {
+    "type": "HAB",
+    "x": 1126.1666717529297,
+    "y": 241.1999969482422
+  },
+  {
+    "type": "STO",
+    "x": 952.1666717529297,
+    "y": 376.1999969482422
+  },
+  {
+    "type": "terminal",
+    "x": 830.25,
+    "y": 276.95
+  },
+  {
+    "type": "terminal",
+    "x": 1071.05,
+    "y": 341.95
+  },
+  {
+    "type": "terminal",
+    "x": 229.6,
+    "y": 402.95
+  },
+  {
+    "type": "plus_terminal",
+    "x": 909.15,
+    "y": 380.90000000000003
+  },
+  {
+    "type": "plus_terminal",
+    "x": 330.2,
+    "y": 519.9
+  },
+  {
+    "type": "plus_terminal",
+    "x": 147.2,
+    "y": 418.90000000000003
+  },
+  {
+    "type": "plus_terminal",
+    "x": 917.3,
+    "y": 221.95000000000002
+  },
+  {
+    "type": "plus_terminal",
+    "x": 1074.6,
+    "y": 245.95000000000002
+  },
+  {
+    "type": "plus_terminal",
+    "x": 194.2,
+    "y": 340.90000000000003
+  },
+  {
+    "type": "door",
+    "x": 880.55,
+    "y": 355.4,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 363.55,
+    "y": 532.4,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 162.60000000000002,
+    "y": 440,
+    "door_type": "airlock",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 206.60000000000002,
+    "y": 327,
+    "door_type": "airlock",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 936.55,
+    "y": 237.05,
+    "door_type": "airlock",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 839.55,
+    "y": 213.05,
+    "door_type": "airlock",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 1011.5,
+    "y": 391.4,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 294.55,
+    "y": 547.5,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 1049.5,
+    "y": 253.10000000000002,
+    "door_type": "airlock",
+    "access": 0
+  },
+  {
+    "type": "door",
+    "x": 856.55,
+    "y": 183.55,
+    "door_type": "inner",
+    "access": 3
+  },
+  {
+    "type": "door",
+    "x": 919.55,
+    "y": 155.55,
+    "door_type": "inner",
+    "access": 3
+  }
+]

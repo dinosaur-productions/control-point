@@ -113,7 +113,6 @@ class EnclaveComponent extends HTMLElement {
                 .activity-undermine { color: #F44336; }
             </style>
             <div class="enclave">
-                <h1>Enclave Systems (49 Systems)</h1>
                 <div class="cycle-navigation">
                     <button id="cycle-prev">← Previous Cycle</button>
                     <div class="cycle-date" id="cycle-date">Loading...</div>

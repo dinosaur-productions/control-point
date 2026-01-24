@@ -4,6 +4,7 @@ import { registerSystemSearchComponent } from "./system-search.js";
 import { registerInfraFailuresRouteComponent } from "./infra-failures-route.js";
 import { registerEnclaveComponent } from "./enclave.js";
 import { registerSettlementsRouteComponent } from "./settlements-route.js";
+import { registerSettlementMapsRouteComponent } from "./settlement-maps-route.js";
 import { registerLastUpdatedComponent } from "../components/last-updated.js";
 import { registerCheckManifestComponent } from "../components/check-manifest.js";
 import { registerActivityItemComponent } from "../components/activity-item.js";
@@ -30,6 +31,7 @@ class App extends HTMLElement {
                     <li><a href="#/infra-failures">Infra Failures</a></li>
                     <li><a href="#/enclave">Enclave</a></li>
                     <li><a href="#/settlements">Settlements</a></li>
+                    <li><a href="#/settlement-maps">Settlement Maps</a></li>
                 </ul>
                 <x-check-manifest></x-check-manifest>
             </nav>
@@ -51,10 +53,24 @@ class App extends HTMLElement {
                     <x-settlements></x-settlements>
                 </x-route>
                 <x-settlements-route path="/settlements/([0-9]+)"></x-settlements-route>
+                <x-settlement-maps-route path="/settlement-maps(?:/([\w-]+))?"></x-settlement-maps-route>
                 <x-system-activity-route path="/system/([0-9]+)"></x-system-activity-route>
             </div>
         </main>
         `;
+
+        // Highlight current tab in navbar
+        const updateActiveNav = () => {
+            const path = (window.location.hash || '#/').split('?')[0];
+            const links = this.querySelectorAll('.navbar-links a');
+            links.forEach(a => {
+                const hrefPath = (a.getAttribute('href') || '').split('?')[0];
+                const isActive = hrefPath && path.startsWith(hrefPath);
+                a.classList.toggle('is-active', isActive);
+            });
+        };
+        updateActiveNav();
+        window.addEventListener('hashchange', updateActiveNav);
     }
 }
 // TODO
@@ -69,6 +85,7 @@ export const registerApp = () => {
     registerInfraFailuresRouteComponent();
     registerEnclaveComponent();
     registerSettlementsRouteComponent();
+    registerSettlementMapsRouteComponent();
     registerLastUpdatedComponent();
     registerCheckManifestComponent();
     registerActivityItemComponent();

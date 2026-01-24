@@ -52,6 +52,13 @@ header {
     color: #fff;
 }
 
+/* Active tab highlight */
+.navbar-links a.is-active {
+    background-color: #555;
+    border-radius: 5px;
+    color: #fff;
+}
+
 main .container {
     max-width: 1200px;
     padding: 20px;

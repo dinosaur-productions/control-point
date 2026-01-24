@@ -1,6 +1,7 @@
 @import "./styles/reset.css";
 @import "./styles/app.css";
 @import "./styles/settlements.css";
+@import "./styles/settlement-maps.css";
 
 body {
     background: #181c20;

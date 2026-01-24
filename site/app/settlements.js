@@ -80,7 +80,6 @@ class SettlementsComponent extends HTMLElement {
     renderSearchUI() {
         this.container.innerHTML = `
             <div class="settlements-search">
-                <h1>Settlements</h1>
                 <p>Search for a system to view its on-foot settlements:</p>
                 <x-autocomplete placeholder="Enter system name..."></x-autocomplete>
             </div>
@@ -117,8 +116,7 @@ class SettlementsComponent extends HTMLElement {
         if (settlements.length === 0) {
             this.container.innerHTML = `
                 <div class="settlements-content">
-                    <h1>Settlements in ${systemName}</h1>
-                    <p>No on-foot settlements found in this system.</p>
+                    <p>No on-foot settlements found in ${systemName}.</p>
                     <button onclick="window.location.href='#/settlements'">Search another system</button>
                 </div>
             `;
@@ -128,10 +126,7 @@ class SettlementsComponent extends HTMLElement {
         this.container.innerHTML = `
             <div class="settlements-content">
                 <div class="settlements-header">
-                    <h1>
-                        Settlements in ${systemName}
-                        <x-external-links system-name="${systemName}" system-address="${systemAddress}"></x-external-links>
-                    </h1>
+                    <x-external-links system-name="${systemName}" system-address="${systemAddress}"></x-external-links>
                     <button onclick="window.location.href='#/settlements'">Search another system</button>
                 </div>
                 <x-sortable-table></x-sortable-table>
@@ -156,9 +151,12 @@ class SettlementsComponent extends HTMLElement {
             const pads = settlement.LandingPads || { Large: 0, Medium: 0, Small: 0 };
             const padInfo = `L: ${pads.Large || 0}, M: ${pads.Medium || 0}, S: ${pads.Small || 0}`;
             const marketIdAttr = settlement.MarketId ? ` station-market-id="${settlement.MarketId}"` : '';
+            const econSlug = this.mapEconomyToCategory(settlement.StationEconomy);
+            const query = this.buildMapsQuery(econSlug, pads);
+            const mapsHref = `#/settlement-maps${query ? `?${query}` : ''}`;
             
             return {
-                StationName: `${settlement.StationName} <x-external-links station-name="${settlement.StationName}" station-system="${systemName}"${marketIdAttr}></x-external-links>`,
+                StationName: `${settlement.StationName} <x-external-links station-name="${settlement.StationName}" station-system="${systemName}"${marketIdAttr}></x-external-links> <a href="${mapsHref}" title="Open Settlement Maps with filters">[Maps]</a>`,
                 BodyName: settlement.BodyName || 'Unknown',
                 FactionName: `${settlement.FactionName || 'Unknown'} ${settlement.FactionName ? `<x-external-links faction-name="${settlement.FactionName}"></x-external-links>` : ''}`,
                 StationEconomy: settlement.StationEconomy || 'Unknown',
@@ -168,6 +166,32 @@ class SettlementsComponent extends HTMLElement {
         });
         
         table.setRows(processedRows);
+    }
+
+    mapEconomyToCategory(economy) {
+        const s = String(economy || '').toLowerCase().trim();
+        const normalized = s.replace(/\s+/g, '');
+        const map = {
+            agri: 'agricultural',
+            extraction: 'extraction',
+            industrial: 'industrial',
+            military: 'military',
+            hightech: 'hightech',
+            tourism: 'tourist',
+        };
+        return map[normalized] || '';
+    }
+
+    buildMapsQuery(econSlug, pads) {
+        const params = new URLSearchParams();
+        if (econSlug) params.set('economy', econSlug);
+        const s = Number(pads?.Small ?? 0);
+        const m = Number(pads?.Medium ?? 0);
+        const l = Number(pads?.Large ?? 0);
+        params.set('small', String(s));
+        params.set('medium', String(m));
+        params.set('large', String(l));
+        return params.toString();
     }
 }
 

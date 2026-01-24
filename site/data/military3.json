@@ -1,0 +1,179 @@
+[
+  {
+    "name": "Polemos",
+    "landingPads": {
+      "small": 1,
+      "medium": 1,
+      "large": 0
+    },
+    "dataports": 8
+  },
+  {
+    "type": "HAB",
+    "x": 461.71665954589844,
+    "y": 546.1999969482422
+  },
+  {
+    "type": "PWR",
+    "x": 712.1999969482422,
+    "y": 559.1999969482422
+  },
+  {
+    "type": "STO",
+    "x": 523.1999969482422,
+    "y": 146.1999969482422
+  },
+  {
+    "type": "HAB",
+    "x": 384.1999969482422,
+    "y": 274.1999969482422
+  },
+  {
+    "type": "CMD",
+    "x": 803.1999969482422,
+    "y": 338.1999969482422
+  },
+  {
+    "type": "power",
+    "x": 691.1999969482422,
+    "y": 493.1999969482422
+  },
+  {
+    "type": "alarm",
+    "x": 831.1999969482422,
+    "y": 394.1999969482422
+  },
+  {
+    "type": "terminal",
+    "x": 490.84999999999997,
+    "y": 501.05
+  },
+  {
+    "type": "terminal",
+    "x": 502.84999999999997,
+    "y": 513.05
+  },
+  {
+    "type": "terminal",
+    "x": 868.05,
+    "y": 312.75
+  },
+  {
+    "type": "terminal",
+    "x": 501.05,
+    "y": 386.8
+  },
+  {
+    "type": "plus_terminal",
+    "x": 846.75,
+    "y": 302.5
+  },
+  {
+    "type": "plus_terminal",
+    "x": 469.29999999999995,
+    "y": 332.7
+  },
+  {
+    "type": "plus_terminal",
+    "x": 501.95,
+    "y": 164.9
+  },
+  {
+    "type": "door",
+    "x": 794.85,
+    "y": 379.75,
+    "door_type": "inner",
+    "access": 3
+  },
+  {
+    "type": "door",
+    "x": 742.65,
+    "y": 356.45,
+    "door_type": "inner",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 660.6,
+    "y": 465.15,
+    "door_type": "airlock",
+    "access": 3
+  },
+  {
+    "type": "door",
+    "x": 493.65,
+    "y": 468.8,
+    "door_type": "airlock",
+    "access": 0
+  },
+  {
+    "type": "door",
+    "x": 533.1,
+    "y": 505.5,
+    "door_type": "airlock",
+    "access": 0
+  },
+  {
+    "type": "door",
+    "x": 574.7,
+    "y": 175.5,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 480.25,
+    "y": 190.14999999999998,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 718.65,
+    "y": 308.45,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 760,
+    "y": 346.75,
+    "door_type": "inner",
+    "access": 2
+  },
+  {
+    "type": "door",
+    "x": 749.9,
+    "y": 255.2,
+    "door_type": "inner",
+    "access": 3
+  },
+  {
+    "type": "door",
+    "x": 736,
+    "y": 184.8,
+    "door_type": "inner",
+    "access": 3
+  },
+  {
+    "type": "door",
+    "x": 864.6,
+    "y": 292.45,
+    "door_type": "airlock",
+    "access": 1
+  },
+  {
+    "type": "door",
+    "x": 676.15,
+    "y": 533.9,
+    "door_type": "airlock",
+    "access": 3
+  },
+  {
+    "type": "door",
+    "x": 500.1,
+    "y": 332.45,
+    "door_type": "airlock",
+    "access": 0
+  }
+]
