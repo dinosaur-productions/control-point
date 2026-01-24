@@ -3,6 +3,7 @@ import { registerSystemActivityRouteComponent } from "./system-activity-route.js
 import { registerSystemSearchComponent } from "./system-search.js";
 import { registerInfraFailuresRouteComponent } from "./infra-failures-route.js";
 import { registerEnclaveComponent } from "./enclave.js";
+import { registerSettlementsRouteComponent } from "./settlements-route.js";
 import { registerLastUpdatedComponent } from "../components/last-updated.js";
 import { registerCheckManifestComponent } from "../components/check-manifest.js";
 import { registerActivityItemComponent } from "../components/activity-item.js";
@@ -28,6 +29,7 @@ class App extends HTMLElement {
                 <ul class="navbar-links">
                     <li><a href="#/infra-failures">Infra Failures</a></li>
                     <li><a href="#/enclave">Enclave</a></li>
+                    <li><a href="#/settlements">Settlements</a></li>
                 </ul>
                 <x-check-manifest></x-check-manifest>
             </nav>
@@ -45,6 +47,10 @@ class App extends HTMLElement {
                 <x-route path="/enclave" exact>
                     <x-enclave></x-enclave>
                 </x-route>
+                <x-route path="/settlements" exact>
+                    <x-settlements></x-settlements>
+                </x-route>
+                <x-settlements-route path="/settlements/([0-9]+)"></x-settlements-route>
                 <x-system-activity-route path="/system/([0-9]+)"></x-system-activity-route>
             </div>
         </main>
@@ -62,6 +68,7 @@ export const registerApp = () => {
     registerSystemSearchComponent();
     registerInfraFailuresRouteComponent();
     registerEnclaveComponent();
+    registerSettlementsRouteComponent();
     registerLastUpdatedComponent();
     registerCheckManifestComponent();
     registerActivityItemComponent();

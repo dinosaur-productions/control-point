@@ -63,7 +63,7 @@ customElements.define('x-component-name', XComponentName);
 
 ### Local Development
 
-Activate the python environment first using poetry.
+Activate the python environment first using poetry, or use `poetry run` before each command.
 
 ```bash
 # Full pipeline run

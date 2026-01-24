@@ -2,13 +2,12 @@ import datetime as dt
 import os
 import re
 
-from constants import DB_MAIN_PATH, DB_SITE_NAME, DIR_DATA_DUMP, SITE_DIR
+from constants import DB_MAIN_PATH, DIR_DATA_DUMP
 import dl_hist
 import dl_today
 import import_
 import compress
 import report
-import json
 import clean
 
 def get_auto_lookback_days(data_dump_dir, today_date):
@@ -43,17 +42,6 @@ def get_auto_lookback_days(data_dump_dir, today_date):
     
     return lookback_days
 
-def write_manifest(site_path, db_name, generated_at, db_site_path):
-    manifest = {
-        "generated_at": generated_at.isoformat(),
-        "db_name": os.path.basename(db_site_path),
-    }
-    manifest_path = os.path.join(site_path, db_name + "_manifest.json")
-    with open(manifest_path, "w") as f:
-        json.dump(manifest, f, indent=2)
-    return generated_at
-
-
 if __name__ == "__main__":
     today = dl_today.main()
     auto_lookback_days = get_auto_lookback_days(DIR_DATA_DUMP, today)
@@ -61,7 +49,5 @@ if __name__ == "__main__":
     import_.main()
     compress.compress_database(DB_MAIN_PATH)
     generated_at = dt.datetime.now(dt.timezone.utc)
-    db_site_path = report.make_report_db(generated_at)
-    compress.compress_database(db_site_path)
-    write_manifest(SITE_DIR, DB_SITE_NAME, generated_at, db_site_path)
+    report.make_report_db(generated_at)
     clean.clean_data_dump(DIR_DATA_DUMP)

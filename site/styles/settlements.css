@@ -1,0 +1,80 @@
+.settlements-container {
+    padding: 1rem;
+}
+
+.settlements-search {
+    max-width: 600px;
+    margin: 2rem auto;
+}
+
+.settlements-search h1 {
+    margin-bottom: 1rem;
+}
+
+.settlements-search p {
+    margin-bottom: 1rem;
+    color: #888;
+}
+
+.settlements-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.settlements-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.settlements-header h1 {
+    margin: 0;
+}
+
+.settlements-header button {
+    padding: 0.5rem 1rem;
+    background: #44475a;
+    color: #f8f8f2;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.settlements-header button:hover {
+    background: #6272a4;
+}
+
+.settlements-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+}
+
+.settlements-table thead {
+    background: #282a36;
+    border-bottom: 2px solid #44475a;
+}
+
+.settlements-table th {
+    padding: 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    color: #8be9fd;
+}
+
+.settlements-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #44475a;
+}
+
+.settlements-table tbody tr:hover {
+    background: #282a36;
+}
+
+.settlements-count {
+    color: #888;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+}

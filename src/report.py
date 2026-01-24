@@ -1,9 +1,11 @@
 import duckdb
 import datetime as dt
 import os
+import json
 
 from constants import SITE_DIR, DB_SITE_NAME
 import glob
+import compress
 
 
 
@@ -269,9 +271,71 @@ def make_report_db(generated_at = dt.datetime.now()):
         FROM dedup
         ORDER BY StarSystem, timestamp;
     """)
+    conn.execute("""
+    CREATE OR REPLACE TABLE settlements AS
+        WITH docked_settlements AS (
+            SELECT
+                SystemAddress,
+                StationName,
+                MarketId,
+                StationEconomy,
+                StationGovernment,
+                StationFaction,
+                LandingPads,
+                ROW_NUMBER() OVER (PARTITION BY SystemAddress, StationName ORDER BY timestamp DESC) AS rn
+            FROM db.docked
+            WHERE StationType = 'OnFootSettlement'
+        ),
+        latest_docked AS (
+            SELECT SystemAddress, StationName, MarketId, StationEconomy, StationGovernment, StationFaction, LandingPads
+            FROM docked_settlements
+            WHERE rn = 1
+        ),
+        body_names AS (
+            SELECT
+                SystemAddress,
+                Name AS SettlementName,
+                BodyName,
+                ROW_NUMBER() OVER (PARTITION BY SystemAddress, Name ORDER BY timestamp DESC) AS rn
+            FROM db.approach_settlement
+        ),
+        latest_bodies AS (
+            SELECT SystemAddress, SettlementName, BodyName
+            FROM body_names
+            WHERE rn = 1
+        )
+        SELECT
+            d.SystemAddress,
+            d.StationName,
+            d.MarketId,
+            COALESCE(b.BodyName, '') AS BodyName,
+            d.StationFaction.Name AS FactionName,
+            d.StationEconomy,
+            d.StationGovernment,
+            d.LandingPads
+        FROM latest_docked d
+        LEFT JOIN latest_bodies b 
+            ON d.SystemAddress = b.SystemAddress 
+            AND d.StationName = b.SettlementName
+        ORDER BY d.SystemAddress, d.StationName;
+    """)
     conn.close()
     print("Done.")
+    
+    # Compress the database
+    compress.compress_database(db_site_path)
+    
+    # Write manifest
+    manifest = {
+        "generated_at": generated_at.isoformat(),
+        "db_name": os.path.basename(db_site_path),
+    }
+    manifest_path = os.path.join(SITE_DIR, DB_SITE_NAME + "_manifest.json")
+    with open(manifest_path, "w") as f:
+        json.dump(manifest, f, indent=2)
+    
     return db_site_path
 
 if __name__ == "__main__":
-    make_report_db()
+    generated_at = dt.datetime.now(dt.timezone.utc)
+    make_report_db(generated_at)
