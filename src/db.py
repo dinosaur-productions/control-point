@@ -302,41 +302,20 @@ FSS_SIGNAL_TYPE = [
 ]
 
 def create_schema(conn):
-    # Create enum types if not exist
-    conn.execute(f"""
-    CREATE TYPE IF NOT EXISTS power_enum AS ENUM ({', '.join(repr(p) for p in POWER)});
-    CREATE TYPE IF NOT EXISTS powerplaystate_enum AS ENUM ({', '.join(repr(s) for s in POWERPLAYSTATE)});
-    CREATE TYPE IF NOT EXISTS allegiance_enum AS ENUM ({', '.join(repr(a) for a in ALLEGIANCE)});
-    --DROP TYPE economy_enum;
-    CREATE TYPE IF NOT EXISTS economy_enum AS ENUM ({', '.join(repr(e) for e in ECONOMY)});
-    CREATE TYPE IF NOT EXISTS government_enum AS ENUM ({', '.join(repr(g) for g in GOVERNMENT)});
-    CREATE TYPE IF NOT EXISTS security_enum AS ENUM ({', '.join(repr(s) for s in SECURITY)});
-    CREATE TYPE IF NOT EXISTS body_type_enum AS ENUM ({', '.join(repr(s) for s in BODY_TYPE)});
-    CREATE TYPE IF NOT EXISTS station_type_enum AS ENUM ({', '.join(repr(s) for s in STATION_TYPE)});
-    CREATE TYPE IF NOT EXISTS carrier_docking_access_enum AS ENUM ({', '.join(repr(c) for c in CARRIER_DOCKING_ACCESS)});
-    --DROP TYPE service_enum;
-    CREATE TYPE IF NOT EXISTS service_enum AS ENUM ({', '.join(repr(s) for s in SERVICES)});
-    CREATE TYPE IF NOT EXISTS signal_type_enum AS ENUM ({', '.join(repr(s) for s in SIGNAL_TYPE)});
-    CREATE TYPE IF NOT EXISTS faction_state_enum AS ENUM ({', '.join(repr(f) for f in FACTION_STATE)});
-    CREATE TYPE IF NOT EXISTS happiness_enum AS ENUM ({', '.join(repr(h) for h in HAPPINESS)});
-    CREATE TYPE IF NOT EXISTS commodity_bracket_enum AS ENUM ({', '.join(repr(h) for h in COMMODITY_BRACKET)});
-    CREATE TYPE IF NOT EXISTS reserve_level_enum AS ENUM ({', '.join(repr(h) for h in RESERVE_LEVEL)});
-    CREATE TYPE IF NOT EXISTS belt_or_ring_type_enum AS ENUM ({', '.join(repr(h) for h in BELT_OR_RING_TYPE)});
-    --DROP TYPE fss_signal_type_enum;         
-    CREATE TYPE IF NOT EXISTS fss_signal_type_enum AS ENUM ({', '.join(repr(h) for h in FSS_SIGNAL_TYPE)});
-    """)
-
+    # Note: All enum validation is now done at import time via SQL error() function
+    # in import_.py. No enum types are created here anymore.
+    
     conn.execute(f"""
     CREATE TYPE IF NOT EXISTS faction_detail AS STRUCT(
                 Name VARCHAR, 
-                Allegiance allegiance_enum,
-                FactionState faction_state_enum,
-                Government government_enum,
+                Allegiance VARCHAR,
+                FactionState VARCHAR,
+                Government VARCHAR,
                 Influence DOUBLE,
-                Happiness happiness_enum,
-                ActiveStates faction_state_enum[],
-                RecoveringStates STRUCT(State faction_state_enum, Trend UINT8)[],
-                PendingStates STRUCT(State faction_state_enum, Trend UINT8)[]);
+                Happiness VARCHAR,
+                ActiveStates VARCHAR[],
+                RecoveringStates STRUCT(State VARCHAR, Trend UINT8)[],
+                PendingStates STRUCT(State VARCHAR, Trend UINT8)[]);
     """)
 
     conn.execute(f"""
@@ -348,19 +327,11 @@ def create_schema(conn):
     """)
 
     conn.execute(f"""
-    CREATE TYPE IF NOT EXISTS conflict_status_enum AS ENUM ({', '.join(repr(h) for h in CONFLICT_STATUS)});
-    """)
-
-    conn.execute(f"""
-    CREATE TYPE IF NOT EXISTS conflict_war_type_enum AS ENUM ({', '.join(repr(h) for h in  CONFLICT_WAR_TYPE)});
-    """)
-
-    conn.execute(f"""
     CREATE TYPE IF NOT EXISTS conflict AS STRUCT(
         Faction1 conflict_side,
         Faction2 conflict_side,
-        Status conflict_status_enum,
-        WarType conflict_war_type_enum
+        Status VARCHAR,
+        WarType VARCHAR
     );
     """)
 
@@ -386,20 +357,20 @@ def create_schema(conn):
         BodyId INTEGER,
         --BodyType body_type_enum,
         Population BIGINT,
-        PowerplayState powerplaystate_enum,
-        ControllingPower power_enum,
-        Powers power_enum[],
-        PowerplayConflictProgress STRUCT(Power power_enum, ConflictProgress DOUBLE)[],
+        PowerplayState VARCHAR,  -- validates against POWERPLAYSTATE
+        ControllingPower VARCHAR,  -- validates against POWER
+        Powers VARCHAR[],  -- validates each against POWER
+        PowerplayConflictProgress STRUCT(Power VARCHAR, ConflictProgress DOUBLE)[],
         PowerplayStateControlProgress DOUBLE,
         PowerplayStateReinforcement INTEGER,
         PowerplayStateUndermining INTEGER,
         Factions faction_detail[],
-        SystemFaction STRUCT(Name VARCHAR, FactionState faction_state_enum),
-        SystemAllegiance allegiance_enum,
-        SystemEconomy economy_enum,
-        SystemGovernment government_enum,
-        SystemSecondEconomy economy_enum,
-        SystemSecurity security_enum,
+        SystemFaction STRUCT(Name VARCHAR, FactionState VARCHAR),
+        SystemAllegiance VARCHAR,  -- validates against ALLEGIANCE
+        SystemEconomy VARCHAR,  -- validates against ECONOMY
+        SystemGovernment VARCHAR,  -- validates against GOVERNMENT
+        SystemSecondEconomy VARCHAR,  -- validates against ECONOMY
+        SystemSecurity VARCHAR,  -- validates against SECURITY
         StarPos DOUBLE[3],
         Conflicts conflict[],
     );
@@ -412,20 +383,20 @@ def create_schema(conn):
         timestamp TIMESTAMP NOT NULL,
         SystemName VARCHAR,
         StationName VARCHAR,
-        StationType station_type_enum,
+        StationType VARCHAR,  -- validates against STATION_TYPE
         MarketId BIGINT PRIMARY KEY NOT NULL,
         Prohibited VARCHAR[],
-        Economies STRUCT(Name economy_enum, Proportion DOUBLE)[],
-        CarrierDockingAccess carrier_docking_access_enum,
+        Economies STRUCT(Name VARCHAR, Proportion DOUBLE)[],  -- Name validates against ECONOMY
+        CarrierDockingAccess VARCHAR,  -- validates against CARRIER_DOCKING_ACCESS
         Commodities STRUCT(
             Name VARCHAR,
             BuyPrice INTEGER,
             SellPrice INTEGER,
             MeanPrice INTEGER,
             Stock INTEGER,
-            StockBracket commodity_bracket_enum,
+            StockBracket VARCHAR,  -- validates against COMMODITY_BRACKET
             Demand INTEGER,
-            DemandBracket commodity_bracket_enum,
+            DemandBracket VARCHAR,  -- validates against COMMODITY_BRACKET
             StatusFlags VARCHAR[]
         )[]
     );
@@ -446,12 +417,12 @@ def create_schema(conn):
         MarketId BIGINT,
         Name VARCHAR NOT NULL,
         StarPos DOUBLE[3],
-        StationAllegiance allegiance_enum,
-        StationEconomies STRUCT(Name economy_enum, Proportion DOUBLE)[],
-        StationEconomy economy_enum,
-        StationFaction STRUCT(Name VARCHAR, FactionState faction_state_enum),
-        StationGovernment government_enum,
-        StationServices service_enum[]
+        StationAllegiance VARCHAR,  -- validates against ALLEGIANCE
+        StationEconomies STRUCT(Name VARCHAR, Proportion DOUBLE)[],  -- Name validates against ECONOMY
+        StationEconomy VARCHAR,  -- validates against ECONOMY
+        StationFaction STRUCT(Name VARCHAR, FactionState VARCHAR),
+        StationGovernment VARCHAR,  -- validates against GOVERNMENT
+        StationServices VARCHAR[]  -- each validates against SERVICES
     );
     """)
 
@@ -463,16 +434,16 @@ def create_schema(conn):
         StarSystem VARCHAR,
         SystemAddress BIGINT NOT NULL,
         StationName VARCHAR NOT NULL,
-        StationType station_type_enum,
+        StationType VARCHAR,  -- validates against STATION_TYPE
         MarketId BIGINT,
         DistFromStarLS DOUBLE,
         StarPos DOUBLE[3],
-        StationAllegiance allegiance_enum,
-        StationEconomies STRUCT(Name economy_enum, Proportion DOUBLE)[],
-        StationEconomy economy_enum,
-        StationFaction STRUCT(Name VARCHAR, FactionState faction_state_enum),
-        StationGovernment government_enum,
-        StationServices service_enum[],
+        StationAllegiance VARCHAR,  -- validates against ALLEGIANCE
+        StationEconomies STRUCT(Name VARCHAR, Proportion DOUBLE)[],  -- Name validates against ECONOMY
+        StationEconomy VARCHAR,  -- validates against ECONOMY
+        StationFaction STRUCT(Name VARCHAR, FactionState VARCHAR),
+        StationGovernment VARCHAR,  -- validates against GOVERNMENT
+        StationServices VARCHAR[],  -- each validates against SERVICES
         LandingPads STRUCT(Large INTEGER, Medium INTEGER, Small INTEGER)
     );
     """)
@@ -486,33 +457,33 @@ def create_schema(conn):
         SystemAddress BIGINT NOT NULL,
         Body VARCHAR,
         BodyId INTEGER,
-        BodyType body_type_enum,
+        BodyType VARCHAR,  -- validates against BODY_TYPE
         DistFromStarLS DOUBLE,
         Docked BOOLEAN,
         MarketId BIGINT,
         Population BIGINT,
-        PowerplayState powerplaystate_enum,
-        ControllingPower power_enum,
-        Powers power_enum[],
-        PowerplayConflictProgress STRUCT(Power power_enum, ConflictProgress DOUBLE)[],
+        PowerplayState VARCHAR,  -- validates against POWERPLAYSTATE
+        ControllingPower VARCHAR,  -- validates against POWER
+        Powers VARCHAR[],  -- validates each against POWER
+        PowerplayConflictProgress STRUCT(Power VARCHAR, ConflictProgress DOUBLE)[],
         PowerplayStateControlProgress DOUBLE,
         PowerplayStateReinforcement INTEGER,
         PowerplayStateUndermining INTEGER,
         Factions faction_detail[],
         StarPos DOUBLE[3],
-        StationEconomies STRUCT(Name economy_enum, Proportion DOUBLE)[],
-        StationEconomy economy_enum,
-        StationFaction STRUCT(Name VARCHAR, FactionState faction_state_enum),
-        StationGovernment government_enum,
+        StationEconomies STRUCT(Name VARCHAR, Proportion DOUBLE)[],  -- Name validates against ECONOMY
+        StationEconomy VARCHAR,  -- validates against ECONOMY
+        StationFaction STRUCT(Name VARCHAR, FactionState VARCHAR),
+        StationGovernment VARCHAR,  -- validates against GOVERNMENT
         StationName VARCHAR,
-        StationServices service_enum[],
-        StationType station_type_enum,
-        SystemAllegiance allegiance_enum,
-        SystemEconomy economy_enum,
-        SystemFaction STRUCT(Name VARCHAR, FactionState faction_state_enum),
-        SystemGovernment government_enum,
-        SystemSecondEconomy economy_enum,
-        SystemSecurity security_enum,
+        StationServices VARCHAR[],  -- each validates against SERVICES
+        StationType VARCHAR,  -- validates against STATION_TYPE
+        SystemAllegiance VARCHAR,  -- validates against ALLEGIANCE
+        SystemEconomy VARCHAR,  -- validates against ECONOMY
+        SystemFaction STRUCT(Name VARCHAR, FactionState VARCHAR),
+        SystemGovernment VARCHAR,  -- validates against GOVERNMENT
+        SystemSecondEconomy VARCHAR,  -- validates against ECONOMY
+        SystemSecurity VARCHAR,  -- validates against SECURITY
         Conflicts conflict[],
     );
     """)
@@ -524,7 +495,7 @@ def create_schema(conn):
         SystemAddress BIGINT NOT NULL,
         BodyId INTEGER,
         BodyName VARCHAR,
-        Signals STRUCT(Count INTEGER, Type signal_type_enum)[],
+        Signals STRUCT(Count INTEGER, Type VARCHAR)[],  -- Type validates against SIGNAL_TYPE
         StarPos DOUBLE[]
     );
     """)
@@ -539,7 +510,7 @@ def create_schema(conn):
         BodyId INTEGER,
         BodyName VARCHAR,
         Genuses STRUCT(Genus VARCHAR)[],
-        Signals STRUCT(Count INTEGER, Type signal_type_enum)[],
+        Signals STRUCT(Count INTEGER, Type VARCHAR)[],  -- Type validates against SIGNAL_TYPE
         StarPos DOUBLE[3]
     );
     """)
@@ -667,7 +638,7 @@ def create_schema(conn):
     conn.execute("""
     CREATE TYPE IF NOT EXISTS belt_or_ring AS STRUCT(
         name VARCHAR,
-        type belt_or_ring_type_enum    
+        type VARCHAR  -- validates against BELT_OR_RING_TYPE
     );""")
 
     conn.execute("""
@@ -675,12 +646,12 @@ def create_schema(conn):
         id64 BIGINT,
         bodyId INTEGER,
         name VARCHAR,
-        type body_type_enum,       -- only Planet or Star
+        type VARCHAR,       -- validates against BODY_TYPE (only Planet or Star)
         subType VARCHAR,           -- null for stars
         distanceToArrival DOUBLE,
         belts belt_or_ring[],
         rings belt_or_ring[],
-        reserveLevel reserve_level_enum
+        reserveLevel VARCHAR  -- validates against RESERVE_LEVEL
     );""")
 
     conn.execute("""
@@ -712,7 +683,7 @@ def create_schema(conn):
         signals STRUCT(
             IsStation BOOLEAN,
             SignalName VARCHAR,
-            SignalType fss_signal_type_enum
+            SignalType VARCHAR  -- validates against FSS_SIGNAL_TYPE
         )[]
     );
     """)

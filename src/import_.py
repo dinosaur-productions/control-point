@@ -1,5 +1,11 @@
 import os
-from db import connect_db, create_schema
+from db import (
+    connect_db, create_schema, POWER, POWERPLAYSTATE, ALLEGIANCE, ECONOMY, 
+    GOVERNMENT, SECURITY, BODY_TYPE, STATION_TYPE, CARRIER_DOCKING_ACCESS, 
+    SERVICES, SIGNAL_TYPE, FACTION_STATE, HAPPINESS, COMMODITY_BRACKET,
+    RESERVE_LEVEL, BELT_OR_RING_TYPE, FSS_SIGNAL_TYPE, CONFLICT_STATUS,
+    CONFLICT_WAR_TYPE
+)
 from constants import DIR_DATA_DUMP, GAME_VERSION
 import gzip
 
@@ -56,7 +62,7 @@ def to_economy_enum(expr):
 
 def to_economy_enum_proportion(expr):
     get_name = "e->>'name'"
-    return f"list_transform(CAST({expr} AS JSON[]), e -> struct_pack(Name := {to_economy_enum(get_name)}, Proportion:= e->>'proportion'))"
+    return f"list_transform(CAST({expr} AS JSON[]), e -> struct_pack(Name := {generate_enum_check(to_economy_enum(get_name), ECONOMY, "Economies.Name")}, Proportion:= e->>'proportion'))"
 
 def to_government_enum(expr):
     return f"REGEXP_REPLACE(REGEXP_REPLACE({expr}, '^\\$government_', ''), ';$', '')"
@@ -76,7 +82,7 @@ def to_security_enum(expr):
     """
 
 def to_faction_state(expr):
-    return f"{{'Name': {expr}->>'Name', 'FactionState': COALESCE({expr}->>'FactionState', 'None')::faction_state_enum}}"
+    return f"{{'Name': {expr}->>'Name', 'FactionState': COALESCE({expr}->>'FactionState', 'None')}}"
 
 def to_station_type_enum(expr):
     return f"CASE WHEN {expr} = '' THEN 'Empty' WHEN {expr} = 'Megaship' THEN 'MegaShip' ELSE {expr} END"
@@ -85,7 +91,26 @@ def to_count_signal_type_enum(expr):
     return f"""
         list_transform(CAST({expr} AS JSON[]), s -> struct_pack(
             Count := CAST(s->>'Count' AS INTEGER),
-            Type := CASE WHEN s ->>'Type' = 'tritium' THEN 'Tritium' ELSE REGEXP_REPLACE(REGEXP_REPLACE(s->>'Type', '^\\$SAA_SignalType_', ''), ';$', '') END
+            Type := {generate_enum_check("CASE WHEN s ->>'Type' = 'tritium' THEN 'Tritium' ELSE REGEXP_REPLACE(REGEXP_REPLACE(s->>'Type', '^\\$SAA_SignalType_', ''), ';$', '') END", SIGNAL_TYPE, "Signals.Type")}
+        ))
+    """
+
+def to_conflict(expr):
+    """Convert Conflicts JSON array to struct with validated Status and WarType fields."""
+    return f"""
+        list_transform(CAST({expr} AS JSON[]), c -> struct_pack(
+            Faction1 := struct_pack(
+                Name := c->'Faction1'->>'Name',
+                Stake := c->'Faction1'->>'Stake',
+                WonDays := CAST(c->'Faction1'->>'WonDays' AS INTEGER)
+            ),
+            Faction2 := struct_pack(
+                Name := c->'Faction2'->>'Name',
+                Stake := c->'Faction2'->>'Stake',
+                WonDays := CAST(c->'Faction2'->>'WonDays' AS INTEGER)
+            ),
+            Status := {generate_enum_check("c->>'Status'", CONFLICT_STATUS, "Conflict.Status")},
+            WarType := {generate_enum_check("c->>'WarType'", CONFLICT_WAR_TYPE, "Conflict.WarType")}
         ))
     """
 
@@ -99,19 +124,9 @@ def to_commodities(expr):
                 SellPrice := c->>'sellPrice',
                 MeanPrice := c->>'meanPrice',
                 Stock := c->>'stock',
-                StockBracket := CASE 
-                                    WHEN c->>'stockBracket' in ('0', '') THEN 'None'
-                                    WHEN c->>'stockBracket' = '1' THEN 'Low'
-                                    WHEN c->>'stockBracket' = '2' THEN 'Med'
-                                    WHEN c->>'stockBracket' = '3' THEN 'High'
-                                END,
+                StockBracket := {generate_enum_check("CASE WHEN c->>'stockBracket' in ('0', '') THEN 'None' WHEN c->>'stockBracket' = '1' THEN 'Low' WHEN c->>'stockBracket' = '2' THEN 'Med' WHEN c->>'stockBracket' = '3' THEN 'High' END", COMMODITY_BRACKET, "Commodities.StockBracket")},
                 Demand := c->>'demand',
-                DemandBracket := CASE 
-                                    WHEN c->>'demandBracket' in ('0', '') THEN 'None'
-                                    WHEN c->>'demandBracket' = '1' THEN 'Low'
-                                    WHEN c->>'demandBracket' = '2' THEN 'Med'
-                                    WHEN c->>'demandBracket' = '3' THEN 'High'
-                                END,
+                DemandBracket := {generate_enum_check("CASE WHEN c->>'demandBracket' in ('0', '') THEN 'None' WHEN c->>'demandBracket' = '1' THEN 'Low' WHEN c->>'demandBracket' = '2' THEN 'Med' WHEN c->>'demandBracket' = '3' THEN 'High' END", COMMODITY_BRACKET, "Commodities.DemandBracket")},
                 StatusFlags := [replace(replace(flag, 'rare', 'Rare'), 'High demand', 'High Demand') for flag in CAST(c->'statusFlags' AS VARCHAR[])]
             )
         )
@@ -122,18 +137,11 @@ def to_faction_detail(expr):
     return f"""
         list_transform(CAST({expr} AS JSON[]), f -> struct_pack(
             Name := f->>'Name',
-            Allegiance := {to_allegiance_enum("f->>'Allegiance'")},
-            FactionState := f->>'FactionState',
-            Government := {to_government_enum("f->>'Government'")},
+            Allegiance := {generate_enum_check("f->>'Allegiance'", ALLEGIANCE, "Factions.Allegiance")},
+            FactionState := {generate_enum_check("f->>'FactionState'", FACTION_STATE, "Factions.FactionState")},
+            Government := {generate_enum_check("f->>'Government'", GOVERNMENT, "Factions.Government")},
             Influence := f->>'Influence',
-            Happiness := CASE
-                WHEN f ->>'Happiness' = '$Faction_HappinessBand1;' THEN 'Elated'
-                WHEN f ->>'Happiness' = '$Faction_HappinessBand2;' THEN 'Happy'
-                WHEN f ->>'Happiness' = '$Faction_HappinessBand3;' THEN 'Discontented'
-                WHEN f ->>'Happiness' = '$Faction_HappinessBand4;' THEN 'Unhappy'
-                WHEN f ->>'Happiness' = '$Faction_HappinessBand5;' THEN 'Despondent'
-                ELSE 'Unknown'
-            END,
+            Happiness := {generate_enum_check("CASE WHEN f->>'Happiness' = '$Faction_HappinessBand1;' THEN 'Elated' WHEN f->>'Happiness' = '$Faction_HappinessBand2;' THEN 'Happy' WHEN f->>'Happiness' = '$Faction_HappinessBand3;' THEN 'Discontented' WHEN f->>'Happiness' = '$Faction_HappinessBand4;' THEN 'Unhappy' WHEN f->>'Happiness' = '$Faction_HappinessBand5;' THEN 'Despondent' ELSE 'Unknown' END", HAPPINESS, "Factions.Happiness")},
             ActiveStates := list_transform(CAST(f->'ActiveStates' AS JSON[]), s -> (s->>'State')),
             RecoveringStates := f->'RecoveringStates',
             PendingStates := f->'PendingStates'
@@ -147,6 +155,58 @@ def get_num_lines(fpath):
     else:
         with open(fpath, "r", encoding="utf-8") as f:
             return sum(1 for _ in f)
+
+
+def generate_enum_check(column_expr, allowed_values, column_name):
+    """
+    Generate a SQL expression that validates a value against allowed enum values.
+    Returns the expression unchanged if valid, or calls error() with a message if invalid.
+    
+    Args:
+        column_expr: SQL expression to validate (e.g., "message->>'Economy'")
+        allowed_values: List of allowed string values (e.g., ECONOMY constant)
+        column_name: Human-readable column name for error messages
+    
+    Returns:
+        SQL CASE/WHEN expression that validates and returns the value, or errors
+    
+    Example:
+        generate_enum_check("message->>'SystemEconomy'", ECONOMY, "SystemEconomy")
+        -> "CASE WHEN message->>'SystemEconomy' IN (...) THEN message->>'SystemEconomy' ELSE error('Invalid SystemEconomy: ' || message->>'SystemEconomy') END"
+    """
+    allowed_str = ', '.join(repr(v) for v in allowed_values)
+    return f"""
+        CASE 
+            WHEN {column_expr} IS NULL THEN NULL
+            WHEN {column_expr} IN ({allowed_str}) THEN {column_expr}
+            ELSE error('Invalid {column_name}: ' || {column_expr})
+        END
+    """
+
+
+def validate_enum_list(column_expr, allowed_values, column_name):
+    """
+    Generate a SQL expression that validates each element in a string array against allowed enum values.
+    
+    Args:
+        column_expr: SQL expression returning a VARCHAR array (e.g., "CAST(message->'Powers' AS VARCHAR[])")
+        allowed_values: List of allowed string values
+        column_name: Human-readable column name for error messages
+    
+    Returns:
+        SQL expression that validates all array elements
+    """
+    allowed_str = ', '.join(repr(v) for v in allowed_values)
+    return f"""
+        list_transform(
+            {column_expr},
+            x -> CASE
+                WHEN x IS NULL THEN NULL
+                WHEN x IN ({allowed_str}) THEN x
+                ELSE error('Invalid {column_name} array element: ' || x)
+            END
+        )
+    """
 
 
 # handles both fsdjump and carrierjump
@@ -171,23 +231,23 @@ def import_jump_jsonl_files(conn, imported):
                 CAST(message->>'Population' AS BIGINT) AS Population,
                 CASE 
                     WHEN message->>'PowerplayState' = '' THEN NULL
-                    ELSE message->>'PowerplayState'
+                    ELSE {generate_enum_check("message->>'PowerplayState'", POWERPLAYSTATE, "PowerplayState")}
                 END AS PowerplayState,
-                message->>'ControllingPower' AS ControllingPower,
-                CAST(message->>'Powers' AS power_enum[]) AS Powers,
+                {generate_enum_check("message->>'ControllingPower'", POWER, "ControllingPower")} AS ControllingPower,
+                {validate_enum_list("CAST(message->>'Powers' AS VARCHAR[])", POWER, "Powers")} AS Powers,
                 message->>'PowerplayConflictProgress' AS PowerplayConflictProgress,
                 CAST(message->>'PowerplayStateControlProgress' AS DOUBLE) AS PowerplayStateControlProgress,
                 CAST(message->>'PowerplayStateReinforcement' AS INTEGER) AS PowerplayStateReinforcement,
                 CAST(message->>'PowerplayStateUndermining' AS INTEGER) AS PowerplayStateUndermining,
                 {to_faction_detail("message->>'Factions'")} AS Factions,
                 message->>'SystemFaction' AS SystemFaction,
-                {to_allegiance_enum("message->>'SystemAllegiance'")} AS SystemAllegiance,
-                {to_economy_enum("message->>'SystemEconomy'")} AS SystemEconomy,
-                {to_government_enum("message->>'SystemGovernment'")} AS SystemGovernment,
-                {to_economy_enum("message->>'SystemSecondEconomy'")} AS SystemSecondEconomy,
-                {to_security_enum("message->>'SystemSecurity'")} AS SystemSecurity,
+                {generate_enum_check(to_allegiance_enum("message->>'SystemAllegiance'"), ALLEGIANCE, "SystemAllegiance")} AS SystemAllegiance,
+                {generate_enum_check(to_economy_enum("message->>'SystemEconomy'"), ECONOMY, "SystemEconomy")} AS SystemEconomy,
+                {generate_enum_check(to_government_enum("message->>'SystemGovernment'"), GOVERNMENT, "SystemGovernment")} AS SystemGovernment,
+                {generate_enum_check(to_economy_enum("message->>'SystemSecondEconomy'"), ECONOMY, "SystemSecondEconomy")} AS SystemSecondEconomy,
+                {generate_enum_check(to_security_enum("message->>'SystemSecurity'"), SECURITY, "SystemSecurity")} AS SystemSecurity,
                 CAST(message->>'StarPos' AS DOUBLE[]) AS StarPos,
-                message->'Conflicts' as Conflicts,
+                {to_conflict("message->'Conflicts'")} as Conflicts,
                 rn
             FROM tmp_jump_raw
             )
@@ -235,12 +295,12 @@ def import_commodity_jsonl_files(conn, imported):
                 SELECT
                     message->>'systemName' AS SystemName,
                     message->>'stationName' AS StationName,
-                    {to_station_type_enum("message->>'stationType'")} AS StationType,
+                    {generate_enum_check(to_station_type_enum("message->>'stationType'"), STATION_TYPE, "StationType")} AS StationType,
                     CAST(message->>'marketId' AS BIGINT) AS MarketId,
                     CAST(message->>'timestamp' AS TIMESTAMP) AS timestamp,
                     message->>'prohibited' AS Prohibited,
                     {to_economy_enum_proportion("message->'economies'")} AS Economies,
-                    message->>'carrierDockingAccess' AS CarrierDockingAccess,
+                    {generate_enum_check("message->>'carrierDockingAccess'", CARRIER_DOCKING_ACCESS, "CarrierDockingAccess")} AS CarrierDockingAccess,
                     {to_commodities("message->'commodities'")} AS Commodities,
                     rn
                 FROM tmp_commodity_raw
@@ -284,12 +344,12 @@ def import_approachsettlement_jsonl_files(conn, imported):
                     CAST(message->>'MarketID' AS BIGINT) AS MarketId,
                     message->>'Name' AS Name,
                     CAST(message->>'StarPos' AS DOUBLE[]) AS StarPos,
-                    message->>'StationAllegiance' AS StationAllegiance,
+                    {generate_enum_check("message->>'StationAllegiance'", ALLEGIANCE, "StationAllegiance")} AS StationAllegiance,
                     {to_economy_enum_proportion("message->'StationEconomies'")} AS StationEconomies,
-                    {to_economy_enum("message->>'StationEconomy'")} AS StationEconomy,
+                    {generate_enum_check(to_economy_enum("message->>'StationEconomy'"), ECONOMY, "StationEconomy")} AS StationEconomy,
                     message->'StationFaction' AS StationFaction,
-                    {to_government_enum("message->>'StationGovernment'")} AS StationGovernment,
-                    CAST(message->'StationServices' AS VARCHAR[]) AS StationServices,
+                    {generate_enum_check(to_government_enum("message->>'StationGovernment'"), GOVERNMENT, "StationGovernment")} AS StationGovernment,
+                    {validate_enum_list("CAST(message->'StationServices' AS VARCHAR[])", SERVICES, "StationServices")} AS StationServices,
                     rn
                 FROM tmp_approachsettlement_raw
             )
@@ -327,16 +387,16 @@ def import_docked_jsonl_files(conn, imported):
                     message->>'StarSystem' AS StarSystem,
                     CAST(message->>'SystemAddress' AS BIGINT) AS SystemAddress,
                     message->>'StationName' AS StationName,
-                    message->>'StationType' AS StationType,
+                    {generate_enum_check("message->>'StationType'", STATION_TYPE, "StationType")} AS StationType,
                     CAST(message->>'MarketID' AS BIGINT) AS MarketID,
                     CAST(message->>'DistFromStarLS' AS DOUBLE) AS DistFromStarLS,
                     CAST(message->>'StarPos' AS DOUBLE[]) AS StarPos,
-                    message->>'StationAllegiance' AS StationAllegiance,
+                    {generate_enum_check("message->>'StationAllegiance'", ALLEGIANCE, "StationAllegiance")} AS StationAllegiance,
                     {to_economy_enum_proportion("message->'StationEconomies'")} AS StationEconomies,
-                    {to_economy_enum("message->>'StationEconomy'")} AS StationEconomy,
+                    {generate_enum_check(to_economy_enum("message->>'StationEconomy'"), ECONOMY, "StationEconomy")} AS StationEconomy,
                     {to_faction_state("message->'StationFaction'")} AS StationFaction,
-                    {to_government_enum("message->>'StationGovernment'")} AS StationGovernment,
-                    CAST(message->'StationServices' AS VARCHAR[]) AS StationServices,
+                    {generate_enum_check(to_government_enum("message->>'StationGovernment'"), GOVERNMENT, "StationGovernment")} AS StationGovernment,
+                    {validate_enum_list("CAST(message->'StationServices' AS VARCHAR[])", SERVICES, "StationServices")} AS StationServices,
                     CAST(message->'LandingPads' AS STRUCT(Large INTEGER, Medium INTEGER, Small INTEGER)) AS LandingPads,
                     rn
                 FROM tmp_docked_raw
@@ -409,33 +469,33 @@ def import_location_jsonl_files(conn, imported):
                     CAST(message->>'SystemAddress' AS BIGINT) AS SystemAddress,
                     message->>'Body' AS Body,
                     CAST(message->>'BodyId' AS INTEGER) AS BodyId,
-                    message->>'BodyType' AS BodyType,
+                    {generate_enum_check("message->>'BodyType'", BODY_TYPE, "BodyType")} AS BodyType,
                     CAST(message->>'DistFromStarLS' AS DOUBLE) AS DistFromStarLS,
                     CAST(message->>'Docked' AS BOOLEAN) AS Docked,
                     CAST(message->>'MarketID' AS BIGINT) AS MarketID,
                     CAST(message->>'Population' AS BIGINT) AS Population,
-                    CASE WHEN message->>'PowerplayState' = '' THEN NULL ELSE message->>'PowerplayState' END AS PowerplayState,
-                    message->>'ControllingPower' AS ControllingPower,
-                    CAST(message->>'Powers' AS power_enum[]) AS Powers,
+                    CASE WHEN message->>'PowerplayState' = '' THEN NULL ELSE {generate_enum_check("message->>'PowerplayState'", POWERPLAYSTATE, "PowerplayState")} END AS PowerplayState,
+                    {generate_enum_check("message->>'ControllingPower'", POWER, "ControllingPower")} AS ControllingPower,
+                    {validate_enum_list("CAST(message->>'Powers' AS VARCHAR[])", POWER, "Powers")} AS Powers,
                     message->>'PowerplayConflictProgress' AS PowerplayConflictProgress,
                     CAST(message->>'PowerplayStateControlProgress' AS DOUBLE) AS PowerplayStateControlProgress,
                     CAST(message->>'PowerplayStateReinforcement' AS INTEGER) AS PowerplayStateReinforcement,
                     CAST(message->>'PowerplayStateUndermining' AS INTEGER) AS PowerplayStateUndermining,
                     CAST(message->>'StarPos' AS DOUBLE[]) AS StarPos,
                     {to_economy_enum_proportion("message->'StationEconomies'")} AS StationEconomies,
-                    {to_economy_enum("message->>'StationEconomy'")} AS StationEconomy,
+                    {generate_enum_check(to_economy_enum("message->>'StationEconomy'"), ECONOMY, "StationEconomy")} AS StationEconomy,
                     {to_faction_state("message->'StationFaction'")} AS StationFaction,
-                    {to_government_enum("message->>'StationGovernment'")} AS StationGovernment,
+                    {generate_enum_check(to_government_enum("message->>'StationGovernment'"), GOVERNMENT, "StationGovernment")} AS StationGovernment,
                     message->>'StationName' AS StationName,
-                    CAST(message->'StationServices' AS VARCHAR[]) AS StationServices,
-                    message->>'StationType' AS StationType,
-                    {to_allegiance_enum("message->>'SystemAllegiance'")} AS SystemAllegiance,
-                    {to_economy_enum("message->>'SystemEconomy'")} AS SystemEconomy,
+                    {validate_enum_list("CAST(message->'StationServices' AS VARCHAR[])", SERVICES, "StationServices")} AS StationServices,
+                    {generate_enum_check("message->>'StationType'", STATION_TYPE, "StationType")} AS StationType,
+                    {generate_enum_check(to_allegiance_enum("message->>'SystemAllegiance'"), ALLEGIANCE, "SystemAllegiance")} AS SystemAllegiance,
+                    {generate_enum_check(to_economy_enum("message->>'SystemEconomy'"), ECONOMY, "SystemEconomy")} AS SystemEconomy,
                     {to_faction_state("message->'SystemFaction'")} AS SystemFaction,
-                    {to_government_enum("message->>'SystemGovernment'")} AS SystemGovernment,
-                    {to_economy_enum("message->>'SystemSecondEconomy'")} AS SystemSecondEconomy,
-                    {to_security_enum("message->>'SystemSecurity'")} AS SystemSecurity,
-                    message->'Conflicts' as Conflicts,
+                    {generate_enum_check(to_government_enum("message->>'SystemGovernment'"), GOVERNMENT, "SystemGovernment")} AS SystemGovernment,
+                    {generate_enum_check(to_economy_enum("message->>'SystemSecondEconomy'"), ECONOMY, "SystemSecondEconomy")} AS SystemSecondEconomy,
+                    {generate_enum_check(to_security_enum("message->>'SystemSecurity'"), SECURITY, "SystemSecurity")} AS SystemSecurity,
+                    {to_conflict("message->'Conflicts'")} as Conflicts,
                     rn
                 FROM tmp_location_raw
             )
@@ -523,7 +583,7 @@ def import_fsssignaldiscovered_jsonl_files(conn, imported):
                         s -> struct_pack(
                             IsStation := s->>'IsStation' = 'true',
                             SignalName := s->>'SignalName',
-                            SignalType := CASE WHEN s ->>'SignalType' = '' THEN 'Empty' ELSE s->>'SignalType' END
+                            SignalType := {generate_enum_check("CASE WHEN s ->>'SignalType' = '' THEN 'Empty' ELSE s->>'SignalType' END", FSS_SIGNAL_TYPE, "SignalType")}
                         )
                     ) AS Signals,
                     rn
