@@ -52,6 +52,8 @@ ECONOMY = [
     "Rescue",
     "Prison",
     "Engineer",
+    "Repair", # occurs in older journals
+    "Damaged",
 ]
 
 GOVERNMENT = [
@@ -117,51 +119,6 @@ CARRIER_DOCKING_ACCESS = [
     "friends",
     "squadron",
     "squadronfriends",
-]
-
-SERVICES = [
-    "commodities",
-    "bartender",
-    "tuning",
-    "outfitting",
-    "refuel",
-    "facilitator",
-    "registeringcolonisation",
-    "stationoperations",
-    "techBroker",
-    "dock",
-    "flightcontroller",
-    "livery",
-    "frontlinesolutions",
-    "repair",
-    "stationMenu",
-    "missionsgenerated",
-    "exploration",
-    "missions",
-    "engineer",
-    "blackmarket",
-    "powerplay",
-    "shipyard",
-    "shop",
-    "colonisationcontribution",
-    "pioneersupplies",
-    "crewlounge",
-    "contacts",
-    "apexinterstellar",
-    "socialspace",
-    "vistagenomics",
-    "ondockmission",
-    "refinery",
-    "autodock",
-    "rearm",
-    "searchrescue",
-    "materialtrader",
-    "carriermanagement",
-    "carrierfuel",
-    "voucherredemption",
-    "modulepacks",
-    "carriervendor",
-    "squadronBank",
 ]
 
 SIGNAL_TYPE = [

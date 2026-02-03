@@ -2,7 +2,7 @@ import os
 from db import (
     connect_db, create_schema, POWER, POWERPLAYSTATE, ALLEGIANCE, ECONOMY, 
     GOVERNMENT, SECURITY, BODY_TYPE, STATION_TYPE, CARRIER_DOCKING_ACCESS, 
-    SERVICES, SIGNAL_TYPE, FACTION_STATE, HAPPINESS, COMMODITY_BRACKET,
+    SIGNAL_TYPE, FACTION_STATE, HAPPINESS, COMMODITY_BRACKET,
     RESERVE_LEVEL, BELT_OR_RING_TYPE, FSS_SIGNAL_TYPE, CONFLICT_STATUS,
     CONFLICT_WAR_TYPE
 )
@@ -40,18 +40,18 @@ def create_temp_table(fpath):
             SELECT *, row_number() OVER () AS rn
             FROM read_ndjson_auto('{fpath}', union_by_name=true, ignore_errors=true)
             WHERE 
-                header->>'gameversion' NOT IN ('CAPI-Legacy-market', '')
-                AND (
-                    header->>'gameversion' IN ('CAPI-journal', 'CAPI-Live-market', 'CAPI-market') 
-                    OR (
-                        [
-                            SPLIT_PART(header->>'gameversion', '.', 1)::INTEGER,
-                            SPLIT_PART(header->>'gameversion', '.', 2)::INTEGER,
-                            SPLIT_PART(header->>'gameversion', '.', 3)::INTEGER,
-                            SPLIT_PART(header->>'gameversion', '.', 4)::INTEGER
-                        ] >= [{GAME_VERSION[0]}, {GAME_VERSION[1]}, {GAME_VERSION[2]}, {GAME_VERSION[3]}]
-                    )
-                )
+                (header->>'gameversion' IS NULL OR (header->>'gameversion' NOT IN ('CAPI-Legacy-market', '')))
+                --AND (
+                --    header->>'gameversion' IN ('CAPI-journal', 'CAPI-Live-market', 'CAPI-market') 
+                --    OR (
+                --        [
+                --            SPLIT_PART(header->>'gameversion', '.', 1)::INTEGER,
+                --            SPLIT_PART(header->>'gameversion', '.', 2)::INTEGER,
+                --            SPLIT_PART(header->>'gameversion', '.', 3)::INTEGER,
+                --           SPLIT_PART(header->>'gameversion', '.', 4)::INTEGER
+                --        ] >= [{GAME_VERSION[0]}, {GAME_VERSION[1]}, {GAME_VERSION[2]}, {GAME_VERSION[3]}]
+                --    )
+                --)
                 AND TRY_CAST(header->>'gatewayTimestamp' AS TIMESTAMP) IS NOT NULL
                 AND TRY_CAST(message->>'timestamp' AS TIMESTAMP) IS NOT NULL
                 AND TRY_CAST(message->>'timestamp' AS TIMESTAMP) >= TRY_CAST(header->>'gatewayTimestamp' AS TIMESTAMP) - INTERVAL '1 hour'
@@ -349,7 +349,7 @@ def import_approachsettlement_jsonl_files(conn, imported):
                     {generate_enum_check(to_economy_enum("message->>'StationEconomy'"), ECONOMY, "StationEconomy")} AS StationEconomy,
                     message->'StationFaction' AS StationFaction,
                     {generate_enum_check(to_government_enum("message->>'StationGovernment'"), GOVERNMENT, "StationGovernment")} AS StationGovernment,
-                    {validate_enum_list("CAST(message->'StationServices' AS VARCHAR[])", SERVICES, "StationServices")} AS StationServices,
+                    CAST(message->'StationServices' AS VARCHAR[]) AS StationServices,
                     rn
                 FROM tmp_approachsettlement_raw
             )
@@ -387,7 +387,7 @@ def import_docked_jsonl_files(conn, imported):
                     message->>'StarSystem' AS StarSystem,
                     CAST(message->>'SystemAddress' AS BIGINT) AS SystemAddress,
                     message->>'StationName' AS StationName,
-                    {generate_enum_check("message->>'StationType'", STATION_TYPE, "StationType")} AS StationType,
+                    {generate_enum_check(to_station_type_enum("message->>'stationType'"), STATION_TYPE, "StationType")} AS StationType,
                     CAST(message->>'MarketID' AS BIGINT) AS MarketID,
                     CAST(message->>'DistFromStarLS' AS DOUBLE) AS DistFromStarLS,
                     CAST(message->>'StarPos' AS DOUBLE[]) AS StarPos,
@@ -396,7 +396,7 @@ def import_docked_jsonl_files(conn, imported):
                     {generate_enum_check(to_economy_enum("message->>'StationEconomy'"), ECONOMY, "StationEconomy")} AS StationEconomy,
                     {to_faction_state("message->'StationFaction'")} AS StationFaction,
                     {generate_enum_check(to_government_enum("message->>'StationGovernment'"), GOVERNMENT, "StationGovernment")} AS StationGovernment,
-                    {validate_enum_list("CAST(message->'StationServices' AS VARCHAR[])", SERVICES, "StationServices")} AS StationServices,
+                    CAST(message->'StationServices' AS VARCHAR[]) AS StationServices,
                     CAST(message->'LandingPads' AS STRUCT(Large INTEGER, Medium INTEGER, Small INTEGER)) AS LandingPads,
                     rn
                 FROM tmp_docked_raw
@@ -408,8 +408,8 @@ def import_docked_jsonl_files(conn, imported):
             )
             SELECT
                 timestamp, StarSystem, SystemAddress, StationName, StationType, MarketID,
-                DistFromStarLS, StarPos, StationEconomies,
-                StationEconomy, StationFaction, StationGovernment, StationServices, LandingPads
+                DistFromStarLS, StarPos, StationEconomies, StationEconomy, 
+                StationFaction, StationGovernment, StationServices, LandingPads
             FROM extracted
             WHERE rn > ?
         """, [last_line])
@@ -487,7 +487,7 @@ def import_location_jsonl_files(conn, imported):
                     {to_faction_state("message->'StationFaction'")} AS StationFaction,
                     {generate_enum_check(to_government_enum("message->>'StationGovernment'"), GOVERNMENT, "StationGovernment")} AS StationGovernment,
                     message->>'StationName' AS StationName,
-                    {validate_enum_list("CAST(message->'StationServices' AS VARCHAR[])", SERVICES, "StationServices")} AS StationServices,
+                    CAST(message->'StationServices' AS VARCHAR[]) AS StationServices,
                     {generate_enum_check("message->>'StationType'", STATION_TYPE, "StationType")} AS StationType,
                     {generate_enum_check(to_allegiance_enum("message->>'SystemAllegiance'"), ALLEGIANCE, "SystemAllegiance")} AS SystemAllegiance,
                     {generate_enum_check(to_economy_enum("message->>'SystemEconomy'"), ECONOMY, "SystemEconomy")} AS SystemEconomy,

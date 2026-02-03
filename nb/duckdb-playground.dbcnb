@@ -1058,16 +1058,53 @@ cells:
     metadata: {}
   - kind: 2
     languageId: sql
-    value: "select StationEconomy, LandingPads, count(*) --  ,
+    value: "select * from  read_json('data-dump/stations.json.gz') where systemName
+      = 'Tau-3 Eridani';\r\n"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "select StationName, StationEconomy, LandingPads --  ,
       array_agg(\"StationName\"), ARRAY_AGG(\"StarSystem\")\r
 
       from docked \r
 
-      where StationType = 'OnFootSettlement' \r
+      where StationType = 'OnFootSettlement' and StarSystem = 'Tau-3 Eridani'\r
 
-      group by StationEconomy, LandingPads\r
+      group by StationName,StationEconomy, LandingPads;\r\n"
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: "--select count(DISTINCT SystemAddress) from system_latest where
+      \"Population\" > 0;\r
 
-      having count(*) > 10;\r\n"
+      \r
+
+      -- WITH latest AS (\r
+
+      --         SELECT SystemAddress, StationName, MAX(timestamp) AS
+      timestamp\r
+
+      --         FROM docked\r
+
+      --         GROUP BY ALL\r
+
+      --     ),\r
+
+      -- t AS (\r
+
+      --     SELECT DISTINCT ON (j.SystemAddress, j.StationName) j.*\r
+
+      --     FROM docked j\r
+
+      --     SEMI JOIN latest USING (SystemAddress, StationName, timestamp))\r
+
+      \r
+
+      --SELECT COUNT(*) FROM docked;\r
+
+      \r
+
+      show table docked;"
     metadata: {}
 metadata:
   conn:

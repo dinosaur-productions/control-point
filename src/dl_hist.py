@@ -123,5 +123,13 @@ def main(today, lookback_days):
     download_systems_populated()
 
 
+def download_docked_files():
+    today = dt.date(2025,11, 30)
+    for days_ago in range((today - dt.date(2025, 11, 20)).days): 
+        date = today - dt.timedelta(days=days_ago)
+        download_and_decompress_daily_file("Journal.Docked", date)
+
+
 if __name__ == "__main__":
     main(dt.date.today(), lookback_days=1)
+    # download_docked_files()
