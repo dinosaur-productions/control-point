@@ -10,7 +10,7 @@ Elite Dangerous Powerplay 2.0 helper application that processes EDDN (Elite Dang
 Download → Import → Compress → Report → Deploy
 ```
 1. **Download**: `dl_today.py` + `dl_hist.py` fetch JSONL files from edgalaxydata.space
-2. **Import**: `import_.py` processes EDDN events into `data.duckdb` 
+2. **Import**: `extract.py` processes EDDN events into `data.duckdb` 
 3. **Report**: `report.py` creates optimized `sitedata_*.duckdb` for web consumption
 4. **Deploy**: Files copied to `site/` with manifest for cache-busting
 
@@ -37,7 +37,7 @@ Download → Import → Compress → Report → Deploy
 - Foreign key relationships between systems, stations, commodities
 - Import tracking via `imported_files` table with resume capability
 
-### Import Pattern (`src/import_.py`)
+### Import Pattern (`src/extract.py`)
 ```python
 # Standard pattern for JSONL processing
 def import_X_jsonl_files(conn, imported):
@@ -71,7 +71,7 @@ python -m go
 
 # Individual steps
 python -m dl_today        # Download today's data
-python -m import_         # Import to database  
+python -m extract         # Import to database  
 python -m report          # Generate site database
 
 # Serve locally (required for DuckDB-WASM CORS)

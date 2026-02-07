@@ -260,19 +260,19 @@ FSS_SIGNAL_TYPE = [
 
 def create_schema(conn):
     # Note: All enum validation is now done at import time via SQL error() function
-    # in import_.py. No enum types are created here anymore.
+    # in extract.py. No enum types are created here anymore.
     
     conn.execute(f"""
     CREATE TYPE IF NOT EXISTS faction_detail AS STRUCT(
-                Name VARCHAR, 
-                Allegiance VARCHAR,
-                FactionState VARCHAR,
-                Government VARCHAR,
-                Influence DOUBLE,
-                Happiness VARCHAR,
-                ActiveStates VARCHAR[],
-                RecoveringStates STRUCT(State VARCHAR, Trend UINT8)[],
-                PendingStates STRUCT(State VARCHAR, Trend UINT8)[]);
+        Name VARCHAR, 
+        Allegiance VARCHAR,
+        FactionState VARCHAR,
+        Government VARCHAR,
+        Influence DOUBLE,
+        Happiness VARCHAR,
+        ActiveStates VARCHAR[],
+        RecoveringStates STRUCT(State VARCHAR, Trend UINT8)[],
+        PendingStates STRUCT(State VARCHAR, Trend UINT8)[]);
     """)
 
     conn.execute(f"""
@@ -526,71 +526,8 @@ def create_schema(conn):
     GROUP BY SystemAddress;
     """)
 
-    conn.execute("""
-    CREATE OR REPLACE VIEW station_latest AS
-    WITH approach_docked_loc AS (
-        SELECT
-            timestamp,
-            StarSystem,
-            SystemAddress,
-            StationName,
-            StationType,
-            MarketId,
-            DistFromStarLS,
-            StarPos,
-            StationAllegiance,
-            StationEconomies,
-            StationEconomy,
-            StationFaction,
-            StationGovernment,
-            StationServices
-        FROM docked
-        UNION
-        SELECT
-            timestamp,
-            StarSystem,
-            SystemAddress,
-            Name AS StationName,
-            'Empty' AS StationType,
-            MarketId,
-            NULL AS DistFromStarLS,
-            StarPos,
-            StationAllegiance,
-            StationEconomies,
-            StationEconomy,
-            StationFaction,
-            StationGovernment,
-            StationServices
-        FROM approach_settlement
-        UNION
-        SELECT
-            timestamp,
-            StarSystem,
-            SystemAddress,
-            StationName,
-            StationType,
-            MarketId,
-            DistFromStarLS,
-            StarPos,
-            NULL AS StationAllegiance,
-            StationEconomies,
-            StationEconomy,
-            StationFaction,
-            StationGovernment,
-            StationServices
-        FROM location
-        WHERE Docked = TRUE
-    ),
-    latest AS (
-        SELECT SystemAddress, StationName, MAX(timestamp) AS timestamp
-        FROM approach_docked_loc
-        GROUP BY ALL
-    )
-
-    SELECT DISTINCT ON (j.SystemAddress, j.StationName) j.*
-    FROM approach_docked_loc j
-    SEMI JOIN latest USING (SystemAddress, StationName, timestamp);
-    """)
+    # Note: station_latest is now a materialized table created by transform.py
+    # View definition deprecated - see transform.py for materialization logic
 
     conn.execute("""
     CREATE TYPE IF NOT EXISTS belt_or_ring AS STRUCT(

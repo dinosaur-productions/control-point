@@ -487,73 +487,6 @@ cells:
     metadata: {}
   - kind: 2
     languageId: sql
-    value: "WITH \r
-
-      events as (\r
-
-      \    SELECT StarSystem, Name as Faction, timestamp,
-      list_transform(RecoveringStates, lambda x: x.State) Recovering,
-      ActiveStates Active, list_transform(PendingStates, lambda x: x.State)
-      Pending, Influence, Happiness\r
-
-      \    FROM (SELECT *, UNNEST(Factions, recursive:=true) FROM
-      jumps_location)\r
-
-      )\r
-
-      \r
-
-      select * from events where \"StarSystem\" = 'Moirai' and Faction =
-      'Kausalya Netcoms Organisation' order by timestamp"
-    metadata: {}
-  - kind: 2
-    languageId: sql
-    value: "with \r
-
-      \    un as (\r
-
-      \        select timestamp, StarSystem, unnest(signals,RECURSIVE:=True)
-      from fsssignaldiscovered\r
-
-      \    ),\r
-
-      \    mgs as (\r
-
-      \        SELECT SignalName, min(timestamp), array_agg(DISTINCT StarSystem)
-      as route FROM un\r
-
-      \        WHERE SignalType = 'StationMegaShip'\r
-
-      \        --AND \"StarSystem\" = 'Ebor'\r
-
-      \        GROUP BY SignalName\r
-
-      \    )\r
-
-      \    -- names as (\r
-
-      \    --     SELECT DISTINCT Name FROM systems_populated\r
-
-      \    --     WHERE editdist3(Name, 'Nukamba') < 2\r
-
-      \    --     OR editdist3(Name, 'Graffias') < 2\r
-
-      \    --     OR editdist3(Name, 'Vodyakamana') < 2\r
-
-      \    --     OR editdist3(Name, 'Marfic') < 2\r
-
-      \    --     OR editdist3(Name, 'Upaniklis') < 2\r
-
-      \    -- )\r
-
-      select DISTINCT SignalName\r
-
-      from mgs;\r
-
-      \r\n"
-    metadata: {}
-  - kind: 2
-    languageId: sql
     value: "WITH\r
 
       populated AS (\r
@@ -1058,8 +991,8 @@ cells:
     metadata: {}
   - kind: 2
     languageId: sql
-    value: "select * from  read_json('data-dump/stations.json.gz') where systemName
-      = 'Tau-3 Eridani';\r\n"
+    value: "select * from  read_json('data-dump/systemsPopulated.json.gz') limit 10;
+      --where name = 'Tau-3 Eridani';\r\n"
     metadata: {}
   - kind: 2
     languageId: sql
@@ -1074,37 +1007,7 @@ cells:
     metadata: {}
   - kind: 2
     languageId: sql
-    value: "--select count(DISTINCT SystemAddress) from system_latest where
-      \"Population\" > 0;\r
-
-      \r
-
-      -- WITH latest AS (\r
-
-      --         SELECT SystemAddress, StationName, MAX(timestamp) AS
-      timestamp\r
-
-      --         FROM docked\r
-
-      --         GROUP BY ALL\r
-
-      --     ),\r
-
-      -- t AS (\r
-
-      --     SELECT DISTINCT ON (j.SystemAddress, j.StationName) j.*\r
-
-      --     FROM docked j\r
-
-      --     SEMI JOIN latest USING (SystemAddress, StationName, timestamp))\r
-
-      \r
-
-      --SELECT COUNT(*) FROM docked;\r
-
-      \r
-
-      show table docked;"
+    value: select * from systems_populated limit 1;
     metadata: {}
 metadata:
   conn:

@@ -41,8 +41,9 @@ def create_temp_table(fpath):
             FROM read_ndjson_auto('{fpath}', union_by_name=true, ignore_errors=true)
             WHERE 
                 (header->>'gameversion' IS NULL OR (header->>'gameversion' NOT IN ('CAPI-Legacy-market', '')))
-                --AND (
-                --    header->>'gameversion' IN ('CAPI-journal', 'CAPI-Live-market', 'CAPI-market') 
+                AND (
+                    header->>'gameversion' IN ('CAPI-journal', 'CAPI-Live-market', 'CAPI-market') 
+                    OR SPLIT_PART(header->>'gameversion', '.', 1)::INTEGER >= {GAME_VERSION[0]}
                 --    OR (
                 --        [
                 --            SPLIT_PART(header->>'gameversion', '.', 1)::INTEGER,
@@ -51,7 +52,7 @@ def create_temp_table(fpath):
                 --           SPLIT_PART(header->>'gameversion', '.', 4)::INTEGER
                 --        ] >= [{GAME_VERSION[0]}, {GAME_VERSION[1]}, {GAME_VERSION[2]}, {GAME_VERSION[3]}]
                 --    )
-                --)
+                )
                 AND TRY_CAST(header->>'gatewayTimestamp' AS TIMESTAMP) IS NOT NULL
                 AND TRY_CAST(message->>'timestamp' AS TIMESTAMP) IS NOT NULL
                 AND TRY_CAST(message->>'timestamp' AS TIMESTAMP) >= TRY_CAST(header->>'gatewayTimestamp' AS TIMESTAMP) - INTERVAL '1 hour'

@@ -5,9 +5,10 @@ import re
 from constants import DB_MAIN_PATH, DIR_DATA_DUMP
 import dl_hist
 import dl_today
-import import_
+import extract
 import compress
 import report
+import transform
 import clean
 
 def get_auto_lookback_days(data_dump_dir, today_date):
@@ -46,8 +47,10 @@ if __name__ == "__main__":
     today = dl_today.main()
     auto_lookback_days = get_auto_lookback_days(DIR_DATA_DUMP, today)
     dl_hist.main(today, lookback_days=auto_lookback_days)
-    import_.main()
-    compress.compress_database(DB_MAIN_PATH)
+    extract.main()
+    transform.main()
+    # this takes a long time and doesn't do much anymore as we now do incremental updates.
+    # compress.compress_database(DB_MAIN_PATH)
     generated_at = dt.datetime.now(dt.timezone.utc)
     report.make_report_db(generated_at)
     clean.clean_data_dump(DIR_DATA_DUMP)

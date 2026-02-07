@@ -60,9 +60,8 @@ def download_and_decompress_daily_file(event_type: str, date: dt.date):
         return
 
 
-def download_systems_populated():
-    url = "https://www.edsm.net/dump/systemsPopulated.json.gz"
-    filename = "systemsPopulated.json.gz"
+def download_edsm_gzip_file(url: str, filename: str):
+    """Download a gzip file from EDSM, checking Last-Modified to avoid re-downloads."""
     gz_path = os.path.join(DIR_DATA_DUMP, filename)
 
     def get_last_modified_path_gz(gz_path):
@@ -101,6 +100,20 @@ def download_systems_populated():
         print(f"Failed to download {filename}: HTTP {resp.status_code}")
 
 
+def download_systems_populated():
+    download_edsm_gzip_file(
+        "https://www.edsm.net/dump/systemsPopulated.json.gz",
+        "systemsPopulated.json.gz"
+    )
+
+
+def download_stations():
+    download_edsm_gzip_file(
+        "https://www.edsm.net/dump/stations.json.gz",
+        "stations.json.gz"
+    )
+
+
 def compress_jsonl_files_except_today():
     today_str = dt.date.today().strftime("%Y-%m-%d")
     for fname in os.listdir(DIR_DATA_DUMP):
@@ -121,15 +134,15 @@ def main(today, lookback_days):
         for event_type in EVENT_TYPES:
             download_and_decompress_daily_file(event_type, date)
     download_systems_populated()
+    # download_stations()
 
 
-def download_docked_files():
-    today = dt.date(2025,11, 30)
-    for days_ago in range((today - dt.date(2025, 11, 20)).days): 
-        date = today - dt.timedelta(days=days_ago)
-        download_and_decompress_daily_file("Journal.Docked", date)
+def download_historical_files(fro, to, event):
+    for days_ago in range((to - fro).days): 
+        date = to - dt.timedelta(days=days_ago)
+        download_and_decompress_daily_file(event, date)
 
 
 if __name__ == "__main__":
     main(dt.date.today(), lookback_days=1)
-    # download_docked_files()
+    # download_historical_files(dt.date(2020,1,1), dt.date.today(), "Journal.Docked")
