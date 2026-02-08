@@ -145,4 +145,14 @@ def download_historical_files(fro, to, event):
 
 if __name__ == "__main__":
     main(dt.date.today(), lookback_days=1)
-    # download_historical_files(dt.date(2020,1,1), dt.date.today(), "Journal.Docked")
+
+    # dl = [
+    #     "Journal.ApproachSettlement",
+    #     "Journal.CarrierJump",  
+    #     "Journal.Docked",
+    #     "Journal.FSDJump",  
+    #     "Journal.Location",  
+    #     "Journal.SAASignalsFound"
+    # ]
+    # for event in dl:
+    #     download_historical_files(ODDYSSEY_RELEASE_DATE, dt.date.today(), event)

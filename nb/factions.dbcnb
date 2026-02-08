@@ -1,0 +1,18 @@
+cells:
+  - kind: 2
+    languageId: sql
+    value: "attach 'factions.duckdb' as factions_db;\r
+
+      \r
+
+      select * from factions_db.factions where list_contains(ActiveStates,
+      'InfrastructureFailure');\r
+
+      --detach factions_db;\r\n"
+    metadata: {}
+metadata:
+  conn:
+    id: KeD6F3mAfd-QWn4srJBY1
+    name: in-memory
+  database: memory
+  schema: main

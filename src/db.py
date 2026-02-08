@@ -15,6 +15,8 @@ POWER = [
     "Zemina Torval",
     "Nakato Kaine",
     "Jerome Archer",
+    # PP 1.0 names added here to make old imports of unrelated data work
+    "Zachary Hudson" 
 ]
 
 POWERPLAYSTATE = [
@@ -22,6 +24,13 @@ POWERPLAYSTATE = [
     "Exploited",
     "Fortified",
     "Stronghold",
+    # PP 1.0 values added here to make old imports of unrelated data work
+    "Contested", 
+    "Controlled",
+    "HomeSystem",
+    "InPrepareRadius",
+    "Prepared",
+    "Turmoil",
 ]
 
 ALLEGIANCE = [
@@ -52,8 +61,9 @@ ECONOMY = [
     "Rescue",
     "Prison",
     "Engineer",
-    "Repair", # occurs in older journals
+    "Repair",
     "Damaged",
+    "Unknown",
 ]
 
 GOVERNMENT = [
@@ -73,6 +83,7 @@ GOVERNMENT = [
     "Engineer",
     "Carrier",
     "Megaconstruction",
+    "Undefined",
 ]
 
 SECURITY = [
@@ -80,6 +91,8 @@ SECURITY = [
     "Medium",
     "High",
     "Anarchy",
+    "Lawless",
+    "Unknown",
 ]
 
 BODY_TYPE = [
@@ -445,17 +458,17 @@ def create_schema(conn):
     );
     """)
 
-    conn.execute("""
-    CREATE TABLE IF NOT EXISTS fssbodysignals (
-        timestamp TIMESTAMP NOT NULL,
-        StarSystem VARCHAR,
-        SystemAddress BIGINT NOT NULL,
-        BodyId INTEGER,
-        BodyName VARCHAR,
-        Signals STRUCT(Count INTEGER, Type VARCHAR)[],  -- Type validates against SIGNAL_TYPE
-        StarPos DOUBLE[]
-    );
-    """)
+    # conn.execute("""
+    # CREATE TABLE IF NOT EXISTS fssbodysignals (
+    #     timestamp TIMESTAMP NOT NULL,
+    #     StarSystem VARCHAR,
+    #     SystemAddress BIGINT NOT NULL,
+    #     BodyId INTEGER,
+    #     BodyName VARCHAR,
+    #     Signals STRUCT(Count INTEGER, Type VARCHAR)[],  -- Type validates against SIGNAL_TYPE
+    #     StarPos DOUBLE[]
+    # );
+    # """)
 
     conn.execute("""
     --DROP TABLE IF EXISTS saasignalsfound;
