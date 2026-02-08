@@ -8,3 +8,5 @@ justa.json
 site/sitedata_manifest.json
 .vscode/
 bak/
+factions_sample.csv
+factions.csv.bz2

@@ -1007,11 +1007,14 @@ cells:
     metadata: {}
   - kind: 2
     languageId: sql
-    value: select * from systems_populated limit 1;
+    value: "select distinct message.SystemEconomy\r
+
+      from read_json('data-dump/Journal.Location-2025-11-18.jsonl.gz') --where
+      message.Body = 'Dongkum A'"
     metadata: {}
 metadata:
   conn:
-    id: sNSgV7_EO4yH_3Yd5aRJk
-    name: cp
-  database: data
+    id: KeD6F3mAfd-QWn4srJBY1
+    name: in-memory
+  database: memory
   schema: main

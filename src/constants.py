@@ -19,9 +19,9 @@ EVENT_TYPES = [
     "Journal.ApproachSettlement",   # info about settlement when player approaches
     "Journal.CarrierJump",          # system info when a carrier jumps there
     # "Journal.CodexEntry",
-    "Journal.Docked",               # info about station/any place where a player docks
-    # "Journal.DockingDenied",      # TODO: landing pad size info is here
-    # "Journal.DockingGranted",     # TODO: landing pad size info is here
+    "Journal.Docked",               # info about station/any place where a player docks + available landing pads
+    # "Journal.DockingDenied",      # (does not contain landing pad size info - just name of station and a bit of info)
+    # "Journal.DockingGranted",     # (does not contain landing pad size info - just name of station, assigned pad number and a bit of info)
     # "Journal.FCMaterials",
     "Journal.FSDJump",              # system info when a player jumps
     # "Journal.FSSAllBodiesFound",  # just an event saying all bodies found.
