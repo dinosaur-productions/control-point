@@ -50,7 +50,7 @@ if __name__ == "__main__":
     extract.main()
     transform.main()
     # this takes a long time and doesn't do much anymore as we now do incremental updates.
-    compress.compress_database(DB_MAIN_PATH)
+    # compress.compress_database(DB_MAIN_PATH)
     generated_at = dt.datetime.now(dt.timezone.utc)
     report.make_report_db(generated_at)
     # clean.clean_data_dump(DIR_DATA_DUMP)

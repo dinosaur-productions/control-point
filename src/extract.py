@@ -58,29 +58,15 @@ def create_temp_table(fpath):
             SELECT *, row_number() OVER () AS rn
             FROM read_ndjson_auto('{fpath}', union_by_name=true, ignore_errors=true)
             WHERE 
-                -- Exclude known Legacy/Horizons versions (safety net, mostly redundant with >= 4 check)
-                (header->>'gameversion' IS NULL OR (header->>'gameversion' NOT IN (
-                    'CAPI-Legacy-market',              -- Explicitly marked Legacy client data
-                    'January Update - Patch 1',        -- Early 2020 (v3.7.x era)
-                    'January Update - Patch 2',
-                    'Fleet Carriers Update - Patch 3', -- Mid 2020 (v3.8.x era)
-                    'Fleet Carriers Update - Patch 4',
-                    'Fleet Carriers Update - Patch 5',
-                    'Fleet Carriers Update - Patch 7',
-                    'Fleet Carriers Update - Patch 8',
-                    'Fleet Carriers Update - Patch 9',
-                    'April Update Patch 1 EDH',        -- EDH = Elite Dangerous: Horizons (pre-Odyssey)
-                    'April Update Patch 2 EDH',
-                    'April Update EDH',
-                    'Fleet Carriers Update - Patch 11',
-                    '')))
-                AND (
+                (
                     -- CAPI (Companion API) sources: server-side data, version-agnostic, always accept
                     header->>'gameversion' IN (
                         'CAPI-journal', 'CAPI-Live-market', 'CAPI-market', 
                     ) 
                     -- Odyssey-era clients: major version >= 4 ensures post-split galaxy consistency
-                    OR SPLIT_PART(header->>'gameversion', '.', 1)::INTEGER >= 4
+                    -- Legacy versions (named patches like "Fleet Carriers Update") fail the integer cast
+                    OR (TRY_CAST(SPLIT_PART(header->>'gameversion', '.', 1) AS INTEGER) IS NOT NULL
+                        AND TRY_CAST(SPLIT_PART(header->>'gameversion', '.', 1) AS INTEGER) >= 4)
                 )
                 AND TRY_CAST(header->>'gatewayTimestamp' AS TIMESTAMP) IS NOT NULL
                 AND TRY_CAST(message->>'timestamp' AS TIMESTAMP) IS NOT NULL
@@ -578,7 +564,7 @@ def import_saasignalsfound_jsonl_files(conn, imported):
                     CAST(message->>'SystemAddress' AS BIGINT) AS SystemAddress,
                     CAST(message->>'BodyID' AS INTEGER) AS BodyId,
                     message->>'BodyName' AS BodyName,
-                    CAST(message->'Genuses' AS STRUCT(Genus VARCHAR, Genus_Localised VARCHAR)[]) AS Genuses,
+                    list_transform(CAST(message->'Genuses' AS JSON[]), x -> struct_pack(Genus := x->>'Genus')) AS Genuses,
                     {to_count_signal_type_enum("message->'Signals'")} AS Signals,
                     CAST(message->>'StarPos' AS DOUBLE[]) AS StarPos,
                     rn

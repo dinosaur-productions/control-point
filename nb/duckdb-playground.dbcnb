@@ -991,8 +991,13 @@ cells:
     metadata: {}
   - kind: 2
     languageId: sql
-    value: "select * from  read_json('data-dump/systemsPopulated.json.gz') limit 10;
-      --where name = 'Tau-3 Eridani';\r\n"
+    value: "select * exclude stations, unnest(stations)
+      from  read_json('data-dump/systemsPopulated.json.gz') where name = 'Tau-3
+      Eridani';\r
+
+      \r
+
+      \r\n"
     metadata: {}
   - kind: 2
     languageId: sql
@@ -1007,7 +1012,7 @@ cells:
     metadata: {}
   - kind: 2
     languageId: sql
-    value: select * from fsssignaldiscovered_latest limit 10;
+    value: select unnest(bodies) from systems_populated limit 10;
     metadata: {}
 metadata:
   conn:
