@@ -201,6 +201,7 @@ def generate_enum_check(column_expr, allowed_values, column_name):
     return f"""
         CASE 
             WHEN {column_expr} IS NULL THEN NULL
+            WHEN {column_expr} = '' THEN NULL
             WHEN {column_expr} IN ({allowed_str}) THEN {column_expr}
             ELSE error('Invalid {column_name}: ' || {column_expr})
         END

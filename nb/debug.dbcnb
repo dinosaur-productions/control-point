@@ -39,13 +39,7 @@ cells:
 
       WHERE message->>'StarSystem' = 'LP 410-93'\r
 
-      --WHERE CPower != 'null' AND Progress = 'null'\r
-
-      --WHERE message->'ControllingPower' IS NOT NULL AND
-      message->'PowerplayStateControlProgress' IS NULL\r
-
-      --WHERE header->>'softwareName' = 'EDDiscovery' limit 10; -- AND
-      message->>'StarSystem' = 'Arietis Sector ON-T b3-3';\r
+      \r
 
       \r\n"
     metadata: {}
@@ -92,104 +86,152 @@ cells:
     metadata: {}
   - kind: 2
     languageId: sql
-    value: "select timestamp, StarSystem, COLUMNS('Powerplay')\r
+    value: "WITH jsn as (\r
 
-      from jumps_location \r
+      SELECT message->>'timestamp' ts, header->>'softwareName' softwareName,
+      header->>'softwareVersion' softwareVersion,
+      message->>'carrierDockingAccess' cda, *\r
 
-      where PowerplayStateControlProgress > 2\r
-
-      and PowerplayStateControlProgress < 1000 \r
-
-      and \"PowerplayState\" = 'Exploited'\r
-
-      and timestamp < '2025-09-04' \r
-
-      order by timestamp desc;\r
-
-      \r\n"
-    metadata: {}
-  - kind: 2
-    languageId: sql
-    value: "WITH pp as (\r
-
-      select * EXCLUDE PowerplayConflictProgress,
-      UNNEST(PowerplayConflictProgress, RECURSIVE:=true) as confprogress\r
-
-      from jumps_location \r
+      FROM read_ndjson_auto(['data-dump/Commodity-2026-03-16.jsonl.gz'],
+      union_by_name= true)\r
 
       )\r
 
-      select *\r
+      SELECT distinct cda\r
 
-      from pp\r
+      FROM jsn\r
 
-      where \"PowerplayState\" = 'Unoccupied'\r
+      limit 50\r
 
-      and ConflictProgress > 1.20\r
+      -- WHERE cda not in ('all',  'none', 'friends',\r
 
-      --and  \"PowerplayStateReinforcement\" > 120000\r
+      --     'squadron',\r
 
-      --and \"PowerplayState\" = 'Exploited'\r
-
-      and timestamp < '2025-09-04' and timestamp > '2025-09-01' \r
-
-      order by timestamp desc\r
-
-      limit 100;\r\n"
-    metadata: {}
-  - kind: 2
-    languageId: sql
-    value: "-- select Name, avg(SellPrice) FILTER (Demand > 0)\r
-
-      -- from (\r
-
-      --     select * exclude Commodities, unnest(Commodities,
-      recursive:=true)\r
-
-      --     from commodities_latest\r
-
-      -- )\r
-
-      -- WHERE Name in ('Rhodplumsite', 'LowTemperatureDiamond', 'Serendibite',
-      'Benitoite',\r
-
-      --     'Grandidierite', 'Tritium', 'Bromellite', 'Musgravite', 'Opal',
-      'Monazite',\r
-
-      --     'Painite', 'Platinum', 'Alexandrite')\r
-
-      -- GROUP BY Name;\r
+      --     'squadronfriends')\r
 
       \r
 
-      select * EXCLUDE (Prohibited, Economies, CarrierDockingAccess,
-      StationType)\r
-
-      from (\r
-
-      \    select * exclude Commodities, unnest(Commodities, recursive:=true)\r
-
-      \    from commodities_latest\r
-
-      )\r
-
-      WHERE Name  in ('Rhodplumsite', 'LowTemperatureDiamond', 'Serendibite',
-      'Benitoite',\r
-
-      \    'Grandidierite', 'Tritium', 'Bromellite', 'Musgravite', 'Opal',
-      'Monazite',\r
-
-      \    'Painite', 'Platinum', 'Alexandrite')\r
-
-      AND Demand > 5000\r
-
-      AND SellPrice >= 200000 \r
-
-      --LIMIT 100;\r
-
-      \r
-
-      --limit 100;"
+      --{'commodities': [{'buyPrice': 0, 'demand': 400345, 'demandBracket': '3',
+      'meanPrice': 1351, 'name': 'advancedmedicines', 'sellPrice': 1727,
+      'stock': 0, 'stockBracket': '0', 'statusFlags': NULL}, {'buyPrice': 0,
+      'demand': 420681, 'demandBracket': '3', 'meanPrice': 1197, 'name':
+      'agriculturalmedicines', 'sellPrice': 1582, 'stock': 0, 'stockBracket':
+      '0', 'statusFlags': NULL}, {'buyPrice': 0, 'demand': 93539,
+      'demandBracket': '3', 'meanPrice': 3069, 'name': 'agronomictreatment',
+      'sellPrice': 3702, 'stock': 0, 'stockBracket': '0', 'statusFlags': NULL},
+      {'buyPrice': 98, 'demand': 1, 'demandBracket': '0', 'meanPrice': 308,
+      'name': 'algae', 'sellPrice': 58, 'stock': 1626260, 'stockBracket': '2',
+      'statusFlags': NULL}, {'buyPrice': 1310, 'demand': 1, 'demandBracket':
+      '0', 'meanPrice': 1462, 'name': 'animalmeat', 'sellPrice': 1245, 'stock':
+      49042, 'stockBracket': '2', 'statusFlags': NULL}, {'buyPrice': 0,
+      'demand': 3252322, 'demandBracket': '3', 'meanPrice': 522, 'name':
+      'animalmonitors', 'sellPrice': 799, 'stock': 0, 'stockBracket': '0',
+      'statusFlags': NULL}, {'buyPrice': 0, 'demand': 2884668, 'demandBracket':
+      '3', 'meanPrice': 502, 'name': 'aquaponicsystems', 'sellPrice': 771,
+      'stock': 0, 'stockBracket': '0', 'statusFlags': NULL}, {'buyPrice': 0,
+      'demand': 253490, 'demandBracket': '1', 'meanPrice': 536, 'name':
+      'atmosphericextractors', 'sellPrice': 403, 'stock': 0, 'stockBracket':
+      '0', 'statusFlags': NULL}, {'buyPrice': 0, 'demand': 19786,
+      'demandBracket': '1', 'meanPrice': 489, 'name': 'basicmedicines',
+      'sellPrice': 315, 'stock': 0, 'stockBracket': '0', 'statusFlags': NULL},
+      {'buyPrice': 191, 'demand': 1, 'demandBracket': '0', 'meanPrice': 350,
+      'name': 'beer', 'sellPrice': 157, 'stock': 49975, 'stockBracket': '2',
+      'statusFlags': NULL}, {'buyPrice': 0, 'demand': 5894090, 'demandBracket':
+      '3', 'meanPrice': 271, 'name': 'biowaste', 'sellPrice': 614, 'stock': 0,
+      'stockBracket': '0', 'statusFlags': NULL}, {'buyPrice': 0, 'demand':
+      739198, 'demandBracket': '2', 'meanPrice': 523, 'name': 'clothing',
+      'sellPrice': 518, 'stock': 0, 'stockBracket': '0', 'statusFlags': NULL},
+      {'buyPrice': 1310, 'demand': 1, 'demandBracket': '0', 'meanPrice': 1425,
+      'name': 'coffee', 'sellPrice': 1245, 'stock': 49041, 'stockBracket': '2',
+      'statusFlags': NULL}, {'buyPrice': 0, 'demand': 181839, 'demandBracket':
+      '3', 'meanPrice': 6334, 'name': 'consumertechnology', 'sellPrice': 7500,
+      'stock': 0, 'stockBracket': '0', 'statusFlags': NULL}, {'buyPrice': 0,
+      'demand': 215758, 'demandBracket': '1', 'meanPrice': 2211, 'name':
+      'cropharvesters', 'sellPrice': 2142, 'stock': 0, 'stockBracket': '0',
+      'statusFlags': NULL}, {'buyPrice': 0, 'demand': 893, 'demandBracket': '3',
+      'meanPrice': 16850, 'name': 'damagedescapepod', 'sellPrice': 16983,
+      'stock': 0, 'stockBracket': '0', 'statusFlags': NULL}, {'buyPrice': 0,
+      'demand': 97748, 'demandBracket': '1', 'meanPrice': 719, 'name':
+      'domesticappliances', 'sellPrice': 527, 'stock': 0, 'stockBracket': '0',
+      'statusFlags': NULL}, {'buyPrice': 467, 'demand': 1, 'demandBracket': '0',
+      'meanPrice': 613, 'name': 'fish', 'sellPrice': 431, 'stock': 700793,
+      'stockBracket': '2', 'statusFlags': NULL}, {'buyPrice': 372, 'demand': 1,
+      'demandBracket': '0', 'meanPrice': 483, 'name': 'fruitandvegetables',
+      'sellPrice': 334, 'stock': 90344, 'stockBracket': '2', 'statusFlags':
+      NULL}, {'buyPrice': 238, 'demand': 1, 'demandBracket': '0', 'meanPrice':
+      387, 'name': 'grain', 'sellPrice': 202, 'stock': 2266265, 'stockBracket':
+      '2', 'statusFlags': NULL}, {'buyPrice': 0, 'demand': 893, 'demandBracket':
+      '3', 'meanPrice': 34520, 'name': 'hostage', 'sellPrice': 34699, 'stock':
+      0, 'stockBracket': '0', 'statusFlags': NULL}, {'buyPrice': 0, 'demand':
+      187077, 'demandBracket': '1', 'meanPrice': 119, 'name': 'hydrogenfuel',
+      'sellPrice': 125, 'stock': 0, 'stockBracket': '0', 'statusFlags': NULL},
+      {'buyPrice': 16292, 'demand': 1, 'demandBracket': '0', 'meanPrice': 16569,
+      'name': 'imperialslaves', 'sellPrice': 15959, 'stock': 311706,
+      'stockBracket': '3', 'statusFlags': NULL}, {'buyPrice': 191, 'demand': 1,
+      'demandBracket': '0', 'meanPrice': 423, 'name': 'leather', 'sellPrice':
+      157, 'stock': 49972, 'stockBracket': '2', 'statusFlags': NULL},
+      {'buyPrice': 704, 'demand': 1, 'demandBracket': '0', 'meanPrice': 774,
+      'name': 'liquor', 'sellPrice': 665, 'stock': 1265, 'stockBracket': '2',
+      'statusFlags': NULL}, {'buyPrice': 0, 'demand': 103189, 'demandBracket':
+      '1', 'meanPrice': 4084, 'name': 'marinesupplies', 'sellPrice': 4122,
+      'stock': 0, 'stockBracket': '0', 'statusFlags': NULL}, {'buyPrice': 220,
+      'demand': 1, 'demandBracket': '0', 'meanPrice': 416, 'name': 'mineraloil',
+      'sellPrice': 185, 'stock': 43313, 'stockBracket': '2', 'statusFlags':
+      NULL}, {'buyPrice': 466, 'demand': 1, 'demandBracket': '0', 'meanPrice':
+      662, 'name': 'naturalfabrics', 'sellPrice': 430, 'stock': 17986,
+      'stockBracket': '2', 'statusFlags': NULL}, {'buyPrice': 0, 'demand':
+      12600, 'demandBracket': '2', 'meanPrice': 1848, 'name':
+      'nonlethalweapons', 'sellPrice': 2219, 'stock': 0, 'stockBracket': '0',
+      'statusFlags': NULL}, {'buyPrice': 0, 'demand': 4463, 'demandBracket':
+      '3', 'meanPrice': 30271, 'name': 'occupiedcryopod', 'sellPrice': 30440,
+      'stock': 0, 'stockBracket': '0', 'statusFlags': NULL}, {'buyPrice': 0,
+      'demand': 194190, 'demandBracket': '3', 'meanPrice': 4286, 'name':
+      'onionheadc', 'sellPrice': 5543, 'stock': 0, 'stockBracket': '0',
+      'statusFlags': NULL}, {'buyPrice': 0, 'demand': 151500, 'demandBracket':
+      '3', 'meanPrice': 6490, 'name': 'performanceenhancers', 'sellPrice': 7500,
+      'stock': 0, 'stockBracket': '0', 'statusFlags': NULL}, {'buyPrice': 0,
+      'demand': 4463, 'demandBracket': '3', 'meanPrice': 9489, 'name':
+      'personaleffects', 'sellPrice': 9603, 'stock': 0, 'stockBracket': '0',
+      'statusFlags': NULL}, {'buyPrice': 0, 'demand': 12546, 'demandBracket':
+      '1', 'meanPrice': 4508, 'name': 'personalweapons', 'sellPrice': 4122,
+      'stock': 0, 'stockBracket': '0', 'statusFlags': NULL}, {'buyPrice': 0,
+      'demand': 226032, 'demandBracket': '3', 'meanPrice': 412, 'name':
+      'pesticides', 'sellPrice': 771, 'stock': 0, 'stockBracket': '0',
+      'statusFlags': NULL}, {'buyPrice': 0, 'demand': 10606, 'demandBracket':
+      '1', 'meanPrice': 2388, 'name': 'powergenerators', 'sellPrice': 2285,
+      'stock': 0, 'stockBracket': '0', 'statusFlags': NULL}, {'buyPrice': 0,
+      'demand': 101022, 'demandBracket': '3', 'meanPrice': 6451, 'name':
+      'progenitorcells', 'sellPrice': 7500, 'stock': 0, 'stockBracket': '0',
+      'statusFlags': NULL}, {'buyPrice': 0, 'demand': 39076, 'demandBracket':
+      '2', 'meanPrice': 2102, 'name': 'reactivearmour', 'sellPrice': 2574,
+      'stock': 0, 'stockBracket': '0', 'statusFlags': NULL}, {'buyPrice': 1470,
+      'demand': 1, 'demandBracket': '0', 'meanPrice': 1603, 'name': 'tea',
+      'sellPrice': 1416, 'stock': 46460, 'stockBracket': '2', 'statusFlags':
+      NULL}, {'buyPrice': 0, 'demand': 615114, 'demandBracket': '3',
+      'meanPrice': 4693, 'name': 'terrainenrichmentsystems', 'sellPrice': 5547,
+      'stock': 0, 'stockBracket': '0', 'statusFlags': NULL}, {'buyPrice': 4566,
+      'demand': 1, 'demandBracket': '0', 'meanPrice': 4943, 'name': 'tobacco',
+      'sellPrice': 4413, 'stock': 23318, 'stockBracket': '2', 'statusFlags':
+      NULL}, {'buyPrice': 0, 'demand': 3742, 'demandBracket': '3', 'meanPrice':
+      4058, 'name': 'unocuppiedescapepod', 'sellPrice': 4145, 'stock': 0,
+      'stockBracket': '0', 'statusFlags': NULL}, {'buyPrice': 0, 'demand': 4463,
+      'demandBracket': '3', 'meanPrice': 30956, 'name': 'usscargoblackbox',
+      'sellPrice': 31161, 'stock': 0, 'stockBracket': '0', 'statusFlags': NULL},
+      {'buyPrice': 53, 'demand': 1, 'demandBracket': '0', 'meanPrice': 260,
+      'name': 'water', 'sellPrice': 10, 'stock': 950138, 'stockBracket': '2',
+      'statusFlags': NULL}, {'buyPrice': 0, 'demand': 32700, 'demandBracket':
+      '1', 'meanPrice': 447, 'name': 'waterpurifiers', 'sellPrice': 300,
+      'stock': 0, 'stockBracket': '0', 'statusFlags': NULL}, {'buyPrice': 296,
+      'demand': 1, 'demandBracket': '0', 'meanPrice': 417, 'name': 'wine',
+      'sellPrice': 263, 'stock': 29983, 'stockBracket': '2', 'statusFlags':
+      NULL}, {'buyPrice': 0, 'demand': 893, 'demandBracket': '3', 'meanPrice':
+      8920, 'name': 'wreckagecomponents', 'sellPrice': 9024, 'stock': 0,
+      'stockBracket': '0', 'statusFlags': NULL}], 'economies': [{'name': 'Agri',
+      'proportion': 1}], 'horizons': true, 'marketId': 3229804032, 'odyssey':
+      true, 'prohibited': ['BasicNarcotics', 'BattleWeapons',
+      'CombatStabilisers', 'Slaves'], 'stationName': 'Thompson Dock',
+      'systemName': 'Djiwal', 'timestamp': 2026-03-14 23:59:59, 'stationType':
+      NULL, 'carrierDockingAccess': NULL}"
     metadata: {}
 metadata:
   conn:
